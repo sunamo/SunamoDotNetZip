@@ -13,7 +13,3 @@ global using System.Text.RegularExpressions;
 global using System.Text;
 global using System.Threading;
 global using System;
-global using SunamoDotNetZip.BZip2;
-global using SunamoDotNetZip.Zip;
-global using SunamoDotNetZip.Zlib;
-global using SunamoDotNetZip.Zip.Deflate64;
