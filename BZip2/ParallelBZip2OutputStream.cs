@@ -166,7 +166,7 @@ namespace Ionic.BZip2
     /// </para>
     ///
     /// <para>
-    ///   This class is similar to <see cref="Ionic.BZip2.BZip2OutputStream"/>,
+    ///   This class is similar to <see cref="BZip2OutputStream"/>,
     ///   except that this implementation uses an approach that employs multiple
     ///   worker threads to perform the compression.  On a multi-cpu or multi-core
     ///   computer, the performance of this class can be significantly higher than
@@ -183,7 +183,7 @@ namespace Ionic.BZip2
     ///   thread pool.
     /// </para>
     ///
-    /// <seealso cref="Ionic.BZip2.BZip2OutputStream" />
+    /// <seealso cref="BZip2OutputStream" />
     public class ParallelBZip2OutputStream : System.IO.Stream
     {
         private static readonly int BufferPairsPerCore = 4;
@@ -235,7 +235,7 @@ namespace Ionic.BZip2
         ///       var outFname = fname + ".bz2";
         ///       using (var output = File.Create(outFname))
         ///       {
-        ///           using (var compressor = new Ionic.BZip2.ParallelBZip2OutputStream(output))
+        ///           using (var compressor = new ParallelBZip2OutputStream(output))
         ///           {
         ///               byte[] buffer = new byte[2048];
         ///               int n;

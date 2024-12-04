@@ -491,7 +491,7 @@ namespace Ionic.Zip
         /// using (ZipFile zip = new ZipFile(ZipFileToRead))
         /// {
         ///   ZipEntry e1= zip["Elevation.mp3"];
-        ///   using (Ionic.Zlib.CrcCalculatorStream s = e1.OpenReader())
+        ///   using (CrcCalculatorStream s = e1.OpenReader())
         ///   {
         ///     byte[] buffer = new byte[4096];
         ///     int n, totalBytesRead= 0;
@@ -509,7 +509,7 @@ namespace Ionic.Zip
         /// <code lang="VB">
         ///   Using zip As New ZipFile(ZipFileToRead)
         ///       Dim e1 As ZipEntry = zip.Item("Elevation.mp3")
-        ///       Using s As Ionic.Zlib.CrcCalculatorStream = e1.OpenReader
+        ///       Using s As CrcCalculatorStream = e1.OpenReader
         ///           Dim n As Integer
         ///           Dim buffer As Byte() = New Byte(4096) {}
         ///           Dim totalBytesRead As Integer = 0
@@ -945,7 +945,7 @@ namespace Ionic.Zip
                 if (input is WinZipAesCipherStream)
                     wzs = input as WinZipAesCipherStream;
 
-                else if (input is Ionic.Zlib.CrcCalculatorStream)
+                else if (input is CrcCalculatorStream)
                 {
                     xxx;
                 }

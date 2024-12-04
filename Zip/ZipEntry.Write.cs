@@ -757,7 +757,7 @@ namespace Ionic.Zip
         {
             if (_UncompressedSize < 0x10) return false;
             if (_CompressionMethod == 0x00) return false;
-            if (CompressionLevel == Ionic.Zlib.CompressionLevel.None) return false;
+            if (CompressionLevel == CompressionLevel.None) return false;
             if (_CompressedSize < _UncompressedSize) return false;
 
             if (this._Source == ZipEntrySource.Stream && !this._sourceStream.CanSeek) return false;
@@ -828,7 +828,7 @@ namespace Ionic.Zip
                 CompressionLevel = SetCompression(LocalFileName, _FileNameInArchive);
 
             // finally, set CompressionMethod to None if CompressionLevel is None
-            if (CompressionLevel == (short)Ionic.Zlib.CompressionLevel.None &&
+            if (CompressionLevel == (short)CompressionLevel.None &&
                 CompressionMethod == Ionic.Zip.CompressionMethod.Deflate)
                 _CompressionMethod = 0x00;
 
@@ -1568,15 +1568,15 @@ namespace Ionic.Zip
             output.Close();
 
             // by calling Close() on the deflate stream, we write the footer bytes, as necessary.
-            if ((compressor as Ionic.Zlib.DeflateStream) != null)
+            if ((compressor as DeflateStream) != null)
                 compressor.Close();
 #if BZIP
-            else if ((compressor as Ionic.BZip2.BZip2OutputStream) != null)
+            else if ((compressor as BZip2OutputStream) != null)
                 compressor.Close();
-            else if ((compressor as Ionic.BZip2.ParallelBZip2OutputStream) != null)
+            else if ((compressor as ParallelBZip2OutputStream) != null)
                 compressor.Close();
 #endif
-            else if ((compressor as Ionic.Zlib.ParallelDeflateOutputStream) != null)
+            else if ((compressor as ParallelDeflateOutputStream) != null)
                 compressor.Close();
 
             encryptor.Flush();
@@ -1993,7 +1993,7 @@ namespace Ionic.Zip
 
         private Stream MaybeApplyCompression(Stream s, long streamLength)
         {
-            if (_CompressionMethod == 0x08 && CompressionLevel != Ionic.Zlib.CompressionLevel.None)
+            if (_CompressionMethod == 0x08 && CompressionLevel != CompressionLevel.None)
             {
                 // ParallelDeflateThreshold == 0    means ALWAYS use parallel deflate
                 // ParallelDeflateThreshold == -1L  means NEVER use parallel deflate
@@ -2024,7 +2024,7 @@ namespace Ionic.Zip
                     if (_container.ParallelDeflater == null)
                     {
                         _container.ParallelDeflater =
-                            new Ionic.Zlib.ParallelDeflateOutputStream(s,
+                            new ParallelDeflateOutputStream(s,
                                                                        CompressionLevel,
                                                                        _container.Strategy,
                                                                        true);
@@ -2036,11 +2036,11 @@ namespace Ionic.Zip
                                 _container.ParallelDeflateMaxBufferPairs;
                     }
                     // reset it with the new stream
-                    Ionic.Zlib.ParallelDeflateOutputStream o1 = _container.ParallelDeflater;
+                    ParallelDeflateOutputStream o1 = _container.ParallelDeflater;
                     o1.Reset(s);
                     return o1;
                 }
-                var o = new Ionic.Zlib.DeflateStream(s, Ionic.Zlib.CompressionMode.Compress,
+                var o = new DeflateStream(s, CompressionMode.Compress,
                                                      CompressionLevel,
                                                      true);
                 if (_container.CodecBufferSize > 0)
@@ -2058,10 +2058,10 @@ namespace Ionic.Zip
                      _container.ParallelDeflateThreshold > 0L))
                 {
 
-                    var o1 = new Ionic.BZip2.ParallelBZip2OutputStream(s, true);
+                    var o1 = new ParallelBZip2OutputStream(s, true);
                     return o1;
                 }
-                var o = new Ionic.BZip2.BZip2OutputStream(s, true);
+                var o = new BZip2OutputStream(s, true);
                 return o;
             }
 #endif

@@ -501,7 +501,7 @@ namespace Ionic.Zip
         /// <code lang="C#">
         /// using (var zip = new Ionic.Zip.ZipFile())
         /// {
-        ///     zip.CompressionLevel= Ionic.Zlib.CompressionLevel.BestCompression;
+        ///     zip.CompressionLevel= CompressionLevel.BestCompression;
         ///     zip.Password = "VerySecret.";
         ///     zip.Encryption = EncryptionAlgorithm.WinZipAes128;
         ///     zip.AddFile(sourceFileName);

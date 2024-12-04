@@ -50,7 +50,7 @@
  */
 
 // compile: msbuild
-// not: csc.exe /t:library /debug+ /out:Ionic.BZip2.dll BZip2InputStream.cs BCRC32.cs Rand.cs
+// not: csc.exe /t:library /debug+ /out:dll BZip2InputStream.cs BCRC32.cs Rand.cs
 
 
 
@@ -152,7 +152,7 @@ namespace Ionic.BZip2
         ///   var fname = "logfile.log.bz2";
         ///   using (var fs = File.OpenRead(fname))
         ///   {
-        ///       using (var decompressor = new Ionic.BZip2.BZip2InputStream(fs))
+        ///       using (var decompressor = new BZip2InputStream(fs))
         ///       {
         ///           var outFname = fname + ".decompressed";
         ///           using (var output = File.Create(outFname))

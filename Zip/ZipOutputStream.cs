@@ -345,13 +345,13 @@ namespace Ionic.Zip
         {
             // workitem 9307
             _outputStream = stream.CanRead ? stream : new CountingStream(stream);
-            CompressionLevel = Ionic.Zlib.CompressionLevel.Default;
+            CompressionLevel = CompressionLevel.Default;
             CompressionMethod = Ionic.Zip.CompressionMethod.Deflate;
             _encryption = EncryptionAlgorithm.None;
             _entriesWritten = new Dictionary<String, ZipEntry>(StringComparer.Ordinal);
             _zip64 = Zip64Option.Never;
             _leaveUnderlyingStreamOpen = leaveOpen;
-            Strategy = Ionic.Zlib.CompressionStrategy.Default;
+            Strategy = CompressionStrategy.Default;
             _name = name ?? "(stream)";
             ParallelDeflateThreshold = -1L;
         }
@@ -512,9 +512,9 @@ namespace Ionic.Zip
         ///   work better on different sorts of data. The strategy parameter can affect
         ///   the compression ratio and the speed of compression but not the correctness
         ///   of the compresssion.  For more information see <see
-        ///   cref="Ionic.Zlib.CompressionStrategy "/>.
+        ///   cref="CompressionStrategy "/>.
         /// </remarks>
-        public Ionic.Zlib.CompressionStrategy Strategy
+        public CompressionStrategy Strategy
         {
             get;
             set;
@@ -578,7 +578,7 @@ namespace Ionic.Zip
         ///    alone, and accept the default.
         ///  </para>
         /// </remarks>
-        public Ionic.Zlib.CompressionLevel CompressionLevel
+        public CompressionLevel CompressionLevel
         {
             get;
             set;
@@ -1076,7 +1076,7 @@ namespace Ionic.Zip
         ///     Encryption. This is primarily because encryption tends to slow down
         ///     the entire pipeline. Also, multi-threaded compression gives less of an
         ///     advantage when using lower compression levels, for example <see
-        ///     cref="Ionic.Zlib.CompressionLevel.BestSpeed"/>.  You may have to perform
+        ///     cref="CompressionLevel.BestSpeed"/>.  You may have to perform
         ///     some tests to determine the best approach for your situation.
         ///   </para>
         ///
@@ -1620,7 +1620,7 @@ namespace Ionic.Zip
         private bool _needToWriteEntryHeader;
         private string _name;
         private bool _DontIgnoreCase;
-        internal Ionic.Zlib.ParallelDeflateOutputStream ParallelDeflater;
+        internal ParallelDeflateOutputStream ParallelDeflater;
         private long _ParallelDeflateThreshold;
         private int _maxBufferPairs = 16;
 
@@ -1704,7 +1704,7 @@ namespace Ionic.Zip
             }
         }
 
-        public Ionic.Zlib.ParallelDeflateOutputStream ParallelDeflater
+        public ParallelDeflateOutputStream ParallelDeflater
         {
             get
             {
@@ -1746,7 +1746,7 @@ namespace Ionic.Zip
             }
         }
 
-        public Ionic.Zlib.CompressionStrategy Strategy
+        public CompressionStrategy Strategy
         {
             get
             {
