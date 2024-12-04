@@ -1,3 +1,4 @@
+namespace Ionic.BZip2;
 // BZip2InputStream.cs
 // ------------------------------------------------------------------
 //
@@ -57,8 +58,6 @@
 using System;
 using System.IO;
 
-namespace Ionic.BZip2
-{
 
     /// <summary>
     ///   A read-only decorator stream that performs BZip2 decompression on Read.
@@ -81,7 +80,7 @@ namespace Ionic.BZip2
         private bool blockRandomised;
         private int bsBuff;
         private int bsLive;
-        private readonly Ionic.Crc.CRC32 crc = new Ionic.Crc.CRC32(true);
+        private readonly Ionic.Zlib.CRC32 crc = new Ionic.Zlib.CRC32(true);
         private int nInUse;
         private Stream input;
         private int currentChar = -1;
@@ -1444,4 +1443,3 @@ namespace Ionic.BZip2
 
     }
 
-}

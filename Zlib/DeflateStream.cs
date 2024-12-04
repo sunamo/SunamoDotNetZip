@@ -1,3 +1,4 @@
+namespace Ionic.Zlib;
 // DeflateStream.cs
 // ------------------------------------------------------------------
 //
@@ -27,8 +28,6 @@
 
 using System;
 
-namespace Ionic.Zlib
-{
     /// <summary>
     /// A class for compressing and decompressing streams using the Deflate algorithm.
     /// </summary>
@@ -736,5 +735,4 @@ namespace Ionic.Zlib
 
     }
 
-}
 

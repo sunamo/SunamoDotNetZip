@@ -1,3 +1,4 @@
+namespace Ionic.Zip;
 // ZipEntry.cs
 // ------------------------------------------------------------------
 //
@@ -30,8 +31,6 @@ using System;
 using System.IO;
 using Interop = System.Runtime.InteropServices;
 
-namespace Ionic.Zip
-{
     /// <summary>
     /// Represents a single entry in a ZipFile. Typically, applications get a ZipEntry
     /// by enumerating the entries within a ZipFile, or by adding an entry to a ZipFile.
@@ -2963,4 +2962,3 @@ namespace Ionic.Zip
 
 
 
-}

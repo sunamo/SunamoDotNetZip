@@ -1,3 +1,4 @@
+namespace Ionic.Zlib;
 // GZipStream.cs
 // ------------------------------------------------------------------
 //
@@ -30,8 +31,6 @@
 using System;
 using System.IO;
 
-namespace Ionic.Zlib
-{
     /// <summary>
     ///   A class for compressing and decompressing GZIP streams.
     /// </summary>
@@ -1026,4 +1025,3 @@ namespace Ionic.Zlib
 
 
     }
-}

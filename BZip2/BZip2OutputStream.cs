@@ -1,5 +1,4 @@
-//#define Trace
-
+namespace Ionic.BZip2;
 // BZip2OutputStream.cs
 // ------------------------------------------------------------------
 //
@@ -83,8 +82,6 @@ using System;
 using System.IO;
 
 
-namespace Ionic.BZip2
-{
     /// <summary>
     ///   A write-only decorator stream that compresses data as it is
     ///   written using the BZip2 algorithm.
@@ -523,4 +520,3 @@ namespace Ionic.BZip2
 
     }
 
-}

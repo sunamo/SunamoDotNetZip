@@ -1,5 +1,4 @@
-//#define Trace
-
+namespace Ionic.Zip;
 // ZipEntry.Write.cs
 // ------------------------------------------------------------------
 //
@@ -30,8 +29,6 @@ using System;
 using System.IO;
 using RE = System.Text.RegularExpressions;
 
-namespace Ionic.Zip
-{
     public partial class ZipEntry
     {
         internal void WriteCentralDirectoryEntry(Stream s)
@@ -1239,7 +1236,7 @@ namespace Ionic.Zip
                 // get the original stream:
                 if (this._Source == ZipEntrySource.WriteDelegate)
                 {
-                    var output = new Ionic.Crc.CrcCalculatorStream(Stream.Null);
+                    var output = new Ionic.Zlib.CrcCalculatorStream(Stream.Null);
                     // allow the application to write the data
                     this._WriteDelegate(this.FileName, output);
                     _Crc32 = output.Crc;
@@ -1272,7 +1269,7 @@ namespace Ionic.Zip
                         input = File.Open(LocalFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                     }
 
-                    var crc32 = new Ionic.Crc.CRC32();
+                    var crc32 = new Ionic.Zlib.CRC32();
                     _Crc32 = crc32.GetCrc32(input);
 
                     if (_sourceStream == null)
@@ -1456,7 +1453,7 @@ namespace Ionic.Zip
 
                 // Wrap a CrcCalculatorStream around that.
                 // This will happen BEFORE compression (if any) as we write data out.
-                var output = new Ionic.Crc.CrcCalculatorStream(compressor, true);
+                var output = new Ionic.Zlib.CrcCalculatorStream(compressor, true);
 
                 // output.Write() causes this flow:
                 // calc-crc -> compress -> encrypt -> count -> actually write
@@ -1561,7 +1558,7 @@ namespace Ionic.Zip
                                          CountingStream entryCounter,
                                          Stream encryptor,
                                          Stream compressor,
-                                         Ionic.Crc.CrcCalculatorStream output)
+                                         Ionic.Zlib.CrcCalculatorStream output)
         {
             if (output == null) return;
 
@@ -1952,7 +1949,7 @@ namespace Ionic.Zip
                                        out CountingStream outputCounter,
                                        out Stream encryptor,
                                        out Stream compressor,
-                                       out Ionic.Crc.CrcCalculatorStream output)
+                                       out Ionic.Zlib.CrcCalculatorStream output)
         {
             TraceWriteLine("PrepOutputStream: e({0}) comp({1}) crypto({2}) zf({3})",
                            FileName,
@@ -1986,7 +1983,7 @@ namespace Ionic.Zip
             }
             // Wrap a CrcCalculatorStream around that.
             // This will happen BEFORE compression (if any) as we write data out.
-            output = new Ionic.Crc.CrcCalculatorStream(compressor, true);
+            output = new Ionic.Zlib.CrcCalculatorStream(compressor, true);
         }
 
 
@@ -2641,4 +2638,3 @@ namespace Ionic.Zip
 
         private object _outputLock = new Object();
     }
-}

@@ -1,3 +1,4 @@
+namespace Ionic.Zlib;
 // ZlibStream.cs
 // ------------------------------------------------------------------
 //
@@ -28,8 +29,6 @@
 using System;
 using System.IO;
 
-namespace Ionic.Zlib
-{
 
     /// <summary>
     /// Represents a Zlib stream for compression or decompression.
@@ -722,4 +721,3 @@ namespace Ionic.Zlib
     }
 
 
-}

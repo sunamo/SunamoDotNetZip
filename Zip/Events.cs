@@ -1,3 +1,4 @@
+namespace Ionic.Zip;
 // Events.cs
 // ------------------------------------------------------------------
 //
@@ -27,8 +28,6 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Ionic.Zip
-{
     /// <summary>
     ///   Delegate in which the application writes the <c>ZipEntry</c> content for the named entry.
     /// </summary>
@@ -681,4 +680,3 @@ namespace Ionic.Zip
     }
 
 
-}

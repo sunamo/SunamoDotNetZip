@@ -1,3 +1,4 @@
+namespace Ionic.Zip;
 // ZipFile.cs
 //
 // Copyright (c) 2006-2010 Dino Chiesa
@@ -44,8 +45,6 @@ using System.Collections.Generic;
 using Interop = System.Runtime.InteropServices;
 
 
-namespace Ionic.Zip
-{
     /// <summary>
     ///   The ZipFile type represents a zip archive file.
     /// </summary>
@@ -3924,7 +3923,7 @@ namespace Ionic.Zip
         AddOrUpdate
     }
 
-}
+
 
 
 
@@ -4044,4 +4043,3 @@ namespace Ionic.Zip
 //            9-15 year (since 1980)
 //
 // see http://msdn.microsoft.com/en-us/library/ms724274(VS.85).aspx
-

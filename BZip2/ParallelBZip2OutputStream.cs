@@ -1,5 +1,4 @@
-//#define Trace
-
+namespace Ionic.BZip2;
 // ParallelBZip2OutputStream.cs
 // ------------------------------------------------------------------
 //
@@ -133,8 +132,6 @@ using System.IO;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace Ionic.BZip2
-{
     internal class WorkItem
     {
         public int index;
@@ -992,4 +989,3 @@ namespace Ionic.BZip2
 
     }
 
-}
