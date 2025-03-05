@@ -1,4 +1,5 @@
 namespace Ionic.Zlib;
+
 // Tree.cs
 // ------------------------------------------------------------------
 //
@@ -60,43 +61,30 @@ namespace Ionic.Zlib;
 // and contributors of zlib.
 //
 // -----------------------------------------------------------------------
-
-
-using System;
-
     sealed class Tree
     {
         private static readonly int HEAP_SIZE = (2 * InternalConstants.L_CODES + 1);
-                
         // extra bits for each length code
         internal static readonly int[] ExtraLengthBits =
         [
             0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2,
             3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0
         ];
-                
         // extra bits for each distance code
         internal static readonly int[] ExtraDistanceBits =
         [
             0, 0, 0, 0, 1, 1,  2,  2,  3,  3,  4,  4,  5,  5,  6,  6,
             7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13
         ];
-                
         // extra bits for each bit length code
         internal static readonly int[] extra_blbits = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 7];
-                
         internal static readonly sbyte[] bl_order = [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15];
-                
-                
         // The lengths of the bit length codes are sent in order of decreasing
         // probability, to avoid transmitting the lengths for unused bit
         // length codes.
-                
         internal const int Buf_size = 8 * 2;
-                
         // see definition of array dist_code below
         //internal const int DIST_CODE_LEN = 512;
-                
         private static readonly sbyte[] _dist_code =
         [
             0,  1,  2,  3,  4,  4,  5,  5,  6,  6,  6,  6,  7,  7,  7,  7, 
@@ -132,7 +120,6 @@ using System;
             29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 
             29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29
         ];
-                
         internal static readonly sbyte[] LengthCode =
         [
             0,   1,  2,  3,  4,  5,  6,  7,  8,  8,  9,  9, 10, 10, 11, 11,
@@ -152,22 +139,16 @@ using System;
             27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
             27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 28
         ];
-                
-
         internal static readonly int[] LengthBase =
         [
             0,   1,  2,  3,  4,  5,  6,   7,   8,  10,  12,  14, 16, 20, 24, 28,
             32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 0
         ];
-                
-
         internal static readonly int[] DistanceBase =
         [
             0, 1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 48, 64, 96, 128, 192,
             256, 384, 512, 768, 1024, 1536, 2048, 3072, 4096, 6144, 8192, 12288, 16384, 24576
         ];
-
-
     /// <summary>
     /// Map from a distance to a distance code.
     /// </summary>
@@ -177,11 +158,9 @@ using System;
     internal static int DistanceCode(int dist) => (dist < 256)
             ? _dist_code[dist]
             : _dist_code[256 + SharedUtils.URShift(dist, 7)];
-
     internal short[] dyn_tree; // the dynamic tree
         internal int max_code; // largest code with non zero frequency
         internal StaticTree staticTree; // the corresponding static tree
-                
         // Compute the optimal bit lengths for a tree and update the total bit length
         // for the current block.
         // IN assertion: the fields freq and dad are set, heap[heap_max] and
@@ -203,14 +182,11 @@ using System;
             int xbits; // extra bits
             short f; // frequency
             int overflow = 0; // number of elements with bit length too large
-                        
             for (bits = 0; bits <= InternalConstants.MAX_BITS; bits++)
                 s.bl_count[bits] = 0;
-                        
             // In a first pass, compute the optimal bit lengths (which may
             // overflow in the case of the bit length tree).
             tree[s.heap[s.heap_max] * 2 + 1] = 0; // root of the heap
-                        
             for (h = s.heap_max + 1; h < HEAP_SIZE; h++)
             {
                 n = s.heap[h];
@@ -221,10 +197,8 @@ using System;
                 }
                 tree[n * 2 + 1] = (short) bits;
                 // We overwrite tree[n*2+1] which is no longer needed
-                                
                 if (n > max_code)
                     continue; // not a leaf node
-                                
                 s.bl_count[bits]++;
                 xbits = 0;
                 if (n >= base_Renamed)
@@ -236,7 +210,6 @@ using System;
             }
             if (overflow == 0)
                 return ;
-                        
             // This happens for example on obj2 and pic of the Calgary corpus
             // Find the first bit length which could increase:
             do 
@@ -252,7 +225,6 @@ using System;
                 overflow -= 2;
             }
             while (overflow > 0);
-                        
             for (bits = max_length; bits != 0; bits--)
             {
                 n = s.bl_count[bits];
@@ -270,7 +242,6 @@ using System;
                 }
             }
         }
-                
         // Construct one Huffman tree and assigns the code bit strings and lengths.
         // Update the total bit length for the current block.
         // IN assertion: the field freq is set for all tree elements.
@@ -285,13 +256,11 @@ using System;
             int n, m;            // iterate over heap elements
             int max_code  = -1;  // largest code with non zero frequency
             int node;            // new node being created
-                        
             // Construct the initial heap, with least frequent element in
             // heap[1]. The sons of heap[n] are heap[2*n] and heap[2*n+1].
             // heap[0] is not used.
             s.heap_len = 0;
             s.heap_max = HEAP_SIZE;
-                        
             for (n = 0; n < elems; n++)
             {
                 if (tree[n * 2] != 0)
@@ -304,7 +273,6 @@ using System;
                     tree[n * 2 + 1] = 0;
                 }
             }
-                        
             // The pkzip format requires that at least one distance code exists,
             // and that at least one bit should be sent even if there is only one
             // possible code. So to avoid special checks later on we force at least
@@ -320,16 +288,12 @@ using System;
                 // node is 0 or 1 so it does not have extra bits
             }
             this.max_code = max_code;
-                        
             // The elements heap[heap_len/2+1 .. heap_len] are leaves of the tree,
             // establish sub-heaps of increasing lengths:
-                        
             for (n = s.heap_len / 2; n >= 1; n--)
                 s.pqdownheap(tree, n);
-                        
             // Construct the Huffman tree by repeatedly combining the least two
             // frequent nodes.
-                        
             node = elems; // next internal node of the tree
             do 
             {
@@ -338,32 +302,24 @@ using System;
                 s.heap[1] = s.heap[s.heap_len--];
                 s.pqdownheap(tree, 1);
                 m = s.heap[1]; // m = node of next least frequency
-                                
                 s.heap[--s.heap_max] = n; // keep the nodes sorted by frequency
                 s.heap[--s.heap_max] = m;
-                                
                 // Create a new node father of n and m
                 tree[node * 2] = unchecked((short) (tree[n * 2] + tree[m * 2]));
                 s.depth[node] = (sbyte) (System.Math.Max((byte) s.depth[n], (byte) s.depth[m]) + 1);
                 tree[n * 2 + 1] = tree[m * 2 + 1] = (short) node;
-                                
                 // and insert the new node in the heap
                 s.heap[1] = node++;
                 s.pqdownheap(tree, 1);
             }
             while (s.heap_len >= 2);
-                        
             s.heap[--s.heap_max] = s.heap[1];
-                        
             // At this point, the fields freq and dad are set. We can now
             // generate the bit lengths.
-                        
             gen_bitlen(s);
-                        
             // The field len is now set, we can generate the bit codes
             gen_codes(tree, max_code, s.bl_count);
         }
-                
         // Generate the codes for a given tree and bit counts (which need not be
         // optimal).
         // IN assertion: the array bl_count contains the bit length statistics for
@@ -376,20 +332,17 @@ using System;
             short code = 0; // running code value
             int bits; // bit index
             int n; // code index
-                        
             // The distribution counts are first used to generate the code values
             // without bit reversal.
             for (bits = 1; bits <= InternalConstants.MAX_BITS; bits++)
                 unchecked {
                     next_code[bits] = code = (short) ((code + bl_count[bits - 1]) << 1);
                 }
-                        
             // Check that the bit counts in bl_count are consistent. The last code
             // must be all ones.
             //Assert (code + bl_count[MAX_BITS]-1 == (1<<MAX_BITS)-1,
             //        "inconsistent bit counts");
             //Tracev((stderr,"\ngen_codes: max_code %d ", max_code));
-                        
             for (n = 0; n <= max_code; n++)
             {
                 int len = tree[n * 2 + 1];
@@ -399,7 +352,6 @@ using System;
                 tree[n * 2] =  unchecked((short) (bi_reverse(next_code[len]++, len)));
             }
         }
-                
         // Reverse the first len bits of a code, using straightforward code (a faster
         // method would use a table)
         // IN assertion: 1 <= len <= 15

@@ -1,4 +1,5 @@
 namespace Ionic.Zip;
+
 // ZipFile.Check.cs
 // ------------------------------------------------------------------
 //
@@ -26,12 +27,6 @@ namespace Ionic.Zip;
 //
 // ------------------------------------------------------------------
 //
-
-
-using System;
-using System.IO;
-using System.Collections.Generic;
-
     public partial class ZipFile
     {
     /// <summary>
@@ -67,8 +62,6 @@ using System.Collections.Generic;
     /// <seealso cref="FixZipDirectory(string)"/>
     /// <seealso cref="CheckZip(string,bool,System.IO.TextWriter)"/>
     public static bool CheckZip(string zipFileName) => CheckZip(zipFileName, false, null);
-
-
     /// <summary>
     ///   Checks a zip file to see if its directory is consistent,
     ///   and optionally fixes the directory if necessary.
@@ -110,7 +103,6 @@ using System.Collections.Generic;
     /// <seealso cref="FixZipDirectory(string)"/>
     public static bool CheckZip(string zipFileName, bool fixIfNecessary,
                                     TextWriter writer)
-
         {
             ZipFile zip1 = null, zip2 = null;
             bool isOk = true;
@@ -121,9 +113,7 @@ using System.Collections.Generic;
                 FullScan = true
             };
             zip1.Initialize(zipFileName);
-
                 zip2 = ZipFile.Read(zipFileName);
-
                 foreach (var e1 in zip1)
                 {
                     foreach (var e2 in zip2)
@@ -165,16 +155,13 @@ using System.Collections.Generic;
                                                         e1.FileName, e1.Crc,
                                                         e2.Crc);
                             }
-
                             // found a match, so stop the inside loop
                             break;
                         }
                     }
                 }
-
                 zip2.Dispose();
                 zip2 = null;
-
                 if (!isOk && fixIfNecessary)
                 {
                     string newFileName = Path.GetFileNameWithoutExtension(zipFileName);
@@ -189,9 +176,6 @@ using System.Collections.Generic;
             }
             return isOk;
         }
-
-
-
         /// <summary>
         ///   Rewrite the directory within a zipfile.
         /// </summary>
@@ -233,9 +217,6 @@ using System.Collections.Generic;
         zip.Initialize(zipFileName);
         zip.Save(zipFileName);
     }
-
-
-
         /// <summary>
         ///   Verify the password on a zip file.
         /// </summary>
@@ -282,8 +263,6 @@ using System.Collections.Generic;
             catch(Ionic.Zip.BadPasswordException) { }
             return success;
         }
-
-
         /// <summary>
         ///   Provides a human-readable string with information about the ZipFile.
         /// </summary>
@@ -318,9 +297,7 @@ using System.Collections.Generic;
                 {
                     builder.Append(string.Format("needed to extract: 0x{0:X4}\n", this._versionNeededToExtract));
                 }
-
                 builder.Append(string.Format("       uses ZIP64: {0}\n", this.InputUsesZip64));
-
                 builder.Append(string.Format("     disk with CD: {0}\n", this._diskNumberWithCd));
                 if (this._OffsetOfCentralDirectory == 0xFFFFFFFF)
                     builder.Append(string.Format("      CD64 offset: 0x{0:X16}\n", this._OffsetOfCentralDirectory64));
@@ -334,7 +311,4 @@ using System.Collections.Generic;
                 return builder.ToString();
             }
         }
-
-
     }
-

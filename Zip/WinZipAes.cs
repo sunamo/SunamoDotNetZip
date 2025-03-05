@@ -1,4 +1,5 @@
 namespace Ionic.Zip;
+
 // WinZipAes.cs
 // ------------------------------------------------------------------
 //
@@ -26,12 +27,6 @@ namespace Ionic.Zip;
 // Created: January 2009
 //
 // ------------------------------------------------------------------
-
-using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Security.Cryptography;
-
 #if AESCRYPTO
     /// <summary>
     ///   This is a helper class supporting WinZip AES encryption.
@@ -58,26 +53,20 @@ using System.Security.Cryptography;
         private int Rfc2898KeygenIterations = 1000;
         private string _Password;
         private bool _cryptoGenerated ;
-
         private WinZipAesCrypto(string password, int KeyStrengthInBits)
         {
             _Password = password;
             _KeyStrengthInBits = KeyStrengthInBits;
         }
-
         public static WinZipAesCrypto Generate(string password, int KeyStrengthInBits)
         {
             WinZipAesCrypto c = new WinZipAesCrypto(password, KeyStrengthInBits);
-
             int saltSizeInBytes = c._KeyStrengthInBytes / 2;
             c._Salt = new byte[saltSizeInBytes];
             Random rnd = new Random();
             rnd.NextBytes(c._Salt);
             return c;
         }
-
-
-
         public static WinZipAesCrypto ReadFromStream(string password, int KeyStrengthInBits, Stream s)
         {
             // from http://www.winzip.com/aes_info.htm
@@ -90,21 +79,16 @@ using System.Security.Cryptography;
             // 10            Authentication code
             //
             // ZipEntry.CompressedSize represents the size of all of those elements.
-
             // salt size varies with key length:
             //    128 bit key => 8 bytes salt
             //    192 bits => 12 bytes salt
             //    256 bits => 16 bytes salt
-
             WinZipAesCrypto c = new WinZipAesCrypto(password, KeyStrengthInBits);
-
             int saltSizeInBytes = c._KeyStrengthInBytes / 2;
             c._Salt = new byte[saltSizeInBytes];
             c._providedPv = new byte[2];
-
             s.Read(c._Salt, 0, c._Salt.Length);
             s.Read(c._providedPv, 0, c._providedPv.Length);
-
             c.PasswordVerificationStored = (Int16)(c._providedPv[0] + c._providedPv[1] * 256);
             if (password != null)
             {
@@ -112,10 +96,8 @@ using System.Security.Cryptography;
                 if (c.PasswordVerificationGenerated != c.PasswordVerificationStored)
                     throw new BadPasswordException("bad password");
             }
-
             return c;
         }
-
         public byte[] GeneratedPV
         {
             get
@@ -124,8 +106,6 @@ using System.Security.Cryptography;
                 return _generatedPv;
             }
         }
-
-
         public byte[] Salt
         {
             get
@@ -133,17 +113,13 @@ using System.Security.Cryptography;
                 return _Salt;
             }
         }
-
-
         private int _KeyStrengthInBytes
         {
             get
             {
                 return _KeyStrengthInBits / 8;
-
             }
         }
-
         public int SizeOfEncryptionMetadata
         {
             get
@@ -152,7 +128,6 @@ using System.Security.Cryptography;
                 return _KeyStrengthInBytes / 2 + 10 + 2;
             }
         }
-
         public string Password
         {
             set
@@ -170,23 +145,16 @@ using System.Security.Cryptography;
                 return _Password;
             }
         }
-
-
         private void _GenerateCryptoBytes()
         {
             //Console.WriteLine(" provided password: '{0}'", _Password);
-
             System.Security.Cryptography.Rfc2898DeriveBytes rfc2898 =
                 new System.Security.Cryptography.Rfc2898DeriveBytes(_Password, Salt, Rfc2898KeygenIterations);
-
             _keyBytes = rfc2898.GetBytes(_KeyStrengthInBytes); // 16 or 24 or 32 ???
             _MacInitializationVector = rfc2898.GetBytes(_KeyStrengthInBytes);
             _generatedPv = rfc2898.GetBytes(2);
-
             _cryptoGenerated = true;
         }
-
-
         public byte[] KeyBytes
         {
             get
@@ -195,8 +163,6 @@ using System.Security.Cryptography;
                 return _keyBytes;
             }
         }
-
-
         public byte[] MacIv
         {
             get
@@ -205,22 +171,16 @@ using System.Security.Cryptography;
                 return _MacInitializationVector;
             }
         }
-
         public byte[] CalculatedMac;
-
-
         public void ReadAndVerifyMac(System.IO.Stream s)
         {
             bool invalid = false;
-
             // read integrityCheckVector.
             // caller must ensure that the file pointer is in the right spot!
             _StoredMac = new byte[10];  // aka "authentication code"
             s.Read(_StoredMac, 0, _StoredMac.Length);
-
             if (_StoredMac.Length != CalculatedMac.Length)
                 invalid = true;
-
             if (!invalid)
             {
                 for (int i = 0; i < _StoredMac.Length; i++)
@@ -229,14 +189,10 @@ using System.Security.Cryptography;
                         invalid = true;
                 }
             }
-
             if (invalid)
                 throw new Ionic.Zip.BadStateException("The MAC does not match.");
         }
-
     }
-
-
     #region DONT_COMPILE_BUT_KEEP_FOR_POTENTIAL_FUTURE_USE
 #if NO
     internal class Util
@@ -246,7 +202,6 @@ using System.Security.Cryptography;
                                     int offset,
                                     int length)
         {
-
             System.Text.StringBuilder sb2 = new System.Text.StringBuilder();
             sb1.Append("0000    ");
             int i;
@@ -273,13 +228,9 @@ using System.Security.Cryptography;
                     .Append(sb2);
             }
         }
-
-
-
         internal static string FormatByteArray(byte[] b, int limit)
         {
             System.Text.StringBuilder sb1 = new System.Text.StringBuilder();
-
             if ((limit * 2 > b.Length) || limit == 0)
             {
                 _Format(sb1, b, 0, b.Length);
@@ -288,30 +239,20 @@ using System.Security.Cryptography;
             {
                 // first N bytes of the buffer
                 _Format(sb1, b, 0, limit);
-
                 if (b.Length > limit * 2)
                     sb1.Append(String.Format("\n   ...({0} other bytes here)....\n", b.Length - limit * 2));
-
                 // last N bytes of the buffer
                 _Format(sb1, b, b.Length - limit, limit);
             }
-
             return sb1.ToString();
         }
-
-
         internal static string FormatByteArray(byte[] b)
         {
             return FormatByteArray(b, 0);
         }
     }
-
 #endif
     #endregion
-
-
-
-
     /// <summary>
     ///   A stream that encrypts as it writes, or decrypts as it reads.  The
     ///   Crypto is AES in CTR (counter) mode, which is compatible with the AES
@@ -350,17 +291,12 @@ using System.Security.Cryptography;
         private CryptoMode _mode;
         private int _nonce;
         private bool _finalBlock;
-
         internal HMACSHA1 _mac;
-
         internal Aes _aesCipher;
         internal ICryptoTransform _xform;
-
         private const int BLOCK_SIZE_IN_BYTES = 16;
-
         private byte[] counter = new byte[BLOCK_SIZE_IN_BYTES];
         private byte[] counterOut = new byte[BLOCK_SIZE_IN_BYTES];
-
         // I've had a problem when wrapping a WinZipAesCipherStream inside
         // a DeflateStream. Calling Read() on the DeflateStream results in
         // a Read() on the WinZipAesCipherStream, but the buffer is larger
@@ -369,17 +305,14 @@ using System.Security.Cryptography;
         // bytestream is embedded within a larger stream (As in a zip
         // archive), the Read() doesn't fail with EOF.  This causes bad
         // data to be returned, and it messes up the MAC.
-
         // This field is used to provide a hard-stop to the size of
         // data that can be read from the stream.  In Read(), if the buffer or
         // read request goes beyond the stop, we truncate it.
-
         private long _length;
         private long _totalBytesXferred;
         private byte[] _PendingWriteBlock;
         private int _pendingCount;
         private byte[] _iobuf;
-
         /// <summary>
         /// The constructor.
         /// </summary>
@@ -395,64 +328,49 @@ using System.Security.Cryptography;
             _length = length;
             //Console.WriteLine("max length of AES stream: {0}", _length);
         }
-
 #if WANT_TRACE
         Stream untransformed;
         String traceFileUntransformed;
         Stream transformed;
         String traceFileTransformed;
 #endif
-
-
         internal WinZipAesCipherStream(System.IO.Stream s, WinZipAesCrypto cryptoParams, CryptoMode mode)
             : base()
         {
             TraceOutput("-------------------------------------------------------");
             TraceOutput("Create {0:X8}", this.GetHashCode());
-
             _params = cryptoParams;
             _s = s;
             _mode = mode;
             _nonce = 1;
-
             if (_params == null)
                 throw new BadPasswordException("Supply a password to use AES encryption.");
-
             int keySizeInBits = _params.KeyBytes.Length * 8;
             if (keySizeInBits != 256 && keySizeInBits != 128 && keySizeInBits != 192)
                 throw new ArgumentOutOfRangeException("keysize",
                                                       "size of key must be 128, 192, or 256");
-
             _mac = new HMACSHA1(_params.MacIv);
-
             _aesCipher = System.Security.Cryptography.Aes.Create();
             _aesCipher.BlockSize = 128;
             _aesCipher.KeySize = keySizeInBits;  // 128, 192, 256
             _aesCipher.Mode = CipherMode.ECB;
             _aesCipher.Padding = PaddingMode.None;
-
             byte[] iv = new byte[BLOCK_SIZE_IN_BYTES]; // all zeroes
-
             // Create an ENCRYPTOR, regardless whether doing decryption or encryption.
             // It is reflexive.
             _xform = _aesCipher.CreateEncryptor(_params.KeyBytes, iv);
-
             if (_mode == CryptoMode.Encrypt)
             {
                 _iobuf = new byte[2048];
                 _PendingWriteBlock = new byte[BLOCK_SIZE_IN_BYTES];
             }
-
-
 #if WANT_TRACE
                 traceFileUntransformed = "unpack\\WinZipAesCipherStream.trace.untransformed.out";
             traceFileTransformed = "unpack\\WinZipAesCipherStream.trace.transformed.out";
-
             untransformed = System.IO.File.Create(traceFileUntransformed);
             transformed = System.IO.File.Create(traceFileTransformed);
 #endif
         }
-
         private void XorInPlace(byte[] buffer, int offset, int count)
         {
             for (int i = 0; i < count; i++)
@@ -460,7 +378,6 @@ using System.Security.Cryptography;
                 buffer[offset + i] = (byte)(counterOut[i] ^ buffer[offset + i]);
             }
         }
-
         private void WriteTransformOneBlock(byte[] buffer, int offset)
         {
             System.Array.Copy(BitConverter.GetBytes(_nonce++), 0, counter, 0, 4);
@@ -472,29 +389,22 @@ using System.Security.Cryptography;
             XorInPlace(buffer, offset, BLOCK_SIZE_IN_BYTES);
             _mac.TransformBlock(buffer, offset, BLOCK_SIZE_IN_BYTES, null, 0);
         }
-
-
         private void WriteTransformBlocks(byte[] buffer, int offset, int count)
         {
             int posn = offset;
             int last = count + offset;
-
             while (posn < buffer.Length && posn < last)
             {
                 WriteTransformOneBlock (buffer, posn);
                 posn += BLOCK_SIZE_IN_BYTES;
             }
         }
-
-
         private void WriteTransformFinalBlock()
         {
             if (_pendingCount == 0)
                 throw new InvalidOperationException("No bytes available.");
-
             if (_finalBlock)
                 throw new InvalidOperationException("The final block has already been transformed.");
-
             System.Array.Copy(BitConverter.GetBytes(_nonce++), 0, counter, 0, 4);
             counterOut = _xform.TransformFinalBlock(counter,
                                                     0,
@@ -503,24 +413,16 @@ using System.Security.Cryptography;
             _mac.TransformFinalBlock(_PendingWriteBlock, 0, _pendingCount);
             _finalBlock = true;
         }
-
-
-
-
-
         private int ReadTransformOneBlock(byte[] buffer, int offset, int last)
         {
             if (_finalBlock)
                 throw new NotSupportedException();
-
             int bytesRemaining = last - offset;
             int bytesToRead = (bytesRemaining > BLOCK_SIZE_IN_BYTES)
                 ? BLOCK_SIZE_IN_BYTES
                 : bytesRemaining;
-
             // update the counter
             System.Array.Copy(BitConverter.GetBytes(_nonce++), 0, counter, 0, 4);
-
             // Determine if this is the final block
             if ((bytesToRead == bytesRemaining) &&
                 (_length > 0) &&
@@ -541,78 +443,55 @@ using System.Security.Cryptography;
                                       counterOut,
                                       0);  // offset
             }
-
             XorInPlace(buffer, offset, bytesToRead);
             return bytesToRead;
         }
-
-
-
         private void ReadTransformBlocks(byte[] buffer, int offset, int count)
         {
             int posn = offset;
             int last = count + offset;
-
             while (posn < buffer.Length && posn < last )
             {
                 int n = ReadTransformOneBlock (buffer, posn, last);
                 posn += n;
             }
         }
-
-
-
         public override int Read(byte[] buffer, int offset, int count)
         {
             if (_mode == CryptoMode.Encrypt)
                 throw new NotSupportedException();
-
             if (buffer == null)
                 throw new ArgumentNullException("buffer");
-
             if (offset < 0)
                 throw new ArgumentOutOfRangeException("offset",
                                                       "Must not be less than zero.");
             if (count < 0)
                 throw new ArgumentOutOfRangeException("count",
                                                       "Must not be less than zero.");
-
             if (buffer.Length < offset + count)
                 throw new ArgumentException("The buffer is too small");
-
             // When I wrap a WinZipAesStream in a DeflateStream, the
             // DeflateStream asks its captive to read 4k blocks, even if the
             // encrypted bytestream is smaller than that.  This is a way to
             // limit the number of bytes read.
-
             int bytesToRead = count;
-
             if (_totalBytesXferred >= _length)
             {
                 return 0; // EOF
             }
-
             long bytesRemaining = _length - _totalBytesXferred;
             if (bytesRemaining < count) bytesToRead = (int)bytesRemaining;
-
             int n = _s.Read(buffer, offset, bytesToRead);
-
-
 #if WANT_TRACE
                 untransformed.Write(buffer, offset, bytesToRead);
 #endif
-
             ReadTransformBlocks(buffer, offset, bytesToRead);
-
 #if WANT_TRACE
                 transformed.Write(buffer, offset, bytesToRead);
 #endif
             _totalBytesXferred += n;
             return n;
         }
-
-
-
         /// <summary>
         /// Returns the final HMAC-SHA1-80 for the data that was encrypted.
         /// </summary>
@@ -625,10 +504,8 @@ using System.Security.Cryptography;
                     // special-case zero-byte files
                     if ( _totalBytesXferred != 0)
                         throw new BadStateException("The final hash has not been computed.");
-
                     // Must call ComputeHash on an empty byte array when no data
                     // has run through the MAC.
-
                     byte[] b = {  };
                     _mac.ComputeHash(b);
                     // fall through
@@ -638,19 +515,14 @@ using System.Security.Cryptography;
                 return macBytes10;
             }
         }
-
-
         public override void Write(byte[] buffer, int offset, int count)
         {
             if (_finalBlock)
                 throw new InvalidOperationException("The final block has already been transformed.");
-
             if (_mode == CryptoMode.Decrypt)
                 throw new NotSupportedException();
-
             if (buffer == null)
                 throw new ArgumentNullException("buffer");
-
             if (offset < 0)
                 throw new ArgumentOutOfRangeException("offset",
                                                       "Must not be less than zero.");
@@ -659,16 +531,12 @@ using System.Security.Cryptography;
                                                       "Must not be less than zero.");
             if (buffer.Length < offset + count)
                 throw new ArgumentException("The offset and count are too large");
-
             if (count == 0)
                 return;
-
             TraceOutput("Write off({0}) count({1})", offset, count);
-
 #if WANT_TRACE
             untransformed.Write(buffer, offset, count);
 #endif
-
             // For proper AES encryption, an AES encryptor application calls
             // TransformBlock repeatedly for all 16-byte blocks except the
             // last. For the last block, it then calls TransformFinalBlock().
@@ -709,7 +577,6 @@ using System.Security.Cryptography;
             //
             //  4. transform and write all the other blocks, the middle slice.
             //
-
             // There are 16 or fewer bytes, so just buffer the bytes.
             if (count + _pendingCount <= BLOCK_SIZE_IN_BYTES)
             {
@@ -719,7 +586,6 @@ using System.Security.Cryptography;
                                  _pendingCount,
                                  count);
                 _pendingCount += count;
-
                 // At this point, _PendingWriteBlock contains up to
                 // BLOCK_SIZE_IN_BYTES bytes, and _pendingCount ranges from 0 to
                 // BLOCK_SIZE_IN_BYTES. We don't want to xform+write them yet,
@@ -727,24 +593,19 @@ using System.Security.Cryptography;
                 // written at Close().
                 return;
             }
-
             // We know there are at least 17 bytes, counting those in the current
             // buffer, along with the (possibly empty) pending block.
-
             int bytesRemaining = count;
             int curOffset = offset;
-
             // workitem 12815
             //
             // xform chunkwise ... Cannot transform in place using the original
             // buffer because that is user-maintained.
-
             if (_pendingCount != 0)
             {
                 // We have more than one block of data to write, therefore it is safe
                 // to xform+write.
                 int fillCount = BLOCK_SIZE_IN_BYTES - _pendingCount;
-
                 // fillCount is possibly zero here. That happens when the pending
                 // buffer held 16 bytes (one complete block) before this call to
                 // Write.
@@ -755,30 +616,24 @@ using System.Security.Cryptography;
                                      _PendingWriteBlock,
                                      _pendingCount,
                                      fillCount);
-
                     // adjust counts:
                     bytesRemaining -= fillCount;
                     curOffset += fillCount;
                 }
-
                 // xform and write:
                 WriteTransformOneBlock(_PendingWriteBlock, 0);
                 _s.Write(_PendingWriteBlock, 0, BLOCK_SIZE_IN_BYTES);
                 _totalBytesXferred += BLOCK_SIZE_IN_BYTES;
                 _pendingCount = 0;
             }
-
             // At this point _PendingWriteBlock is empty, and bytesRemaining is
             // always greater than 0.
-
             // Now, xform N blocks, where N = floor((bytesRemaining-1)/16).  If
             // writing 32 bytes, then xform 1 block, and stage the remaining 16.  If
             // writing 10037 bytes, xform 627 blocks of 16 bytes, then stage the
             // remaining 5 bytes.
-
             int blocksToXform = (bytesRemaining-1)/BLOCK_SIZE_IN_BYTES;
             _pendingCount = bytesRemaining - (blocksToXform * BLOCK_SIZE_IN_BYTES);
-
             // _pendingCount is ALWAYS between 1 and 16.
             // Put the last _pendingCount bytes into the pending block.
             Buffer.BlockCopy(buffer,
@@ -788,7 +643,6 @@ using System.Security.Cryptography;
                              _pendingCount);
             bytesRemaining -= _pendingCount;
             _totalBytesXferred += bytesRemaining; // will be true after the loop
-
             // now, transform all the full blocks preceding that.
             // bytesRemaining is always a multiple of 16 .
             if (blocksToXform > 0)
@@ -802,7 +656,6 @@ using System.Security.Cryptography;
                                      _iobuf,
                                      0,
                                      c);
-
                     WriteTransformBlocks(_iobuf, 0, c);
                     _s.Write(_iobuf, 0, c);
                     bytesRemaining -= c;
@@ -810,16 +663,12 @@ using System.Security.Cryptography;
                 } while(bytesRemaining > 0);
             }
         }
-
-
-
         /// <summary>
         ///   Close the stream.
         /// </summary>
         public override void Close()
         {
             TraceOutput("Close {0:X8}", this.GetHashCode());
-
             // In the degenerate case, no bytes have been written to the
             // stream at all.  Need to check here, and NOT emit the
             // final block if Write has not been called.
@@ -831,10 +680,8 @@ using System.Security.Cryptography;
                 _pendingCount = 0;
             }
             _s.Close();
-
             _xform.Dispose();
             _aesCipher.Dispose();
-
 #if WANT_TRACE
             untransformed.Close();
             transformed.Close();
@@ -843,8 +690,6 @@ using System.Security.Cryptography;
 #endif
             TraceOutput("-------------------------------------------------------");
         }
-
-
         /// <summary>
         /// Returns true if the stream can be read.
         /// </summary>
@@ -856,8 +701,6 @@ using System.Security.Cryptography;
                 return true;
             }
         }
-
-
         /// <summary>
         /// Always returns false.
         /// </summary>
@@ -865,7 +708,6 @@ using System.Security.Cryptography;
         {
             get { return false; }
         }
-
         /// <summary>
         /// Returns true if the CryptoMode is Encrypt.
         /// </summary>
@@ -873,7 +715,6 @@ using System.Security.Cryptography;
         {
             get { return (_mode == CryptoMode.Encrypt); }
         }
-
         /// <summary>
         /// Flush the content in the stream.
         /// </summary>
@@ -881,7 +722,6 @@ using System.Security.Cryptography;
         {
             _s.Flush();
         }
-
         /// <summary>
         /// Getting this property throws a NotImplementedException.
         /// </summary>
@@ -889,7 +729,6 @@ using System.Security.Cryptography;
         {
             get { throw new NotImplementedException(); }
         }
-
         /// <summary>
         /// Getting or Setting this property throws a NotImplementedException.
         /// </summary>
@@ -898,7 +737,6 @@ using System.Security.Cryptography;
             get { throw new NotImplementedException(); }
             set { throw new NotImplementedException(); }
         }
-
         /// <summary>
         /// This method throws a NotImplementedException.
         /// </summary>
@@ -906,7 +744,6 @@ using System.Security.Cryptography;
         {
             throw new NotImplementedException();
         }
-
         /// <summary>
         /// This method throws a NotImplementedException.
         /// </summary>
@@ -914,9 +751,6 @@ using System.Security.Cryptography;
         {
             throw new NotImplementedException();
         }
-
-
-
         [System.Diagnostics.ConditionalAttribute("Trace")]
         private void TraceOutput(string format, params object[] varParams)
         {
@@ -929,8 +763,6 @@ using System.Security.Cryptography;
                 Console.ResetColor();
             }
         }
-
         private object _outputLock = new Object();
     }
-
 #endif

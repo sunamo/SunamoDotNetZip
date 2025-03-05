@@ -1,4 +1,5 @@
 namespace Ionic.Zlib;
+
 // GZipStream.cs
 // ------------------------------------------------------------------
 //
@@ -26,11 +27,6 @@ namespace Ionic.Zlib;
 // GZip header.
 //
 // ------------------------------------------------------------------
-
-
-using System;
-using System.IO;
-
     /// <summary>
     ///   A class for compressing and decompressing GZIP streams.
     /// </summary>
@@ -117,9 +113,6 @@ using System.IO;
         // on generation:
         // all optional fields get 0, except for the OS, which gets 255.
         //
-
-
-
         /// <summary>
         ///   The comment on the GZIP stream.
         /// </summary>
@@ -152,7 +145,6 @@ using System.IO;
                 _Comment = value;
             }
         }
-
         /// <summary>
         ///   The FileName for the GZIP stream.
         /// </summary>
@@ -197,7 +189,6 @@ using System.IO;
                 }
             }
         }
-
         /// <summary>
         ///   The last modified time for the GZIP stream.
         /// </summary>
@@ -209,7 +200,6 @@ using System.IO;
         ///   after the first call to <c>Read()</c>.
         /// </remarks>
         public DateTime? LastModified;
-
         /// <summary>
         /// The CRC on the GZIP stream.
         /// </summary>
@@ -217,7 +207,6 @@ using System.IO;
         /// This is used for internal error checking. You probably don't need to look at this property.
         /// </remarks>
         public int Crc32 { get { return _Crc32; } }
-
         private int _headerByteCount;
         internal ZlibBaseStream _baseStream;
         bool _disposed;
@@ -225,8 +214,6 @@ using System.IO;
         string _FileName;
         string _Comment;
         int _Crc32;
-
-
         /// <summary>
         ///   Create a <c>GZipStream</c> using the specified <c>CompressionMode</c>.
         /// </summary>
@@ -345,7 +332,6 @@ using System.IO;
             : this(stream, mode, CompressionLevel.Default, false)
         {
         }
-
         /// <summary>
         ///   Create a <c>GZipStream</c> using the specified <c>CompressionMode</c> and
         ///   the specified <c>CompressionLevel</c>.
@@ -410,7 +396,6 @@ using System.IO;
             : this(stream, mode, level, false)
         {
         }
-
         /// <summary>
         ///   Create a <c>GZipStream</c> using the specified <c>CompressionMode</c>, and
         ///   explicitly specify whether the stream should be left open after Deflation
@@ -463,7 +448,6 @@ using System.IO;
             : this(stream, mode, CompressionLevel.Default, leaveOpen)
         {
         }
-
         /// <summary>
         ///   Create a <c>GZipStream</c> using the specified <c>CompressionMode</c> and the
         ///   specified <c>CompressionLevel</c>, and explicitly specify whether the
@@ -537,9 +521,7 @@ using System.IO;
         {
             _baseStream = new ZlibBaseStream(stream, mode, level, ZlibStreamFlavor.GZIP, leaveOpen);
         }
-
         #region Zlib properties
-
         /// <summary>
         /// This property sets the flush behavior on the stream.
         /// </summary>
@@ -551,7 +533,6 @@ using System.IO;
                 this._baseStream._flushMode = value;
             }
         }
-
         /// <summary>
         ///   The size of the working buffer for the compression codec.
         /// </summary>
@@ -585,8 +566,6 @@ using System.IO;
                 this._baseStream._bufferSize = value;
             }
         }
-
-
         /// <summary> Returns the total number of bytes input so far.</summary>
         virtual public long TotalIn
         {
@@ -595,7 +574,6 @@ using System.IO;
                 return this._baseStream._z.TotalBytesIn;
             }
         }
-
         /// <summary> Returns the total number of bytes output so far.</summary>
         virtual public long TotalOut
         {
@@ -604,11 +582,8 @@ using System.IO;
                 return this._baseStream._z.TotalBytesOut;
             }
         }
-
         #endregion
-
         #region Stream methods
-
         /// <summary>
         ///   Dispose the stream.
         /// </summary>
@@ -651,8 +626,6 @@ using System.IO;
                 base.Dispose(disposing);
             }
         }
-
-
         /// <summary>
         /// Indicates whether the stream can be read.
         /// </summary>
@@ -666,7 +639,6 @@ using System.IO;
             return _disposed ? throw new ObjectDisposedException("GZipStream") : _baseStream._stream.CanRead;
         }
     }
-
         /// <summary>
         /// Indicates whether the stream supports Seek operations.
         /// </summary>
@@ -677,8 +649,6 @@ using System.IO;
         {
             get { return false; }
         }
-
-
         /// <summary>
         /// Indicates whether the stream can be written.
         /// </summary>
@@ -692,7 +662,6 @@ using System.IO;
             return _disposed ? throw new ObjectDisposedException("GZipStream") : _baseStream._stream.CanWrite;
         }
     }
-
         /// <summary>
         /// Flush the stream.
         /// </summary>
@@ -701,7 +670,6 @@ using System.IO;
             if (_disposed) throw new ObjectDisposedException("GZipStream");
             _baseStream.Flush();
         }
-
         /// <summary>
         /// Reading this property always throws a <see cref="NotImplementedException"/>.
         /// </summary>
@@ -709,7 +677,6 @@ using System.IO;
         {
             get { throw new NotImplementedException(); }
         }
-
         /// <summary>
         ///   The position of the stream pointer.
         /// </summary>
@@ -731,10 +698,8 @@ using System.IO;
                     ? this._baseStream._z.TotalBytesIn + this._baseStream._gzipHeaderByteCount
                     : 0;
         }
-
         set { throw new NotImplementedException(); }
         }
-
         /// <summary>
         ///   Read and decompress data from the source stream.
         /// </summary>
@@ -770,10 +735,8 @@ using System.IO;
         {
             if (_disposed) throw new ObjectDisposedException("GZipStream");
             int n = _baseStream.Read(buffer, offset, count);
-
             // Console.WriteLine("GZipStream::Read(buffer, off({0}), c({1}) = {2}", offset, count, n);
             // Console.WriteLine( Util.FormatByteArray(buffer, offset, n) );
-
             if (!_firstReadDone)
             {
                 _firstReadDone = true;
@@ -782,9 +745,6 @@ using System.IO;
             }
             return n;
         }
-
-
-
     /// <summary>
     ///   Calling this method always throws a <see cref="NotImplementedException"/>.
     /// </summary>
@@ -792,13 +752,11 @@ using System.IO;
     /// <param name="origin">irrelevant; it will always throw!</param>
     /// <returns>irrelevant!</returns>
     public override long Seek(long offset, SeekOrigin origin) => throw new NotImplementedException();
-
     /// <summary>
     ///   Calling this method always throws a <see cref="NotImplementedException"/>.
     /// </summary>
     /// <param name="value">irrelevant; this method will always throw!</param>
     public override void SetLength(long value) => throw new NotImplementedException();
-
     /// <summary>
     ///   Write data to the stream.
     /// </summary>
@@ -837,31 +795,23 @@ using System.IO;
                     throw new InvalidOperationException();
                 }
             }
-
             _baseStream.Write(buffer, offset, count);
         }
         #endregion
-
-
         internal static readonly System.DateTime _unixEpoch = new(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         internal static readonly System.Text.Encoding iso8859dash1 = System.Text.Encoding.GetEncoding("iso-8859-1");
-
-
         private int EmitHeader()
         {
             byte[] commentBytes = (Comment == null) ? null : iso8859dash1.GetBytes(Comment);
             byte[] filenameBytes = (FileName == null) ? null : iso8859dash1.GetBytes(FileName);
-
             int cbLength = (Comment == null) ? 0 : commentBytes.Length + 1;
             int fnLength = (FileName == null) ? 0 : filenameBytes.Length + 1;
-
             int bufferLength = 10 + cbLength + fnLength;
             byte[] header = new byte[bufferLength];
             int i = 0;
             // ID
             header[i++] = 0x1F;
             header[i++] = 0x8B;
-
             // compression method
             header[i++] = 8;
             byte flag = 0;
@@ -869,26 +819,21 @@ using System.IO;
                 flag ^= 0x10;
             if (FileName != null)
                 flag ^= 0x8;
-
             // flag
             header[i++] = flag;
-
             // mtime
             if (!LastModified.HasValue) LastModified = DateTime.Now;
             System.TimeSpan delta = LastModified.Value - _unixEpoch;
             Int32 timet = (Int32)delta.TotalSeconds;
             Array.Copy(BitConverter.GetBytes(timet), 0, header, i, 4);
             i += 4;
-
             // xflg
             header[i++] = 0;    // this field is totally useless
             // OS
             header[i++] = 0xFF; // 0xFF == unspecified
-
             // extra field length - only if FEXTRA is set, which it is not.
             //header[i++]= 0;
             //header[i++]= 0;
-
             // filename
             if (fnLength != 0)
             {
@@ -896,7 +841,6 @@ using System.IO;
                 i += fnLength - 1;
                 header[i++] = 0; // terminate
             }
-
             // comment
             if (cbLength != 0)
             {
@@ -904,14 +848,9 @@ using System.IO;
                 i += cbLength - 1;
                 header[i++] = 0; // terminate
             }
-
             _baseStream._stream.Write(header, 0, header.Length);
-
             return header.Length; // bytes written
         }
-
-
-
         /// <summary>
         ///   Compress a string into a byte array using GZip.
         /// </summary>
@@ -937,8 +876,6 @@ using System.IO;
         ZlibBaseStream.CompressString(s, compressor);
         return ms.ToArray();
     }
-
-
         /// <summary>
         ///   Compress a byte array into a new byte array using GZip.
         /// </summary>
@@ -960,12 +897,9 @@ using System.IO;
         using var ms = new MemoryStream();
         System.IO.Stream compressor =
             new GZipStream(ms, CompressionMode.Compress, CompressionLevel.BestCompression);
-
         ZlibBaseStream.CompressBuffer(b, compressor);
         return ms.ToArray();
     }
-
-
         /// <summary>
         ///   Uncompress a GZip'ed byte array into a single string.
         /// </summary>
@@ -984,8 +918,6 @@ using System.IO;
         Stream decompressor = new GZipStream(input, CompressionMode.Decompress);
         return ZlibBaseStream.UncompressString(compressed, decompressor);
     }
-
-
         /// <summary>
         ///   Uncompress a GZip'ed byte array into a byte array.
         /// </summary>
@@ -1003,9 +935,6 @@ using System.IO;
         using var input = new System.IO.MemoryStream(compressed);
         System.IO.Stream decompressor =
             new GZipStream(input, CompressionMode.Decompress);
-
         return ZlibBaseStream.UncompressBuffer(compressed, decompressor);
     }
-
-
     }

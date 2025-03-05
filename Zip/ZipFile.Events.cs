@@ -1,4 +1,5 @@
 namespace Ionic.Zip;
+
 // ZipFile.Events.cs
 // ------------------------------------------------------------------
 //
@@ -24,10 +25,6 @@ namespace Ionic.Zip;
 //
 // ------------------------------------------------------------------
 //
-
-using System;
-using System.IO;
-
     public partial class ZipFile
     {
         private string ArchiveNameForEvent
@@ -37,9 +34,7 @@ using System.IO;
                 return (_name != null) ? _name : "(stream)";
             }
         }
-
         #region Save
-
         /// <summary>
         ///   An event handler invoked when a Save() starts, before and after each
         ///   entry has been written to the archive, when a Save() completes, and
@@ -515,8 +510,6 @@ using System.IO;
         /// <seealso cref="Ionic.Zip.ZipFile.AddProgress"/>
         /// <seealso cref="Ionic.Zip.ZipFile.ExtractProgress"/>
         public event EventHandler<SaveProgressEventArgs> SaveProgress;
-
-
         internal bool OnSaveBlock(ZipEntry entry, Int64 bytesXferred, Int64 totalBytesToXfer)
         {
             EventHandler<SaveProgressEventArgs> sp = SaveProgress;
@@ -530,7 +523,6 @@ using System.IO;
             }
             return _saveOperationCanceled;
         }
-
         private void OnSaveEntry(int current, ZipEntry entry, bool before)
         {
             EventHandler<SaveProgressEventArgs> sp = SaveProgress;
@@ -542,7 +534,6 @@ using System.IO;
                     _saveOperationCanceled = true;
             }
         }
-
         private void OnSaveEvent(ZipProgressEventType eventFlavor)
         {
             EventHandler<SaveProgressEventArgs> sp = SaveProgress;
@@ -554,7 +545,6 @@ using System.IO;
                     _saveOperationCanceled = true;
             }
         }
-
         private void OnSaveStarted()
         {
             EventHandler<SaveProgressEventArgs> sp = SaveProgress;
@@ -576,8 +566,6 @@ using System.IO;
             }
         }
         #endregion
-
-
         #region Read
         /// <summary>
         /// An event handler invoked before, during, and after the reading of a zip archive.
@@ -637,7 +625,6 @@ using System.IO;
         /// <seealso cref="Ionic.Zip.ZipFile.AddProgress"/>
         /// <seealso cref="Ionic.Zip.ZipFile.ExtractProgress"/>
         public event EventHandler<ReadProgressEventArgs> ReadProgress;
-
         private void OnReadStarted()
         {
             EventHandler<ReadProgressEventArgs> rp = ReadProgress;
@@ -647,7 +634,6 @@ using System.IO;
                     rp(this, e);
             }
         }
-
         private void OnReadCompleted()
         {
             EventHandler<ReadProgressEventArgs> rp = ReadProgress;
@@ -657,7 +643,6 @@ using System.IO;
                     rp(this, e);
             }
         }
-
         internal void OnReadBytes(ZipEntry entry)
         {
             EventHandler<ReadProgressEventArgs> rp = ReadProgress;
@@ -670,7 +655,6 @@ using System.IO;
                     rp(this, e);
             }
         }
-
         internal void OnReadEntry(bool before, ZipEntry entry)
         {
             EventHandler<ReadProgressEventArgs> rp = ReadProgress;
@@ -682,7 +666,6 @@ using System.IO;
                 rp(this, e);
             }
         }
-
         private Int64 _lengthOfReadStream = -99;
         private Int64 LengthOfReadStream
         {
@@ -698,8 +681,6 @@ using System.IO;
             }
         }
         #endregion
-
-
         #region Extract
         /// <summary>
         ///   An event handler invoked before, during, and after extraction of
@@ -851,9 +832,6 @@ using System.IO;
         /// <seealso cref="Ionic.Zip.ZipFile.ReadProgress"/>
         /// <seealso cref="Ionic.Zip.ZipFile.AddProgress"/>
         public event EventHandler<ExtractProgressEventArgs> ExtractProgress;
-
-
-
         private void OnExtractEntry(int current, bool before, ZipEntry currentEntry, string path)
         {
             EventHandler<ExtractProgressEventArgs> ep = ExtractProgress;
@@ -865,8 +843,6 @@ using System.IO;
                     _extractOperationCanceled = true;
             }
         }
-
-
         // Can be called from within ZipEntry._ExtractOne.
         internal bool OnExtractBlock(ZipEntry entry, Int64 bytesWritten, Int64 totalBytesToWrite)
         {
@@ -881,8 +857,6 @@ using System.IO;
             }
             return _extractOperationCanceled;
         }
-
-
         // Can be called from within ZipEntry.InternalExtract.
         internal bool OnSingleEntryExtract(ZipEntry entry, string path, bool before)
         {
@@ -898,7 +872,6 @@ using System.IO;
             }
             return _extractOperationCanceled;
         }
-
         internal bool OnExtractExisting(ZipEntry entry, string path)
         {
             EventHandler<ExtractProgressEventArgs> ep = ExtractProgress;
@@ -911,8 +884,6 @@ using System.IO;
             }
             return _extractOperationCanceled;
         }
-
-
         private void OnExtractAllCompleted(string path)
         {
             EventHandler<ExtractProgressEventArgs> ep = ExtractProgress;
@@ -923,8 +894,6 @@ using System.IO;
                 ep(this, e);
             }
         }
-
-
         private void OnExtractAllStarted(string path)
         {
             EventHandler<ExtractProgressEventArgs> ep = ExtractProgress;
@@ -935,12 +904,7 @@ using System.IO;
                 ep(this, e);
             }
         }
-
-
         #endregion
-
-
-
         #region Add
         /// <summary>
         /// An event handler invoked before, during, and after Adding entries to a zip archive.
@@ -1021,7 +985,6 @@ using System.IO;
         /// <seealso cref="Ionic.Zip.ZipFile.ReadProgress"/>
         /// <seealso cref="Ionic.Zip.ZipFile.ExtractProgress"/>
         public event EventHandler<AddProgressEventArgs> AddProgress;
-
         private void OnAddStarted()
         {
             EventHandler<AddProgressEventArgs> ap = AddProgress;
@@ -1033,7 +996,6 @@ using System.IO;
                     _addOperationCanceled = true;
             }
         }
-
         private void OnAddCompleted()
         {
             EventHandler<AddProgressEventArgs> ap = AddProgress;
@@ -1043,7 +1005,6 @@ using System.IO;
                 ap(this, e);
             }
         }
-
         internal void AfterAddEntry(ZipEntry entry)
         {
             EventHandler<AddProgressEventArgs> ap = AddProgress;
@@ -1055,11 +1016,7 @@ using System.IO;
                     _addOperationCanceled = true;
             }
         }
-
         #endregion
-
-
-
         #region Error
         /// <summary>
         /// An event that is raised when an error occurs during open or read of files
@@ -1197,7 +1154,6 @@ using System.IO;
         ///
         /// <seealso cref="Ionic.Zip.ZipFile.ZipErrorAction"/>
         public event EventHandler<ZipErrorEventArgs> ZipError;
-
         internal bool OnZipErrorSaving(ZipEntry entry, Exception exc)
         {
             if (ZipError != null)
@@ -1213,5 +1169,4 @@ using System.IO;
             return _saveOperationCanceled;
         }
         #endregion
-
     }

@@ -1,13 +1,9 @@
 namespace Ionic.Zip;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
     partial class ZipFile
     {
         private static System.Text.Encoding _defaultEncoding = null;
         private static bool _defaultEncodingInitialized = false;
-
         /// <summary>
         /// 
         /// 
@@ -27,7 +23,6 @@ using System.Text;
             }
             catch (Exception /*e*/)
             {
-
             }
 #if NETCOREAPP2_0 || NETSTANDARD2_0
             if (ibm437 == null)
@@ -38,7 +33,6 @@ using System.Text;
                 }
                 catch (Exception /*e*/)
                 {
-
                 }
             }
 #else
@@ -50,13 +44,11 @@ using System.Text;
                 }
                 catch (Exception /*e*/)
                 {
-
                 }
             }
 #endif
             _defaultEncoding = ibm437;
         }
-
         /// <summary>
         /// The default text encoding used in zip archives.  It is numeric 437, also
         /// known as IBM437.

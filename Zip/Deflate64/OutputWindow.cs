@@ -1,6 +1,4 @@
 namespace Ionic.Zip.Deflate64;
-using System;
-using System.Diagnostics;
 
     /// This class maintains a window for decompressed output.
     /// We need to keep this because the decompressed information can be
@@ -15,13 +13,10 @@ using System.Diagnostics;
         // overwriting existing data. OutputWindow requires that the WindowSize be an exponent of 2, so we round up to 2^18.
         private const int WindowSize = 262144;
         private const int WindowMask = 262143;
-
         private readonly byte[] _window = new byte[WindowSize]; // The window is 2^18 bytes
         private int _end;       // this is the position to where we should write next byte
         private int _bytesUsed; // The number of bytes in the output window which is not consumed.
-
     internal void ClearBytesUsed() => _bytesUsed = 0;
-
     /// <summary>Add a byte to output window.</summary>
     public void Write(byte b)
         {
@@ -30,16 +25,13 @@ using System.Diagnostics;
             _end &= WindowMask;
             ++_bytesUsed;
         }
-
         public void WriteLengthDistance(int length, int distance)
         {
             Debug.Assert((_bytesUsed + length) <= WindowSize, "No Enough space");
-
             // move backwards distance bytes in the output stream,
             // and copy length bytes from this position to the output stream.
             _bytesUsed += length;
             int copyStart = (_end - distance) & WindowMask; // start position for coping.
-
             int border = WindowSize - length;
             if (copyStart <= border && _end < border)
             {
@@ -71,7 +63,6 @@ using System.Diagnostics;
                 }
             }
         }
-
         /// <summary>
         /// Copy up to length of bytes from input directly.
         /// This is used for uncompressed block.
@@ -80,7 +71,6 @@ using System.Diagnostics;
         {
             length = Math.Min(Math.Min(length, WindowSize - _bytesUsed), input.AvailableBytes);
             int copied;
-
             // We might need wrap around to copy all bytes.
             int tailLen = WindowSize - _end;
             if (length > tailLen)
@@ -98,23 +88,18 @@ using System.Diagnostics;
                 // only one copy is needed if there is no wrap around.
                 copied = input.CopyTo(_window, _end, length);
             }
-
             _end = (_end + copied) & WindowMask;
             _bytesUsed += copied;
             return copied;
         }
-
         /// <summary>Free space in output window.</summary>
         public int FreeBytes => WindowSize - _bytesUsed;
-
         /// <summary>Bytes not consumed in output window.</summary>
         public int AvailableBytes => _bytesUsed;
-
         /// <summary>Copy the decompressed bytes to output array.</summary>
         public int CopyTo(byte[] output, int offset, int length)
         {
             int copy_end;
-
             if (length > _bytesUsed)
             {
                 // we can copy all the decompressed bytes out
@@ -125,9 +110,7 @@ using System.Diagnostics;
             {
                 copy_end = (_end - _bytesUsed + length) & WindowMask; // copy length of bytes
             }
-
             int copied = length;
-
             int tailLen = length - copy_end;
             if (tailLen > 0)
             {

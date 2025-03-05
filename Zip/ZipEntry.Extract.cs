@@ -1,4 +1,5 @@
 namespace Ionic.Zip;
+
 // ZipEntry.Extract.cs
 // ------------------------------------------------------------------
 //
@@ -23,12 +24,6 @@ namespace Ionic.Zip;
 // This module defines logic for Extract methods on the ZipEntry class.
 //
 // ------------------------------------------------------------------
-
-
-using System;
-using System.IO;
-
-
 public partial class ZipEntry
 {
     /// <summary>
@@ -71,7 +66,6 @@ public partial class ZipEntry
     ///
     /// </remarks>
     public void Extract() => InternalExtractToBaseDir(".", null, _container, _Source, FileName);
-
     /// <summary>
     ///   Extract the entry to a file in the filesystem, using the specified
     ///   behavior when extraction would overwrite an existing file.
@@ -93,7 +87,6 @@ public partial class ZipEntry
         ExtractExistingFile = extractExistingFile;
         InternalExtractToBaseDir(".", null, _container, _Source, FileName);
     }
-
     /// <summary>
     ///   Extracts the entry to the specified stream.
     /// </summary>
@@ -118,7 +111,6 @@ public partial class ZipEntry
     /// </param>
     ///
     public void Extract(Stream stream) => InternalExtractToStream(stream, null, _container, _Source, FileName);
-
     /// <summary>
     ///   Extract the entry to the filesystem, starting at the specified base
     ///   directory.
@@ -171,7 +163,6 @@ public partial class ZipEntry
     /// </para>
     /// </remarks>
     public void Extract(string baseDirectory) => InternalExtractToBaseDir(baseDirectory, null, _container, _Source, FileName);
-
     /// <summary>
     ///   Extract the entry to the filesystem, starting at the specified base
     ///   directory, and using the specified behavior when extraction would
@@ -224,7 +215,6 @@ public partial class ZipEntry
         ExtractExistingFile = extractExistingFile;
         InternalExtractToBaseDir(baseDirectory, null, _container, _Source, FileName);
     }
-
     /// <summary>
     ///   Extract the entry to the filesystem, using the current working directory
     ///   and the specified password.
@@ -285,7 +275,6 @@ public partial class ZipEntry
     /// </example>
     /// <param name="password">The Password to use for decrypting the entry.</param>
     public void ExtractWithPassword(string password) => InternalExtractToBaseDir(".", password, _container, _Source, FileName);
-
     /// <summary>
     ///   Extract the entry to the filesystem, starting at the specified base
     ///   directory, and using the specified password.
@@ -312,7 +301,6 @@ public partial class ZipEntry
     /// <param name="baseDirectory">The pathname of the base directory.</param>
     /// <param name="password">The Password to use for decrypting the entry.</param>
     public void ExtractWithPassword(string baseDirectory, string password) => InternalExtractToBaseDir(baseDirectory, password, _container, _Source, FileName);
-
     /// <summary>
     ///   Extract the entry to a file in the filesystem, relative to the
     ///   current directory, using the specified behavior when extraction
@@ -336,7 +324,6 @@ public partial class ZipEntry
         ExtractExistingFile = extractExistingFile;
         InternalExtractToBaseDir(".", password, _container, _Source, FileName);
     }
-
     /// <summary>
     ///   Extract the entry to the filesystem, starting at the specified base
     ///   directory, and using the specified behavior when extraction would
@@ -359,7 +346,6 @@ public partial class ZipEntry
         ExtractExistingFile = extractExistingFile;
         InternalExtractToBaseDir(baseDirectory, password, _container, _Source, FileName);
     }
-
     /// <summary>
     ///   Extracts the entry to the specified stream, using the specified
     ///   Password.  For example, the caller could extract to Console.Out, or
@@ -389,7 +375,6 @@ public partial class ZipEntry
     ///   The password to use for decrypting the entry.
     /// </param>
     public void ExtractWithPassword(Stream stream, string password) => InternalExtractToStream(stream, password, _container, _Source, FileName);
-
     /// <summary>
     ///   Opens a readable stream corresponding to the zip entry in the
     ///   archive.  The stream decompresses and decrypts as necessary, as it
@@ -515,12 +500,10 @@ public partial class ZipEntry
         // workitem 10923
         if (_container.ZipFile == null)
             throw new InvalidOperationException("Use OpenReader() only with ZipFile.");
-
         // use the entry password if it is non-null,
         // else use the zipfile password, which is possibly null
         return InternalOpenReader(_Password ?? _container.Password);
     }
-
     /// <summary>
     ///   Opens a readable stream for an encrypted zip entry in the archive.
     ///   The stream decompresses and decrypts as necessary, as it is read.
@@ -541,17 +524,14 @@ public partial class ZipEntry
         _container.ZipFile == null
             ? throw new InvalidOperationException("Use OpenReader() only with ZipFile.")
             : InternalOpenReader(password);
-
     internal CrcCalculatorStream InternalOpenReader(string password)
     {
         ValidateCompression(_CompressionMethod_FromZipFile, FileName, GetUnsupportedCompressionMethod(_CompressionMethod));
         ValidateEncryption(Encryption, FileName, _UnsupportedAlgorithmId);
         SetupCryptoForExtract(password);
-
         // workitem 7958
         if (this._Source != ZipEntrySource.ZipFile)
             throw new BadStateException("You must call ZipFile.Save before calling OpenReader");
-
         // LeftToRead is a count of bytes remaining to be read (out)
         // from the stream AFTER decompression and decryption.
         // It is the uncompressed size, unless ... there is no compression in which
@@ -559,21 +539,16 @@ public partial class ZipEntry
         var leftToRead = (_CompressionMethod_FromZipFile == (short)CompressionMethod.None)
             ? _CompressedFileDataSize
             : UncompressedSize;
-
         this.ArchiveStream.Seek(this.FileDataPosition, SeekOrigin.Begin);
-
         _inputDecryptorStream = GetExtractDecryptor(ArchiveStream);
         var input3 = GetExtractDecompressor(_inputDecryptorStream);
-
         return new CrcCalculatorStream(input3, leftToRead);
     }
-
     void OnExtractProgress(Int64 bytesWritten, Int64 totalBytesToWrite)
     {
         if (_container.ZipFile != null)
             _ioOperationCanceled = _container.ZipFile.OnExtractBlock(this, bytesWritten, totalBytesToWrite);
     }
-
     static void OnBeforeExtract(ZipEntry zipEntryInstance, string path, ZipFile zipFile)
     {
         // When in the context of a ZipFile.ExtractAll, the events are generated from
@@ -584,7 +559,6 @@ public partial class ZipEntry
         // returned boolean is always ignored for all callers of OnBeforeExtract
         zipFile.OnSingleEntryExtract(zipEntryInstance, path, true);
     }
-
     private void OnAfterExtract(string path)
     {
         // When in the context of a ZipFile.ExtractAll, the events are generated from
@@ -594,13 +568,11 @@ public partial class ZipEntry
         if (_container.ZipFile._inExtractAll) return;
         _container.ZipFile.OnSingleEntryExtract(this, path, false);
     }
-
     private void OnExtractExisting(string path)
     {
         if (_container.ZipFile != null)
             _ioOperationCanceled = _container.ZipFile.OnExtractExisting(this, path);
     }
-
     private static void ReallyDelete(string fileName)
     {
         // workitem 7881
@@ -609,14 +581,11 @@ public partial class ZipEntry
             File.SetAttributes(fileName, FileAttributes.Normal);
         File.Delete(fileName);
     }
-
-
     void WriteStatus(string format, params Object[] args)
     {
         if (_container.ZipFile != null && _container.ZipFile.Verbose)
             _container.ZipFile.StatusMessageTextWriter.WriteLine(format, args);
     }
-
     /// <summary>
     /// Pass in either basedir or s, but not both.
     /// In other words, you can extract to a stream or to a directory (filesystem), but not both!
@@ -625,24 +594,17 @@ public partial class ZipEntry
     void InternalExtractToBaseDir(string baseDir, string password, ZipContainer zipContainer, ZipEntrySource zipEntrySource, string fileName)
     {
         ArgumentNullException.ThrowIfNull(baseDir);
-
         // workitem 7958
         if (zipContainer == null)
             throw new BadStateException("This entry is an orphan");
-
         // workitem 10355
         if (zipContainer.ZipFile == null)
             throw new InvalidOperationException("Use Extract() only with ZipFile.");
-
         zipContainer.ZipFile.Reset(false);
-
         if (zipEntrySource != ZipEntrySource.ZipFile)
             throw new BadStateException("You must call ZipFile.Save before calling any Extract method");
-
         OnBeforeExtract(this, baseDir, zipContainer.ZipFile);
-
         _ioOperationCanceled = false;
-
         var fileExistsBeforeExtraction = false;
         var checkLaterForResetDirTimes = false;
         string targetFileName = null;
@@ -650,7 +612,6 @@ public partial class ZipEntry
         {
             ValidateCompression(_CompressionMethod_FromZipFile, fileName, GetUnsupportedCompressionMethod(_CompressionMethod));
             ValidateEncryption(Encryption, fileName, _UnsupportedAlgorithmId);
-
             if (IsDoneWithOutputToBaseDir(baseDir, out targetFileName))
             {
                 WriteStatus("extract dir {0}...", targetFileName);
@@ -659,10 +620,8 @@ public partial class ZipEntry
                 OnAfterExtract(baseDir);
                 return;
             }
-
             // workitem 10639
             // do we want to extract to a regular filesystem file?
-
             // Check for extracting to a previously existing file. The user
             // can specify bejavior for that case: overwrite, don't
             // overwrite, and throw.  Also, if the file exists prior to
@@ -679,29 +638,22 @@ public partial class ZipEntry
                 if (rc == 2) goto ExitTry; // cancel
                 if (rc == 1) return; // do not overwrite
             }
-
             // If no password explicitly specified, use the password on the entry itself,
             // or on the zipfile itself.
             if (_Encryption_FromZipFile != EncryptionAlgorithm.None)
                 EnsurePassword(password);
-
             // set up the output stream
             var tmpName = SharedUtilities.InternalGetTempFileName();
             var tmpPath = Path.Combine(Path.GetDirectoryName(targetFileName), tmpName);
             WriteStatus("extract file {0}...", targetFileName);
-
             using (var output = OpenFileStream(tmpPath, ref checkLaterForResetDirTimes))
             {
                 if (ExtractToStream(ArchiveStream, output, Encryption, _Crc32))
                     goto ExitTry;
-
                 output.Close();
             }
-
             MoveFileInPlace(fileExistsBeforeExtraction, targetFileName, tmpPath, checkLaterForResetDirTimes);
-
             OnAfterExtract(baseDir);
-
         ExitTry:;
         }
         catch (Exception)
@@ -727,7 +679,6 @@ public partial class ZipEntry
             }
         }
     }
-
     /// <summary>
     /// Extract to a stream
     /// In other words, you can extract to a stream or to a directory (filesystem), but not both!
@@ -738,25 +689,18 @@ public partial class ZipEntry
         // workitem 7958
         if (zipContainer == null)
             throw new BadStateException("This entry is an orphan");
-
         // workitem 10355
         if (zipContainer.ZipFile == null)
             throw new InvalidOperationException("Use Extract() only with ZipFile.");
-
         zipContainer.ZipFile.Reset(false);
-
         if (zipEntrySource != ZipEntrySource.ZipFile)
             throw new BadStateException("You must call ZipFile.Save before calling any Extract method");
-
         OnBeforeExtract(this, null, zipContainer.ZipFile);
-
         _ioOperationCanceled = false;
-
         try
         {
             ValidateCompression(_CompressionMethod_FromZipFile, fileName, GetUnsupportedCompressionMethod(_CompressionMethod));
             ValidateEncryption(Encryption, fileName, _UnsupportedAlgorithmId);
-
             if (IsDoneWithOutputToStream())
             {
                 WriteStatus("extract dir {0}...", null);
@@ -765,21 +709,15 @@ public partial class ZipEntry
                 OnAfterExtract(null);
                 return;
             }
-
             // If no password explicitly specified, use the password on the entry itself,
             // or on the zipfile itself.
             if (_Encryption_FromZipFile != EncryptionAlgorithm.None)
                 EnsurePassword(password);
-
             WriteStatus("extract entry {0} to stream...", fileName);
-
             var archiveStream = ArchiveStream;
-
             if (ExtractToStream(archiveStream, outStream, Encryption, _Crc32))
                 goto ExitTry;
-
             OnAfterExtract(null);
-
         ExitTry:;
         }
         catch (Exception)
@@ -788,21 +726,17 @@ public partial class ZipEntry
             throw;
         }
     }
-
     bool ExtractToStream(Stream archiveStream, Stream output, EncryptionAlgorithm encryptionAlgorithm, int expectedCrc32)
     {
         if (_ioOperationCanceled)
             return true;
-
         try
         {
             var calculatedCrc32 = ExtractAndCrc(archiveStream, output,
                 _CompressionMethod_FromZipFile, _CompressedFileDataSize,
                 UncompressedSize);
-
             if (_ioOperationCanceled)
                 return true;
-
             VerifyCrcAfterExtract(calculatedCrc32, encryptionAlgorithm, expectedCrc32, archiveStream, UncompressedSize);
             return false;
         }
@@ -816,7 +750,6 @@ public partial class ZipEntry
             }
         }
     }
-
     void MoveFileInPlace(
         bool fileExistsBeforeExtraction,
         string targetFileName,
@@ -825,7 +758,6 @@ public partial class ZipEntry
         // workitem 10639
         // move file to permanent home
         string zombie = null;
-
         if (fileExistsBeforeExtraction)
         {
             // An AV program may hold the target file open, which means
@@ -842,13 +774,10 @@ public partial class ZipEntry
             zombie = targetFileName + Path.GetRandomFileName() + ".PendingOverwrite";
             File.Move(targetFileName, zombie);
         }
-
         File.Move(tmpPath, targetFileName);
         _SetTimes(targetFileName, true);
-
         if (zombie != null && File.Exists(zombie))
             ReallyDelete(zombie);
-
         // workitem 8264
         if (checkLaterForResetDirTimes)
         {
@@ -858,7 +787,6 @@ public partial class ZipEntry
             // the time on the dir, 1000 times. This allows the directory
             // to have times that reflect the actual time on the entry in
             // the zip archive.
-
             if (FileName.Contains("/"))
             {
                 var dirname = Path.GetDirectoryName(FileName);
@@ -866,7 +794,6 @@ public partial class ZipEntry
                     _SetTimes(Path.GetDirectoryName(targetFileName), false);
             }
         }
-
         // workitem 7071
         //
         // We can only apply attributes if they are relevant to the NTFS
@@ -881,13 +808,11 @@ public partial class ZipEntry
             File.SetAttributes(targetFileName, validAttrs);
         }
     }
-
     void EnsurePassword(string password)
     {
         var p = (password ?? _Password ?? _container.Password) ?? throw new BadPasswordException();
         SetupCryptoForExtract(p);
     }
-
     FileStream OpenFileStream(string tmpPath, ref bool checkLaterForResetDirTimes)
     {
         var dirName = Path.GetDirectoryName(tmpPath);
@@ -906,11 +831,9 @@ public partial class ZipEntry
             if (_container.ZipFile != null)
                 checkLaterForResetDirTimes = _container.ZipFile._inExtractAll;
         }
-
         // File.Create(CreateNew) will overwrite any existing file.
         return new FileStream(tmpPath, FileMode.CreateNew);
     }
-
 #if NOT
         internal void CalcWinZipAesMac(Stream input)
         {
@@ -919,16 +842,13 @@ public partial class ZipEntry
             {
                 if (input is WinZipAesCipherStream)
                     wzs = input as WinZipAesCipherStream;
-
                 else if (input is CrcCalculatorStream)
                 {
                     xxx;
                 }
-
             }
         }
 #endif
-
     internal void VerifyCrcAfterExtract(Int32 calculatedCrc32, EncryptionAlgorithm encryptionAlgorithm, int expectedCrc32, Stream archiveStream, long uncompressedSize)
     {
 #if AESCRYPTO
@@ -942,35 +862,28 @@ public partial class ZipEntry
                         throw new BadCrcException("CRC error: the file being extracted appears to be corrupted. " +
                                                   String.Format("Expected 0x{0:X8}, Actual 0x{1:X8}", expectedCrc32, calculatedCrc32));
                 }
-
                 // ignore MAC if the size of the file is zero
                 if (uncompressedSize == 0)
                     return;
-
                 // calculate the MAC
                 if (encryptionAlgorithm == EncryptionAlgorithm.WinZipAes128 ||
                     encryptionAlgorithm == EncryptionAlgorithm.WinZipAes256)
                 {
                     var wzs = _inputDecryptorStream as WinZipAesCipherStream;
-                    
                     // sometimes there are extra bytes in the WinZipAES stream that were not required to generate
                     // the decryption output. Read and ignore these bytes, so that the CRC can be calculated:
                     byte[] throwAwayBuffer = new byte[256];
                     wzs.Read(throwAwayBuffer, 0, 256);
-
                     _aesCrypto_forExtract.CalculatedMac = wzs.FinalAuthentication;
-
                     _aesCrypto_forExtract.ReadAndVerifyMac(archiveStream); // throws if MAC is bad
                     // side effect: advances file position.
                 }
-
 #else
         if (calculatedCrc32 != expectedCrc32)
             throw new BadCrcException("CRC error: the file being extracted appears to be corrupted. " +
                                       String.Format("Expected 0x{0:X8}, Actual 0x{1:X8}", expectedCrc32, calculatedCrc32));
 #endif
     }
-
     int CheckExtractExistingFile(string baseDir, string targetFileName)
     {
         int loop = 0;
@@ -982,22 +895,18 @@ public partial class ZipEntry
                 case ExtractExistingFileAction.OverwriteSilently:
                     WriteStatus("the file {0} exists; will overwrite it...", targetFileName);
                     return 0;
-
                 case ExtractExistingFileAction.DoNotOverwrite:
                     WriteStatus("the file {0} exists; not extracting entry...", FileName);
                     OnAfterExtract(baseDir);
                     return 1;
-
                 case ExtractExistingFileAction.InvokeExtractProgressEvent:
                     if (loop > 0)
                         throw new ZipException(String.Format("The file {0} already exists.", targetFileName));
                     OnExtractExisting(baseDir);
                     if (_ioOperationCanceled)
                         return 2;
-
                     // loop around
                     break;
-
                 case ExtractExistingFileAction.Throw:
                 default:
                     throw new ZipException(String.Format("The file {0} already exists.", targetFileName));
@@ -1006,16 +915,13 @@ public partial class ZipEntry
         }
         while (true);
     }
-
     void _CheckRead(int nbytes)
     {
         if (nbytes == 0)
             throw new BadReadException(String.Format("bad read of entry {0} from compressed archive.",
                          FileName));
     }
-
     Stream _inputDecryptorStream;
-
     int ExtractAndCrc(Stream archiveStream, Stream targetOutput,
         short compressionMethod,
         long compressedFileDataSize,
@@ -1023,27 +929,20 @@ public partial class ZipEntry
     {
         int crcResult;
         var input = archiveStream;
-
         // change for workitem 8098
         input.Seek(FileDataPosition, SeekOrigin.Begin);
-
         var bytes = new byte[BufferSize];
-
         // The extraction process varies depending on how the entry was
         // stored.  It could have been encrypted, and it coould have
         // been compressed, or both, or neither. So we need to check
         // both the encryption flag and the compression flag, and take
         // the proper action in all cases.
-
         var leftToRead = (compressionMethod != (short)CompressionMethod.None)
             ? uncompressedSize
             : compressedFileDataSize;
-
         // Get a stream that either decrypts or not.
         _inputDecryptorStream = GetExtractDecryptor(input);
-
         var input3 = GetExtractDecompressor(_inputDecryptorStream);
-
         var bytesWritten = 0L;
         // As we read, we maybe decrypt, and then we maybe decompress. Then we write.
         using (var s1 = new CrcCalculatorStream(input3))
@@ -1051,37 +950,28 @@ public partial class ZipEntry
             while (leftToRead > 0)
             {
                 //Console.WriteLine("ExtractOne: LeftToRead {0}", LeftToRead);
-
                 // Casting LeftToRead down to an int is ok here in the else clause,
                 // because that only happens when it is less than bytes.Length,
                 // which is much less than MAX_INT.
                 int len = (leftToRead > bytes.Length) ? bytes.Length : (int)leftToRead;
                 int n = s1.Read(bytes, 0, len);
-
                 // must check data read - essential for detecting corrupt zip files
                 _CheckRead(n);
-
                 targetOutput.Write(bytes, 0, n);
                 leftToRead -= n;
                 bytesWritten += n;
-
                 // fire the progress event, check for cancels
                 OnExtractProgress(bytesWritten, uncompressedSize);
-
                 if (_ioOperationCanceled)
                     break;
             }
-
             crcResult = s1.Crc;
         }
-
         return crcResult;
     }
-
     Stream GetExtractDecompressor(Stream input2)
     {
         ArgumentNullException.ThrowIfNull(input2);
-
         // get a stream that either decompresses or not.
         switch (_CompressionMethod_FromZipFile)
         {
@@ -1096,34 +986,24 @@ public partial class ZipEntry
                     return new BZip2.BZip2InputStream(input2, true);
 #endif
         }
-
         throw new Exception(string.Format("Failed to find decompressor matching {0}",
             _CompressionMethod_FromZipFile));
     }
-
     Stream GetExtractDecryptor(Stream input)
     {
         ArgumentNullException.ThrowIfNull(input);
-
         Stream input2;
         if (_Encryption_FromZipFile == EncryptionAlgorithm.PkzipWeak)
             input2 = new ZipCipherStream(input, _zipCrypto_forExtract, CryptoMode.Decrypt);
-
 #if AESCRYPTO
             else if (_Encryption_FromZipFile == EncryptionAlgorithm.WinZipAes128 ||
                  _Encryption_FromZipFile == EncryptionAlgorithm.WinZipAes256)
                 input2 = new WinZipAesCipherStream(input, _aesCrypto_forExtract, _CompressedFileDataSize, CryptoMode.Decrypt);
 #endif
-
         else
             input2 = input;
-
         return input2;
     }
-
-
-
-
     internal void _SetTimes(string fileOrDirectory, bool isFile)
     {
         // workitem 8807:
@@ -1131,7 +1011,6 @@ public partial class ZipEntry
         // and because other applications can interfere with the setting
         // of a time on a directory, we're going to swallow IO exceptions
         // in this method.
-
         try
         {
             if (_ntfsTimesAreSet)
@@ -1163,7 +1042,6 @@ public partial class ZipEntry
             {
                 // workitem 6191
                 DateTime AdjustedLastModified = Ionic.Zip.SharedUtilities.AdjustTime_Reverse(LastModified);
-
                 if (isFile)
                     File.SetLastWriteTime(fileOrDirectory, AdjustedLastModified);
                 else
@@ -1175,12 +1053,8 @@ public partial class ZipEntry
             WriteStatus("failed to set time on {0}: {1}", fileOrDirectory, ioexc1.Message);
         }
     }
-
-
     #region Support methods
-
     // workitem 7968
-
     static string GetUnsupportedAlgorithm(uint unsupportedAlgorithmId)
     {
         string alg = unsupportedAlgorithmId switch
@@ -1212,9 +1086,7 @@ public partial class ZipEntry
         };
         return alg;
     }
-
     // workitem 7968
-
     static string GetUnsupportedCompressionMethod(short compressionMethod)
     {
         string meth = (int)compressionMethod switch
@@ -1231,7 +1103,6 @@ public partial class ZipEntry
         };
         return meth;
     }
-
     static void ValidateEncryption(EncryptionAlgorithm encryptionAlgorithm, string fileName, uint unsupportedAlgorithmId)
     {
         if (encryptionAlgorithm != EncryptionAlgorithm.PkzipWeak &&
@@ -1249,7 +1120,6 @@ public partial class ZipEntry
                                                  fileName, (int)encryptionAlgorithm));
         }
     }
-
     static void ValidateCompression(short compressionMethod, string fileName, string compressionMethodName)
     {
         if ((compressionMethod != (short)CompressionMethod.None) &&
@@ -1262,29 +1132,23 @@ public partial class ZipEntry
             throw new ZipException(String.Format("Entry {0} uses an unsupported compression method (0x{1:X2}, {2})",
                                                       fileName, compressionMethod, compressionMethodName));
     }
-
-
     void SetupCryptoForExtract(string password)
     {
         //if (password == null) return;
         if (_Encryption_FromZipFile == EncryptionAlgorithm.None) return;
-
         if (_Encryption_FromZipFile == EncryptionAlgorithm.PkzipWeak)
         {
             if (password == null)
                 throw new ZipException("Missing password.");
-
             this.ArchiveStream.Seek(this.FileDataPosition - 12, SeekOrigin.Begin);
             _zipCrypto_forExtract = ZipCrypto.ForRead(password, this);
         }
-
 #if AESCRYPTO
             else if (_Encryption_FromZipFile == EncryptionAlgorithm.WinZipAes128 ||
                  _Encryption_FromZipFile == EncryptionAlgorithm.WinZipAes256)
             {
                 if (password == null)
                     throw new ZipException("Missing password.");
-
                 // If we already have a WinZipAesCrypto object in place, use it.
                 // It can be set up in the ReadDirEntry(), or during a previous Extract.
                 if (_aesCrypto_forExtract != null)
@@ -1301,9 +1165,6 @@ public partial class ZipEntry
             }
 #endif
     }
-
-
-
     /// <summary>
     /// Validates that the args are consistent; returning whether the caller can return
     /// because it's done, or not (caller should continue)
@@ -1315,23 +1176,17 @@ public partial class ZipEntry
         // Rather than unpack to the root of the volume, we're going to
         // drop the slash and unpack to the specified base directory.
         var f = FileName.Replace(Path.DirectorySeparatorChar, '/');
-
         // workitem 11772: remove drive letter with separator
         if (f.IndexOf(':') == 1)
             f = f[2..];
-
         if (f.StartsWith("/"))
             f = f[1..];
-
         f = SharedUtilities.SanitizePath(f);
-
         outFileName = _container.ZipFile.FlattenFoldersOnExtract
             ? Path.Combine(baseDir, f.Contains("/") ? Path.GetFileName(f) : f)
             : Path.Combine(baseDir, f);
-
         // workitem 10639
         outFileName = outFileName.Replace('/', Path.DirectorySeparatorChar);
-
         // Resolve any directory traversal sequence and compare the result with the intended base directory
         // where the file or folder will be created.
         // https://gist.github.com/thomas-chauchefoin-bentley-systems/855218959116f870f08857cce2aec731
@@ -1341,7 +1196,6 @@ public partial class ZipEntry
         {
             throw new IOException(string.Format("Extracting {0} would write to {1}, outside of {2}; rejecting.", outFileName, canonicalOutPath, canonicalBaseDir));
         }
-
         // check if it is a directory
         if (IsDirectory || FileName.EndsWith("/"))
         {
@@ -1360,13 +1214,10 @@ public partial class ZipEntry
         }
         return false;  // false == work to do by caller.
     }
-
     /// <summary>
     /// Validates that the args are consistent; returning whether the caller can return
     /// because it's done, or not (caller should continue)
     /// </summary>
     bool IsDoneWithOutputToStream() => IsDirectory || FileName.EndsWith("/");
-
     #endregion
-
 }

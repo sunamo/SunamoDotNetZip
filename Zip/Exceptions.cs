@@ -1,3 +1,5 @@
+
+
 // Exceptions.cs
 // ------------------------------------------------------------------
 //
@@ -21,24 +23,12 @@
 //
 // This module defines exceptions used in the class library.
 //
-
-
-
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Runtime.Serialization;
-
 namespace Ionic.Zip;
-
 ///// <summary>
 ///// Base exception type for all custom exceptions in the Zip library. It acts as a marker class.
 ///// </summary>
 //[AttributeUsage(AttributeTargets.Class)]
 //public class ZipExceptionAttribute : Attribute { }
-
-
-
 /// <summary>
 /// Issued when an <c>ZipEntry.ExtractWithPassword()</c> method is invoked
 /// with an incorrect password.
@@ -51,7 +41,6 @@ public class BadPasswordException : ZipException
     /// Default ctor.
     /// </summary>
     public BadPasswordException() { }
-
     /// <summary>
     /// Come on, you know how exceptions work. Why are you looking at this documentation?
     /// </summary>
@@ -59,7 +48,6 @@ public class BadPasswordException : ZipException
     public BadPasswordException(String message)
         : base(message)
     { }
-
     /// <summary>
     /// Come on, you know how exceptions work. Why are you looking at this documentation?
     /// </summary>
@@ -69,7 +57,6 @@ public class BadPasswordException : ZipException
         : base(message, innerException)
     {
     }
-
     /// <summary>
     /// Come on, you know how exceptions work. Why are you looking at this documentation?
     /// </summary>
@@ -78,9 +65,7 @@ public class BadPasswordException : ZipException
     protected BadPasswordException(SerializationInfo info, StreamingContext context)
         : base(info, context)
     { }
-
 }
-
 /// <summary>
 /// Indicates that a read was attempted on a stream, and bad or incomplete data was
 /// received.
@@ -93,7 +78,6 @@ public class BadReadException : ZipException
     /// Default ctor.
     /// </summary>
     public BadReadException() { }
-
     /// <summary>
     /// Come on, you know how exceptions work. Why are you looking at this documentation?
     /// </summary>
@@ -101,7 +85,6 @@ public class BadReadException : ZipException
     public BadReadException(String message)
         : base(message)
     { }
-
     /// <summary>
     /// Come on, you know how exceptions work. Why are you looking at this documentation?
     /// </summary>
@@ -111,7 +94,6 @@ public class BadReadException : ZipException
         : base(message, innerException)
     {
     }
-
     /// <summary>
     /// Come on, you know how exceptions work. Why are you looking at this documentation?
     /// </summary>
@@ -120,11 +102,7 @@ public class BadReadException : ZipException
     protected BadReadException(SerializationInfo info, StreamingContext context)
         : base(info, context)
     { }
-
 }
-
-
-
 /// <summary>
 /// Issued when an CRC check fails upon extracting an entry from a zip archive.
 /// </summary>
@@ -136,7 +114,6 @@ public class BadCrcException : ZipException
     /// Default ctor.
     /// </summary>
     public BadCrcException() { }
-
     /// <summary>
     /// Come on, you know how exceptions work. Why are you looking at this documentation?
     /// </summary>
@@ -144,8 +121,6 @@ public class BadCrcException : ZipException
     public BadCrcException(String message)
         : base(message)
     { }
-
-
     /// <summary>
     /// Come on, you know how exceptions work. Why are you looking at this documentation?
     /// </summary>
@@ -154,10 +129,7 @@ public class BadCrcException : ZipException
     protected BadCrcException(SerializationInfo info, StreamingContext context)
         : base(info, context)
     { }
-
 }
-
-
 /// <summary>
 /// Issued when errors occur saving a self-extracting archive.
 /// </summary>
@@ -169,7 +141,6 @@ public class SfxGenerationException : ZipException
     /// Default ctor.
     /// </summary>
     public SfxGenerationException() { }
-
     /// <summary>
     /// Come on, you know how exceptions work. Why are you looking at this documentation?
     /// </summary>
@@ -177,7 +148,6 @@ public class SfxGenerationException : ZipException
     public SfxGenerationException(String message)
         : base(message)
     { }
-
     /// <summary>
     /// Come on, you know how exceptions work. Why are you looking at this documentation?
     /// </summary>
@@ -186,10 +156,7 @@ public class SfxGenerationException : ZipException
     protected SfxGenerationException(SerializationInfo info, StreamingContext context)
         : base(info, context)
     { }
-
 }
-
-
 /// <summary>
 /// Indicates that an operation was attempted on a ZipFile which was not possible
 /// given the state of the instance. For example, if you call <c>Save()</c> on a ZipFile
@@ -203,7 +170,6 @@ public class BadStateException : ZipException
     /// Default ctor.
     /// </summary>
     public BadStateException() { }
-
     /// <summary>
     /// Come on, you know how exceptions work. Why are you looking at this documentation?
     /// </summary>
@@ -211,7 +177,6 @@ public class BadStateException : ZipException
     public BadStateException(String message)
         : base(message)
     { }
-
     /// <summary>
     /// Come on, you know how exceptions work. Why are you looking at this documentation?
     /// </summary>
@@ -220,7 +185,6 @@ public class BadStateException : ZipException
     public BadStateException(String message, Exception innerException)
         : base(message, innerException)
     { }
-
     /// <summary>
     /// Come on, you know how exceptions work. Why are you looking at this documentation?
     /// </summary>
@@ -229,9 +193,7 @@ public class BadStateException : ZipException
     protected BadStateException(SerializationInfo info, StreamingContext context)
         : base(info, context)
     { }
-
 }
-
 /// <summary>
 /// Base class for all exceptions defined by and throw by the Zip library.
 /// </summary>
@@ -243,13 +205,11 @@ public class ZipException : Exception
     /// Default ctor.
     /// </summary>
     public ZipException() { }
-
     /// <summary>
     /// Come on, you know how exceptions work. Why are you looking at this documentation?
     /// </summary>
     /// <param name="message">The message in the exception.</param>
     public ZipException(String message) : base(message) { }
-
     /// <summary>
     /// Come on, you know how exceptions work. Why are you looking at this documentation?
     /// </summary>
@@ -258,7 +218,6 @@ public class ZipException : Exception
     public ZipException(String message, Exception innerException)
         : base(message, innerException)
     { }
-
     /// <summary>
     /// Come on, you know how exceptions work. Why are you looking at this documentation?
     /// </summary>
@@ -267,5 +226,4 @@ public class ZipException : Exception
     protected ZipException(SerializationInfo info, StreamingContext context)
         : base(info, context)
     { }
-
 }

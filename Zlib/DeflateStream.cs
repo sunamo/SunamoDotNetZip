@@ -1,4 +1,5 @@
 namespace Ionic.Zlib;
+
 // DeflateStream.cs
 // ------------------------------------------------------------------
 //
@@ -24,10 +25,6 @@ namespace Ionic.Zlib;
 // the System.IO.Compression.DeflateStream class in the .NET BCL.
 //
 // ------------------------------------------------------------------
-
-
-using System;
-
     /// <summary>
     /// A class for compressing and decompressing streams using the Deflate algorithm.
     /// </summary>
@@ -67,7 +64,6 @@ using System;
         internal ZlibBaseStream _baseStream;
         internal System.IO.Stream _innerStream;
         bool _disposed;
-
         /// <summary>
         ///   Create a DeflateStream using the specified CompressionMode.
         /// </summary>
@@ -122,7 +118,6 @@ using System;
             : this(stream, mode, CompressionLevel.Default, false)
         {
         }
-
         /// <summary>
         /// Create a DeflateStream using the specified CompressionMode and the specified CompressionLevel.
         /// </summary>
@@ -188,7 +183,6 @@ using System;
             : this(stream, mode, level, false)
         {
         }
-
         /// <summary>
         ///   Create a <c>DeflateStream</c> using the specified
         ///   <c>CompressionMode</c>, and explicitly specify whether the
@@ -230,7 +224,6 @@ using System;
             : this(stream, mode, CompressionLevel.Default, leaveOpen)
         {
         }
-
         /// <summary>
         ///   Create a <c>DeflateStream</c> using the specified <c>CompressionMode</c>
         ///   and the specified <c>CompressionLevel</c>, and explicitly specify whether
@@ -308,9 +301,7 @@ using System;
             _innerStream = stream;
             _baseStream = new ZlibBaseStream(stream, mode, level, ZlibStreamFlavor.DEFLATE, leaveOpen);
         }
-
         #region Zlib properties
-
         /// <summary>
         /// This property sets the flush behavior on the stream.
         /// </summary>
@@ -325,7 +316,6 @@ using System;
                 this._baseStream._flushMode = value;
             }
         }
-
         /// <summary>
         ///   The size of the working buffer for the compression codec.
         /// </summary>
@@ -359,7 +349,6 @@ using System;
                 this._baseStream._bufferSize = value;
             }
         }
-
         /// <summary>
         ///   The ZLIB strategy to be used during compression.
         /// </summary>
@@ -380,7 +369,6 @@ using System;
                 this._baseStream.Strategy = value;
             }
         }
-
         /// <summary> Returns the total number of bytes input so far.</summary>
         virtual public long TotalIn
         {
@@ -389,7 +377,6 @@ using System;
                 return this._baseStream._z.TotalBytesIn;
             }
         }
-
         /// <summary> Returns the total number of bytes output so far.</summary>
         virtual public long TotalOut
         {
@@ -398,9 +385,7 @@ using System;
                 return this._baseStream._z.TotalBytesOut;
             }
         }
-
         #endregion
-
         #region System.IO.Stream methods
         /// <summary>
         ///   Dispose the stream.
@@ -442,9 +427,6 @@ using System;
                 base.Dispose(disposing);
             }
         }
-
-
-
         /// <summary>
         /// Indicates whether the stream can be read.
         /// </summary>
@@ -458,7 +440,6 @@ using System;
             return _disposed ? throw new ObjectDisposedException("DeflateStream") : _baseStream._stream.CanRead;
         }
     }
-
         /// <summary>
         /// Indicates whether the stream supports Seek operations.
         /// </summary>
@@ -469,8 +450,6 @@ using System;
         {
             get { return false; }
         }
-
-
         /// <summary>
         /// Indicates whether the stream can be written.
         /// </summary>
@@ -484,7 +463,6 @@ using System;
             return _disposed ? throw new ObjectDisposedException("DeflateStream") : _baseStream._stream.CanWrite;
         }
     }
-
         /// <summary>
         /// Flush the stream.
         /// </summary>
@@ -493,7 +471,6 @@ using System;
             if (_disposed) throw new ObjectDisposedException("DeflateStream");
             _baseStream.Flush();
         }
-
         /// <summary>
         /// Reading this property always throws a <see cref="NotImplementedException"/>.
         /// </summary>
@@ -501,7 +478,6 @@ using System;
         {
             get { throw new NotImplementedException(); }
         }
-
         /// <summary>
         /// The position of the stream pointer.
         /// </summary>
@@ -523,7 +499,6 @@ using System;
         }
         set { throw new NotImplementedException(); }
         }
-
     /// <summary>
     /// Read data from the stream.
     /// </summary>
@@ -551,8 +526,6 @@ using System;
     /// <param name="count">the number of bytes to read.</param>
     /// <returns>the number of bytes actually read</returns>
     public override int Read(byte[] buffer, int offset, int count) => _disposed ? throw new ObjectDisposedException("DeflateStream") : _baseStream.Read(buffer, offset, count);
-
-
     /// <summary>
     /// Calling this method always throws a <see cref="NotImplementedException"/>.
     /// </summary>
@@ -560,13 +533,11 @@ using System;
     /// <param name="origin">this is irrelevant, since it will always throw!</param>
     /// <returns>irrelevant!</returns>
     public override long Seek(long offset, System.IO.SeekOrigin origin) => throw new NotImplementedException();
-
     /// <summary>
     /// Calling this method always throws a <see cref="NotImplementedException"/>.
     /// </summary>
     /// <param name="value">this is irrelevant, since it will always throw!</param>
     public override void SetLength(long value) => throw new NotImplementedException();
-
     /// <summary>
     ///   Write data to the stream.
     /// </summary>
@@ -602,10 +573,6 @@ using System;
             _baseStream.Write(buffer, offset, count);
         }
         #endregion
-
-
-
-
         /// <summary>
         ///   Compress a string into a byte array using DEFLATE (RFC 1951).
         /// </summary>
@@ -633,8 +600,6 @@ using System;
         ZlibBaseStream.CompressString(s, compressor);
         return ms.ToArray();
     }
-
-
         /// <summary>
         ///   Compress a byte array into a new byte array using DEFLATE.
         /// </summary>
@@ -658,12 +623,9 @@ using System;
         using var ms = new System.IO.MemoryStream();
         System.IO.Stream compressor =
             new DeflateStream(ms, CompressionMode.Compress, CompressionLevel.BestCompression);
-
         ZlibBaseStream.CompressBuffer(b, compressor);
         return ms.ToArray();
     }
-
-
         /// <summary>
         ///   Uncompress a DEFLATE'd byte array into a single string.
         /// </summary>
@@ -683,11 +645,8 @@ using System;
         using var input = new System.IO.MemoryStream(compressed);
         System.IO.Stream decompressor =
             new DeflateStream(input, CompressionMode.Decompress);
-
         return ZlibBaseStream.UncompressString(compressed, decompressor);
     }
-
-
         /// <summary>
         ///   Uncompress a DEFLATE'd byte array into a byte array.
         /// </summary>
@@ -707,10 +666,6 @@ using System;
         using var input = new System.IO.MemoryStream(compressed);
         System.IO.Stream decompressor =
             new DeflateStream(input, CompressionMode.Decompress);
-
         return ZlibBaseStream.UncompressBuffer(compressed, decompressor);
     }
-
     }
-
-

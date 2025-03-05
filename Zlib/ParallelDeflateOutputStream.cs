@@ -1,4 +1,5 @@
 namespace Ionic.Zlib;
+
 // ParallelDeflateOutputStream.cs
 // ------------------------------------------------------------------
 //
@@ -22,14 +23,6 @@ namespace Ionic.Zlib;
 // More info on: http://dotnetzip.codeplex.com
 //
 // ------------------------------------------------------------------
-
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using Ionic.Zlib;
-using System.IO;
-
-
 internal class WorkItem
 {
     public byte[] buffer;
@@ -40,10 +33,8 @@ internal class WorkItem
     public int inputBytesAvailable;
     public int compressedBytesAvailable;
     public ZlibCodec compressor;
-
     public WorkItem(int size,
                     CompressionLevel compressLevel,
-
                     int ix)
     {
         this.buffer = new byte[size];
@@ -57,7 +48,6 @@ internal class WorkItem
         this.index = ix;
     }
 }
-
 /// <summary>
 ///   A class for compressing streams using the
 ///   Deflate algorithm with multiple threads.
@@ -97,10 +87,8 @@ internal class WorkItem
 /// <seealso cref="DeflateStream" />
 public class ParallelDeflateOutputStream : System.IO.Stream
 {
-
     private static readonly int IO_BUFFER_SIZE_DEFAULT = 64 * 1024;  // 128k
     private static readonly int BufferPairsPerCore = 4;
-
     private System.Collections.Generic.List<WorkItem> _pool;
     private readonly bool _leaveOpen;
     private bool emitting;
@@ -127,14 +115,11 @@ public class ParallelDeflateOutputStream : System.IO.Stream
     private volatile Exception _pendingException;
     private bool _handlingException;
     private readonly Lock _eLock = new();  // protects _pendingException
-
     // This bitfield is used only when Trace is defined.
     //private TraceBits _DesiredTrace = TraceBits.Write | TraceBits.WriteBegin |
     //TraceBits.WriteDone | TraceBits.Lifecycle | TraceBits.Fill | TraceBits.Flush |
     //TraceBits.Session;
-
     //private TraceBits _DesiredTrace = TraceBits.WriteBegin | TraceBits.WriteDone | TraceBits.Synch | TraceBits.Lifecycle  | TraceBits.Session ;
-
     private readonly TraceBits _DesiredTrace =
         TraceBits.Session |
         TraceBits.Compress |
@@ -145,7 +130,6 @@ public class ParallelDeflateOutputStream : System.IO.Stream
         TraceBits.EmitLock |
         TraceBits.EmitSkip |
         TraceBits.EmitBegin;
-
     /// <summary>
     /// Create a ParallelDeflateOutputStream.
     /// </summary>
@@ -221,7 +205,6 @@ public class ParallelDeflateOutputStream : System.IO.Stream
         : this(stream, CompressionLevel.Default, CompressionStrategy.Default, false)
     {
     }
-
     /// <summary>
     ///   Create a ParallelDeflateOutputStream using the specified CompressionLevel.
     /// </summary>
@@ -235,7 +218,6 @@ public class ParallelDeflateOutputStream : System.IO.Stream
         : this(stream, level, CompressionStrategy.Default, false)
     {
     }
-
     /// <summary>
     /// Create a ParallelDeflateOutputStream and specify whether to leave the captive stream open
     /// when the ParallelDeflateOutputStream is closed.
@@ -252,7 +234,6 @@ public class ParallelDeflateOutputStream : System.IO.Stream
         : this(stream, CompressionLevel.Default, CompressionStrategy.Default, leaveOpen)
     {
     }
-
     /// <summary>
     /// Create a ParallelDeflateOutputStream and specify whether to leave the captive stream open
     /// when the ParallelDeflateOutputStream is closed.
@@ -270,7 +251,6 @@ public class ParallelDeflateOutputStream : System.IO.Stream
         : this(stream, CompressionLevel.Default, CompressionStrategy.Default, leaveOpen)
     {
     }
-
     /// <summary>
     /// Create a ParallelDeflateOutputStream using the specified
     /// CompressionLevel and CompressionStrategy, and specifying whether to
@@ -303,8 +283,6 @@ public class ParallelDeflateOutputStream : System.IO.Stream
         _leaveOpen = leaveOpen;
         this.MaxBufferPairs = 16; // default
     }
-
-
     /// <summary>
     ///   The ZLIB strategy to be used during compression.
     /// </summary>
@@ -314,7 +292,6 @@ public class ParallelDeflateOutputStream : System.IO.Stream
         get;
         private set;
     }
-
     /// <summary>
     ///   The maximum number of buffer pairs to use.
     /// </summary>
@@ -400,7 +377,6 @@ public class ParallelDeflateOutputStream : System.IO.Stream
             _maxBufferPairs = value;
         }
     }
-
     /// <summary>
     ///   The size of the buffers used by the compressor threads.
     /// </summary>
@@ -452,7 +428,6 @@ public class ParallelDeflateOutputStream : System.IO.Stream
             _bufferSize = value;
         }
     }
-
     /// <summary>
     /// The CRC32 for the data that was written out, prior to compression.
     /// </summary>
@@ -460,8 +435,6 @@ public class ParallelDeflateOutputStream : System.IO.Stream
     /// This value is meaningful only after a call to Close().
     /// </remarks>
     public int Crc32 { get { return _Crc32; } }
-
-
     /// <summary>
     /// The total number of uncompressed bytes processed by the ParallelDeflateOutputStream.
     /// </summary>
@@ -469,8 +442,6 @@ public class ParallelDeflateOutputStream : System.IO.Stream
     /// This value is meaningful only after a call to Close().
     /// </remarks>
     public Int64 BytesProcessed { get { return _totalBytesProcessed; } }
-
-
     private void _InitializePoolOfWorkItems()
     {
         _toWrite = new Queue<int>();
@@ -483,7 +454,6 @@ public class ParallelDeflateOutputStream : System.IO.Stream
             _pool.Add(new WorkItem(_bufferSize, _compressLevel, i));
             _toFill.Enqueue(i);
         }
-
         _newlyCompressedBlob = new AutoResetEvent(false);
         _runningCrc = new Ionic.Zlib.CRC32();
         _currentlyFilling = -1;
@@ -491,10 +461,6 @@ public class ParallelDeflateOutputStream : System.IO.Stream
         _lastWritten = -1;
         _latestCompressed = -1;
     }
-
-
-
-
     /// <summary>
     ///   Write data to the stream.
     /// </summary>
@@ -521,16 +487,13 @@ public class ParallelDeflateOutputStream : System.IO.Stream
     public override void Write(byte[] buffer, int offset, int count)
     {
         bool mustWait = false;
-
         // This method does this:
         //   0. handles any pending exceptions
         //   1. write any buffers that are ready to be written,
         //   2. fills a work buffer; when full, flip state to 'Filled',
         //   3. if more data to be written,  goto step 1
-
         if (_isClosed)
             throw new InvalidOperationException();
-
         // dispense any exceptions that occurred on the BG threads
         if (_pendingException != null)
         {
@@ -539,9 +502,7 @@ public class ParallelDeflateOutputStream : System.IO.Stream
             _pendingException = null;
             throw pe;
         }
-
         if (count == 0) return;
-
         if (!_firstWriteDone)
         {
             // Want to do this on first Write, first session, and not in the
@@ -550,13 +511,10 @@ public class ParallelDeflateOutputStream : System.IO.Stream
             _InitializePoolOfWorkItems();
             _firstWriteDone = true;
         }
-
-
         do
         {
             // may need to make buffers available
             EmitPendingBuffers(false, mustWait);
-
             mustWait = false;
             // use current buffer, or get a new buffer to fill
             int ix = -1;
@@ -578,7 +536,6 @@ public class ParallelDeflateOutputStream : System.IO.Stream
                     mustWait = true;
                     continue;
                 }
-
                 ix = _toFill.Dequeue();
                 TraceOutput(TraceBits.WriteTake,
                             "Write    take     wi({0}) lf({1})",
@@ -586,22 +543,17 @@ public class ParallelDeflateOutputStream : System.IO.Stream
                             _lastFilled);
                 ++_lastFilled; // TODO: consider rollover?
             }
-
             WorkItem workitem = _pool[ix];
-
             int limit = ((workitem.buffer.Length - workitem.inputBytesAvailable) > count)
                 ? count
                 : (workitem.buffer.Length - workitem.inputBytesAvailable);
-
             workitem.ordinal = _lastFilled;
-
             TraceOutput(TraceBits.Write,
                         "Write    lock     wi({0}) ord({1}) iba({2})",
                         workitem.index,
                         workitem.ordinal,
                         workitem.inputBytesAvailable
                         );
-
             // copy from the provided buffer to our workitem, starting at
             // the tail end of whatever data we might have in there currently.
             Buffer.BlockCopy(buffer,
@@ -609,7 +561,6 @@ public class ParallelDeflateOutputStream : System.IO.Stream
                              workitem.buffer,
                              workitem.inputBytesAvailable,
                              limit);
-
             count -= limit;
             offset += limit;
             workitem.inputBytesAvailable += limit;
@@ -624,30 +575,23 @@ public class ParallelDeflateOutputStream : System.IO.Stream
                             workitem.index,
                             workitem.ordinal,
                             workitem.inputBytesAvailable);
-
 #if !PCL
                 if (!ThreadPool.QueueUserWorkItem(_DeflateOne, workitem))
                     throw new Exception("Cannot enqueue workitem");
 #else
                     System.Threading.Tasks.Task.Run(() => _DeflateOne(workitem));
 #endif
-
                 _currentlyFilling = -1; // will get a new buffer next time
             }
             else
                 _currentlyFilling = ix;
-
             if (count > 0)
                 TraceOutput(TraceBits.WriteEnter, "Write    more");
         }
         while (count > 0);  // until no more to write
-
         TraceOutput(TraceBits.WriteEnter, "Write    exit");
         return;
     }
-
-
-
     private void _FlushFinish()
     {
         // After writing a series of compressed buffers, each one closed
@@ -663,35 +607,25 @@ public class ParallelDeflateOutputStream : System.IO.Stream
         compressor.NextOut = 0;
         compressor.AvailableBytesOut = buffer.Length;
         rc = compressor.Deflate(FlushType.Finish);
-
         if (rc != ZlibConstants.Z_STREAM_END && rc != ZlibConstants.Z_OK)
             throw new Exception("deflating: " + compressor.Message);
-
         if (buffer.Length - compressor.AvailableBytesOut > 0)
         {
             TraceOutput(TraceBits.EmitBegin,
                         "Emit     begin    flush bytes({0})",
                         buffer.Length - compressor.AvailableBytesOut);
-
             _outStream.Write(buffer, 0, buffer.Length - compressor.AvailableBytesOut);
-
             TraceOutput(TraceBits.EmitDone,
                         "Emit     done     flush");
         }
-
         compressor.EndDeflate();
-
         _Crc32 = _runningCrc.Crc32Result;
     }
-
-
     private void _Flush(bool lastInput)
     {
         if (_isClosed)
             throw new InvalidOperationException();
-
         if (emitting) return;
-
         // compress any partial buffer
         if (_currentlyFilling >= 0)
         {
@@ -699,7 +633,6 @@ public class ParallelDeflateOutputStream : System.IO.Stream
             _DeflateOne(workitem);
             _currentlyFilling = -1; // get a new buffer next Write()
         }
-
         if (lastInput)
         {
             EmitPendingBuffers(true, false);
@@ -710,9 +643,6 @@ public class ParallelDeflateOutputStream : System.IO.Stream
             EmitPendingBuffers(false, false);
         }
     }
-
-
-
     /// <summary>
     /// Flush the stream.
     /// </summary>
@@ -727,11 +657,8 @@ public class ParallelDeflateOutputStream : System.IO.Stream
         }
         if (_handlingException)
             return;
-
         _Flush(false);
     }
-
-
 #if !PCL
     /// <summary>
     /// Close the stream.
@@ -742,11 +669,9 @@ public class ParallelDeflateOutputStream : System.IO.Stream
     /// </remarks>
     public override void Close() => InnerClose();
 #endif
-
     private void InnerClose()
     {
         TraceOutput(TraceBits.Session, "Close {0:X8}", this.GetHashCode());
-
         if (_pendingException != null)
         {
             _handlingException = true;
@@ -754,24 +679,15 @@ public class ParallelDeflateOutputStream : System.IO.Stream
             _pendingException = null;
             throw pe;
         }
-
         if (_handlingException)
             return;
-
         if (_isClosed) return;
-
         _Flush(true);
-
         if (!_leaveOpen)
             _outStream.Dispose();
-
         _isClosed = true;
     }
-
-
-
     // workitem 10030 - implement a new Dispose method
-
     /// <summary>Dispose the object</summary>
     /// <remarks>
     ///   <para>
@@ -789,9 +705,6 @@ public class ParallelDeflateOutputStream : System.IO.Stream
         _pool = null;
         Dispose(true);
     }
-
-
-
     /// <summary>The Dispose method</summary>
     /// <param name="disposing">
     ///   indicates whether the Dispose method was invoked by user code.
@@ -801,8 +714,6 @@ public class ParallelDeflateOutputStream : System.IO.Stream
         base.Dispose(disposing);
         InnerClose();
     }
-
-
     /// <summary>
     ///   Resets the stream for use with another stream.
     /// </summary>
@@ -847,9 +758,7 @@ public class ParallelDeflateOutputStream : System.IO.Stream
     {
         TraceOutput(TraceBits.Session, "-------------------------------------------------------");
         TraceOutput(TraceBits.Session, "Reset {0:X8} firstDone({1})", this.GetHashCode(), _firstWriteDone);
-
         if (!_firstWriteDone) return;
-
         // reset all status
         _toWrite.Clear();
         _toFill.Clear();
@@ -858,7 +767,6 @@ public class ParallelDeflateOutputStream : System.IO.Stream
             _toFill.Enqueue(workitem.index);
             workitem.ordinal = -1;
         }
-
         _firstWriteDone = false;
         _totalBytesProcessed = 0L;
         _runningCrc = new Ionic.Zlib.CRC32();
@@ -869,10 +777,6 @@ public class ParallelDeflateOutputStream : System.IO.Stream
         _latestCompressed = -1;
         _outStream = stream;
     }
-
-
-
-
     private void EmitPendingBuffers(bool doAll, bool mustWait)
     {
         // When combining parallel deflation with a ZipSegmentedStream, it's
@@ -882,14 +786,12 @@ public class ParallelDeflateOutputStream : System.IO.Stream
         // this stream is unaware of the pending exception, so the Close()
         // method invokes this method AGAIN.  This can lead to a deadlock.
         // Therefore, failfast if re-entering.
-
         if (emitting) return;
         emitting = true;
         if ((doAll && (_latestCompressed != _lastFilled)) || mustWait)
         {
             _newlyCompressedBlob.WaitOne();
         }
-
         do
         {
             int firstSkip = -1;
@@ -909,7 +811,6 @@ public class ParallelDeflateOutputStream : System.IO.Stream
                     {
                         Monitor.Exit(_toWrite);
                     }
-
                     if (nextToWrite >= 0)
                     {
                         WorkItem workitem = _pool[nextToWrite];
@@ -922,12 +823,10 @@ public class ParallelDeflateOutputStream : System.IO.Stream
                                         workitem.ordinal,
                                         _lastWritten,
                                         firstSkip);
-
                             lock (_toWrite)
                             {
                                 _toWrite.Enqueue(nextToWrite);
                             }
-
                             if (firstSkip == nextToWrite)
                             {
                                 // We went around the list once.
@@ -938,54 +837,40 @@ public class ParallelDeflateOutputStream : System.IO.Stream
                             }
                             else if (firstSkip == -1)
                                 firstSkip = nextToWrite;
-
                             continue;
                         }
-
                         firstSkip = -1;
-
                         TraceOutput(TraceBits.EmitBegin,
                                     "Emit     begin    wi({0}) ord({1})              cba({2})",
                                     workitem.index,
                                     workitem.ordinal,
                                     workitem.compressedBytesAvailable);
-
                         _outStream.Write(workitem.compressed, 0, workitem.compressedBytesAvailable);
                         _runningCrc.Combine(workitem.crc, workitem.inputBytesAvailable);
                         _totalBytesProcessed += workitem.inputBytesAvailable;
                         workitem.inputBytesAvailable = 0;
-
                         TraceOutput(TraceBits.EmitDone,
                                     "Emit     done     wi({0}) ord({1})              cba({2}) mtw({3})",
                                     workitem.index,
                                     workitem.ordinal,
                                     workitem.compressedBytesAvailable,
                                     millisecondsToWait);
-
                         _lastWritten = workitem.ordinal;
                         _toFill.Enqueue(workitem.index);
-
                         // don't wait next time through
                         if (millisecondsToWait == -1) millisecondsToWait = 0;
                     }
                 }
                 else
                     nextToWrite = -1;
-
             } while (nextToWrite >= 0);
-
         } while (doAll && (_lastWritten != _latestCompressed || _lastWritten != _lastFilled));
-
         emitting = false;
     }
-
-
-
 #if OLD
         private void _PerpetualWriterMethod(object state)
         {
             TraceOutput(TraceBits.WriterThread, "_PerpetualWriterMethod START");
-
             try
             {
                 do
@@ -994,12 +879,9 @@ public class ParallelDeflateOutputStream : System.IO.Stream
                     TraceOutput(TraceBits.Synch | TraceBits.WriterThread, "Synch    _sessionReset.WaitOne(begin) PWM");
                     _sessionReset.WaitOne();
                     TraceOutput(TraceBits.Synch | TraceBits.WriterThread, "Synch    _sessionReset.WaitOne(done)  PWM");
-
                     if (_isDisposed) break;
-
                     TraceOutput(TraceBits.Synch | TraceBits.WriterThread, "Synch    _sessionReset.Reset()        PWM");
                     _sessionReset.Reset();
-
                     // repeatedly write buffers as they become ready
                     WorkItem workitem = null;
                     CRC32 c= new CRC32();
@@ -1015,7 +897,6 @@ public class ParallelDeflateOutputStream : System.IO.Stream
                                                workitem.status,
                                                (workitem.status == (int)WorkItem.Status.Compressed),
                                                workitem.compressedBytesAvailable);
-
                             do
                             {
                                 if (workitem.status == (int)WorkItem.Status.Compressed)
@@ -1025,7 +906,6 @@ public class ParallelDeflateOutputStream : System.IO.Stream
                                                    workitem.index,
                                                    workitem.status,
                                                    workitem.compressedBytesAvailable);
-
                                     workitem.status = (int)WorkItem.Status.Writing;
                                     _outStream.Write(workitem.compressed, 0, workitem.compressedBytesAvailable);
                                     c.Combine(workitem.crc, workitem.inputBytesAvailable);
@@ -1033,14 +913,11 @@ public class ParallelDeflateOutputStream : System.IO.Stream
                                     _nextToWrite++;
                                     workitem.inputBytesAvailable= 0;
                                     workitem.status = (int)WorkItem.Status.Done;
-
                                     TraceOutput(TraceBits.WriteDone,
                                                    "Write    done     wi({0}) stat({1})              cba({2})",
                                                    workitem.index,
                                                    workitem.status,
                                                    workitem.compressedBytesAvailable);
-
-
                                     Monitor.Pulse(workitem);
                                     break;
                                 }
@@ -1057,17 +934,13 @@ public class ParallelDeflateOutputStream : System.IO.Stream
                                                        workitem.status,
                                                        _nextToWrite, _nextToFill,
                                                        _noMoreInputForThisSegment );
-
                                         if (_noMoreInputForThisSegment && _nextToWrite == _nextToFill)
                                             break;
-
                                         wcycles++;
-
                                         // wake up someone else
                                         Monitor.Pulse(workitem);
                                         // release and wait
                                         Monitor.Wait(workitem);
-
                                         if (workitem.status == (int)WorkItem.Status.Compressed)
                                             TraceOutput(TraceBits.WriteWait,
                                                            "Write    A-OK     wi({0}) stat({1}) iba({2}) cba({3}) cyc({4})",
@@ -1077,26 +950,19 @@ public class ParallelDeflateOutputStream : System.IO.Stream
                                                            workitem.compressedBytesAvailable,
                                                            wcycles);
                                     }
-
                                     if (_noMoreInputForThisSegment && _nextToWrite == _nextToFill)
                                         break;
-
                                 }
                             }
                             while (true);
                         }
-
                         if (_noMoreInputForThisSegment)
                             TraceOutput(TraceBits.Write,
                                            "Write    nomore  nw({0}) nf({1}) break({2})",
                                            _nextToWrite, _nextToFill, (_nextToWrite == _nextToFill));
-
                         if (_noMoreInputForThisSegment && _nextToWrite == _nextToFill)
                             break;
-
                     } while (true);
-
-
                     // Finish:
                     // After writing a series of buffers, closing each one with
                     // Flush.Sync, we now write the final one as Flush.Finish, and
@@ -1111,26 +977,19 @@ public class ParallelDeflateOutputStream : System.IO.Stream
                     compressor.NextOut = 0;
                     compressor.AvailableBytesOut = buffer.Length;
                     rc = compressor.Deflate(FlushType.Finish);
-
                     if (rc != ZlibConstants.Z_STREAM_END && rc != ZlibConstants.Z_OK)
                         throw new Exception("deflating: " + compressor.Message);
-
                     if (buffer.Length - compressor.AvailableBytesOut > 0)
                     {
                         TraceOutput(TraceBits.WriteBegin,
                                        "Write    begin    flush bytes({0})",
                                        buffer.Length - compressor.AvailableBytesOut);
-
                         _outStream.Write(buffer, 0, buffer.Length - compressor.AvailableBytesOut);
-
                         TraceOutput(TraceBits.WriteBegin,
                                        "Write    done     flush");
                     }
-
                     compressor.EndDeflate();
-
                     _Crc32 = c.Crc32Result;
-
                     // signal that writing is complete:
                     TraceOutput(TraceBits.Synch, "Synch    _writingDone.Set()           PWM");
                     _writingDone.Set();
@@ -1146,14 +1005,9 @@ public class ParallelDeflateOutputStream : System.IO.Stream
                         _pendingException = exc1;
                 }
             }
-
             TraceOutput(TraceBits.WriterThread, "_PerpetualWriterMethod FINIS");
         }
 #endif
-
-
-
-
     private void _DeflateOne(Object wi)
     {
         // compress one buffer
@@ -1162,13 +1016,10 @@ public class ParallelDeflateOutputStream : System.IO.Stream
         {
             int myItem = workitem.index;
             Ionic.Zlib.CRC32 crc = new();
-
             // calc CRC on the buffer
             crc.SlurpBlock(workitem.buffer, 0, workitem.inputBytesAvailable);
-
             // deflate it
             DeflateOneSegment(workitem);
-
             // update status
             workitem.crc = crc.Crc32Result;
             TraceOutput(TraceBits.Compress,
@@ -1177,7 +1028,6 @@ public class ParallelDeflateOutputStream : System.IO.Stream
                         workitem.ordinal,
                         workitem.compressedBytesAvailable
                         );
-
             lock (_latestLock)
             {
                 if (workitem.ordinal > _latestCompressed)
@@ -1199,18 +1049,12 @@ public class ParallelDeflateOutputStream : System.IO.Stream
             }
         }
     }
-
-
-
-
     private bool DeflateOneSegment(WorkItem workitem)
     {
         ZlibCodec compressor = workitem.compressor;
         compressor.ResetDeflate();
         compressor.NextIn = 0;
-
         compressor.AvailableBytesIn = workitem.inputBytesAvailable;
-
         // step 1: deflate the buffer
         compressor.NextOut = 0;
         compressor.AvailableBytesOut = workitem.compressed.Length;
@@ -1219,15 +1063,11 @@ public class ParallelDeflateOutputStream : System.IO.Stream
             compressor.Deflate(FlushType.None);
         }
         while (compressor.AvailableBytesIn > 0 || compressor.AvailableBytesOut == 0);
-
         // step 2: flush (sync)
         int rc = compressor.Deflate(FlushType.Sync);
-
         workitem.compressedBytesAvailable = (int)compressor.TotalBytesOut;
         return true;
     }
-
-
     [System.Diagnostics.ConditionalAttribute("Trace")]
     private void TraceOutput(TraceBits bits, string format, params object[] varParams)
     {
@@ -1237,7 +1077,6 @@ public class ParallelDeflateOutputStream : System.IO.Stream
             {
 #if !PCL
                 int tid = Thread.CurrentThread.GetHashCode();
-
                 Console.ForegroundColor = (ConsoleColor)(tid % 8 + 8);
                 Console.Write("{0:000} PDOS ", tid);
                 Console.WriteLine(format, varParams);
@@ -1246,8 +1085,6 @@ public class ParallelDeflateOutputStream : System.IO.Stream
             }
         }
     }
-
-
     // used only when Trace is defined
     [Flags]
     enum TraceBits : uint
@@ -1271,9 +1108,6 @@ public class ParallelDeflateOutputStream : System.IO.Stream
         WriteTake = 16384,    // on _toFill.Take()
         All = 0xffffffff,
     }
-
-
-
     /// <summary>
     /// Indicates whether the stream supports Seek operations.
     /// </summary>
@@ -1284,8 +1118,6 @@ public class ParallelDeflateOutputStream : System.IO.Stream
     {
         get { return false; }
     }
-
-
     /// <summary>
     /// Indicates whether the stream supports Read operations.
     /// </summary>
@@ -1296,7 +1128,6 @@ public class ParallelDeflateOutputStream : System.IO.Stream
     {
         get { return false; }
     }
-
     /// <summary>
     /// Indicates whether the stream supports Write operations.
     /// </summary>
@@ -1307,7 +1138,6 @@ public class ParallelDeflateOutputStream : System.IO.Stream
     {
         get { return _outStream.CanWrite; }
     }
-
     /// <summary>
     /// Reading this property always throws a NotSupportedException.
     /// </summary>
@@ -1315,7 +1145,6 @@ public class ParallelDeflateOutputStream : System.IO.Stream
     {
         get { throw new NotSupportedException(); }
     }
-
     /// <summary>
     /// Returns the current position of the output stream.
     /// </summary>
@@ -1331,7 +1160,6 @@ public class ParallelDeflateOutputStream : System.IO.Stream
         get { return _outStream.Position; }
         set { throw new NotSupportedException(); }
     }
-
     /// <summary>
     /// This method always throws a NotSupportedException.
     /// </summary>
@@ -1350,7 +1178,6 @@ public class ParallelDeflateOutputStream : System.IO.Stream
     /// </param>
     /// <returns>nothing.</returns>
     public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
-
     /// <summary>
     /// This method always throws a NotSupportedException.
     /// </summary>
@@ -1364,7 +1191,6 @@ public class ParallelDeflateOutputStream : System.IO.Stream
     /// </param>
     /// <returns>nothing. It always throws.</returns>
     public override long Seek(long offset, System.IO.SeekOrigin origin) => throw new NotSupportedException();
-
     /// <summary>
     /// This method always throws a NotSupportedException.
     /// </summary>
@@ -1373,5 +1199,4 @@ public class ParallelDeflateOutputStream : System.IO.Stream
     ///   THIS METHOD ACTUALLY DID ANYTHING.
     /// </param>
     public override void SetLength(long value) => throw new NotSupportedException();
-
 }

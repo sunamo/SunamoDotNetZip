@@ -1,4 +1,5 @@
 namespace Ionic.Zlib;
+
 // CRC32.cs
 // ------------------------------------------------------------------
 //
@@ -25,11 +26,7 @@ namespace Ionic.Zlib;
 // files, or GZIP files. This class does both.
 //
 // ------------------------------------------------------------------
-
-
-using System;
 using Interop = System.Runtime.InteropServices;
-
     /// <summary>
     ///   Computes a CRC-32. The CRC-32 algorithm is parameterized - you
     ///   can set the polynomial and enable or disable bit
@@ -40,7 +37,6 @@ using Interop = System.Runtime.InteropServices;
     ///   directly by applications wishing to create, read, or manipulate zip
     ///   archive files.
     /// </remarks>
-
 #if !PCL
     [Interop.GuidAttribute("ebc25cf6-9120-4283-b972-0e5520d0000C")]
     [Interop.ComVisible(true)]
@@ -58,7 +54,6 @@ using Interop = System.Runtime.InteropServices;
                 return _TotalBytesRead;
             }
         }
-
         /// <summary>
         /// Indicates the current CRC for all blocks slurped in.
         /// </summary>
@@ -69,14 +64,12 @@ using Interop = System.Runtime.InteropServices;
                 return unchecked((Int32)(~_register));
             }
         }
-
     /// <summary>
     /// Returns the CRC32 for the specified stream.
     /// </summary>
     /// <param name="input">The stream over which to calculate the CRC32</param>
     /// <returns>the CRC32 calculation</returns>
     public Int32 GetCrc32(System.IO.Stream input) => GetCrc32AndCopy(input, null);
-
     /// <summary>
     /// Returns the CRC32 for the specified stream, and writes the input into the
     /// output stream.
@@ -88,12 +81,10 @@ using Interop = System.Runtime.InteropServices;
         {
             if (input == null)
                 throw new Exception("The input stream must not be null.");
-
             unchecked
             {
                 byte[] buffer = new byte[BUFFER_SIZE];
                 int readSize = BUFFER_SIZE;
-
                 _TotalBytesRead = 0;
                 int count = input.Read(buffer, 0, readSize);
                 output?.Write(buffer, 0, count);
@@ -105,12 +96,9 @@ using Interop = System.Runtime.InteropServices;
                     output?.Write(buffer, 0, count);
                     _TotalBytesRead += count;
                 }
-
                 return (Int32)(~_register);
             }
         }
-
-
     /// <summary>
     ///   Get the CRC32 for the given (word,byte) combo.  This is a
     ///   computation defined by PKzip for PKZIP 2.0 (weak) encryption.
@@ -119,10 +107,7 @@ using Interop = System.Runtime.InteropServices;
     /// <param name="B">The byte to combine it with.</param>
     /// <returns>The CRC-ized result.</returns>
     public Int32 ComputeCrc32(Int32 W, byte B) => _InternalComputeCrc32((UInt32)W, B);
-
     internal Int32 _InternalComputeCrc32(UInt32 W, byte B) => (Int32)(crc32Table[(W ^ B) & 0xFF] ^ (W >> 8));
-
-
     /// <summary>
     /// Update the value for the running CRC32 using the given block of bytes.
     /// This is useful when using the CRC32() class in a Stream.
@@ -134,7 +119,6 @@ using Interop = System.Runtime.InteropServices;
         {
             if (block == null)
                 throw new Exception("The data buffer must not be null.");
-
             // bzip algorithm
             for (int i = 0; i < count; i++)
             {
@@ -153,8 +137,6 @@ using Interop = System.Runtime.InteropServices;
             }
             _TotalBytesRead += count;
         }
-
-
         /// <summary>
         ///   Process one byte in the CRC.
         /// </summary>
@@ -172,7 +154,6 @@ using Interop = System.Runtime.InteropServices;
                 _register = (_register >> 8) ^ crc32Table[temp];
             }
         }
-
         /// <summary>
         ///   Process a run of N identical bytes into the CRC.
         /// </summary>
@@ -204,13 +185,9 @@ using Interop = System.Runtime.InteropServices;
                     _register = (_register >> 8) ^ crc32Table[(temp >= 0)
                                                               ? temp
                                                               : (temp + 256)];
-
                 }
             }
         }
-
-
-
         private static uint ReverseBits(uint data)
         {
             unchecked
@@ -223,7 +200,6 @@ using Interop = System.Runtime.InteropServices;
                 return ret;
             }
         }
-
         private static byte ReverseBits(byte data)
         {
             unchecked
@@ -235,9 +211,6 @@ using Interop = System.Runtime.InteropServices;
                 return (byte)((0x01001001 * (s + t)) >> 24);
             }
         }
-
-
-
         private void GenerateLookupTable()
         {
             crc32Table = new UInt32[256];
@@ -270,7 +243,6 @@ using Interop = System.Runtime.InteropServices;
                     i++;
                 } while (i!=0);
             }
-
 #if VERBOSE
             Console.WriteLine();
             Console.WriteLine("private static readonly UInt32[] crc32Table = {");
@@ -287,8 +259,6 @@ using Interop = System.Runtime.InteropServices;
             Console.WriteLine();
 #endif
         }
-
-
         private uint gf2_matrix_times(uint[] matrix, uint vec)
         {
             uint sum = 0;
@@ -302,15 +272,11 @@ using Interop = System.Runtime.InteropServices;
             }
             return sum;
         }
-
         private void gf2_matrix_square(uint[] square, uint[] mat)
         {
             for (int i = 0; i < 32; i++)
                 square[i] = gf2_matrix_times(mat, mat[i]);
         }
-
-
-
         /// <summary>
         ///   Combines the given CRC32 value with the current running total.
         /// </summary>
@@ -326,13 +292,10 @@ using Interop = System.Runtime.InteropServices;
         {
             uint[] even = new uint[32];     // even-power-of-two zeros operator
             uint[] odd = new uint[32];      // odd-power-of-two zeros operator
-
             if (length == 0)
                 return;
-
             uint crc1= ~_register;
             uint crc2= (uint) crc;
-
             // put operator for one zero bit in odd
             odd[0] = this.dwPolynomial;  // the CRC-32 polynomial
             uint row = 1;
@@ -341,46 +304,32 @@ using Interop = System.Runtime.InteropServices;
                 odd[i] = row;
                 row <<= 1;
             }
-
             // put operator for two zero bits in even
             gf2_matrix_square(even, odd);
-
             // put operator for four zero bits in odd
             gf2_matrix_square(odd, even);
-
             uint len2 = (uint) length;
-
             // apply len2 zeros to crc1 (first square will put the operator for one
             // zero byte, eight zero bits, in even)
             do {
                 // apply zeros operator for this bit of len2
                 gf2_matrix_square(even, odd);
-
                 if ((len2 & 1)== 1)
                     crc1 = gf2_matrix_times(even, crc1);
                 len2 >>= 1;
-
                 if (len2 == 0)
                     break;
-
                 // another iteration of the loop with odd and even swapped
                 gf2_matrix_square(odd, even);
                 if ((len2 & 1)==1)
                     crc1 = gf2_matrix_times(odd, crc1);
                 len2 >>= 1;
-
-
             } while (len2 != 0);
-
             crc1 ^= crc2;
-
             _register= ~crc1;
-
             //return (int) crc1;
             return;
         }
-
-
         /// <summary>
         ///   Create an instance of the CRC32 class using the default settings: no
         ///   bit reversal, and a polynomial of 0xEDB88320.
@@ -388,7 +337,6 @@ using Interop = System.Runtime.InteropServices;
         public CRC32() : this(false)
         {
         }
-
         /// <summary>
         ///   Create an instance of the CRC32 class, specifying whether to reverse
         ///   data bits or not.
@@ -409,8 +357,6 @@ using Interop = System.Runtime.InteropServices;
             this( unchecked((int)0xEDB88320), reverseBits)
         {
         }
-
-
         /// <summary>
         ///   Create an instance of the CRC32 class, specifying the polynomial and
         ///   whether to reverse data bits or not.
@@ -442,7 +388,6 @@ using Interop = System.Runtime.InteropServices;
             this.dwPolynomial = (uint) polynomial;
             this.GenerateLookupTable();
         }
-
     /// <summary>
     ///   Reset the CRC-32 class - clear the CRC "remainder register."
     /// </summary>
@@ -453,7 +398,6 @@ using Interop = System.Runtime.InteropServices;
     ///   </para>
     /// </remarks>
     public void Reset() => _register = 0xFFFFFFFFU;
-
     // private member vars
     private readonly UInt32 dwPolynomial;
         private Int64 _TotalBytesRead;
@@ -462,8 +406,6 @@ using Interop = System.Runtime.InteropServices;
         private const int BUFFER_SIZE = 8192;
         private UInt32 _register = 0xFFFFFFFFU;
     }
-
-
     /// <summary>
     /// A Stream that calculates a CRC32 (a checksum) on all bytes read,
     /// or on all bytes written.
@@ -486,12 +428,10 @@ using Interop = System.Runtime.InteropServices;
     public class CrcCalculatorStream : System.IO.Stream, IDisposable
     {
         static readonly Int64 UnsetLengthLimit = -99;
-
         readonly System.IO.Stream _innerStream;
         readonly CRC32 _crc32;
         readonly Int64 _lengthLimit = -99;
         bool _leaveOpen;
-
         /// <summary>
         /// The default constructor.
         /// </summary>
@@ -507,7 +447,6 @@ using Interop = System.Runtime.InteropServices;
             : this(true, UnsetLengthLimit, stream, null)
         {
         }
-
         /// <summary>
         ///   The constructor allows the caller to specify how to handle the
         ///   underlying stream at close.
@@ -525,7 +464,6 @@ using Interop = System.Runtime.InteropServices;
             : this(leaveOpen, UnsetLengthLimit, stream, null)
         {
         }
-
         /// <summary>
         ///   A constructor allowing the specification of the length of the stream
         ///   to read.
@@ -548,7 +486,6 @@ using Interop = System.Runtime.InteropServices;
             if (length < 0)
                 throw new ArgumentException("length");
         }
-
         /// <summary>
         ///   A constructor allowing the specification of the length of the stream
         ///   to read, as well as whether to keep the underlying stream open upon
@@ -570,7 +507,6 @@ using Interop = System.Runtime.InteropServices;
             if (length < 0)
                 throw new ArgumentException("length");
         }
-
         /// <summary>
         ///   A constructor allowing the specification of the length of the stream
         ///   to read, as well as whether to keep the underlying stream open upon
@@ -594,8 +530,6 @@ using Interop = System.Runtime.InteropServices;
             if (length < 0)
                 throw new ArgumentException("length");
         }
-
-
         // This ctor is private - no validation except null is done here.
         // This is to allow the use
         // of a (specific) negative value for the _lengthLimit, to indicate that there
@@ -610,8 +544,6 @@ using Interop = System.Runtime.InteropServices;
             _lengthLimit = length;
             _leaveOpen = leaveOpen;
         }
-
-
         /// <summary>
         ///   Gets the total number of bytes run through the CRC32 calculator.
         /// </summary>
@@ -624,7 +556,6 @@ using Interop = System.Runtime.InteropServices;
         {
             get { return _crc32.TotalBytesRead; }
         }
-
         /// <summary>
         ///   Provides the current CRC for all blocks slurped in.
         /// </summary>
@@ -639,7 +570,6 @@ using Interop = System.Runtime.InteropServices;
         {
             get { return _crc32.Crc32Result; }
         }
-
         /// <summary>
         ///   Indicates whether the underlying stream will be left open when the
         ///   <c>CrcCalculatorStream</c> is Closed.
@@ -654,7 +584,6 @@ using Interop = System.Runtime.InteropServices;
             get { return _leaveOpen; }
             set { _leaveOpen = value; }
         }
-
         /// <summary>
         /// Read from the stream
         /// </summary>
@@ -665,7 +594,6 @@ using Interop = System.Runtime.InteropServices;
         public override int Read(byte[] buffer, int offset, int count)
         {
             int bytesToRead = count;
-
             // Need to limit the # of bytes returned, if the stream is intended to have
             // a definite length.  This is especially useful when returning a stream for
             // the uncompressed data directly to the application.  The app won't
@@ -673,7 +601,6 @@ using Interop = System.Runtime.InteropServices;
             // wrapping the stream returned from OpenReader() into a StreadReader() and
             // calling ReadToEnd() on it, We can "over-read" the zip data and get a
             // corrupt string.  The length limits that, prevents that problem.
-
             if (_lengthLimit != CrcCalculatorStream.UnsetLengthLimit)
             {
                 if (_crc32.TotalBytesRead >= _lengthLimit) return 0; // EOF
@@ -684,7 +611,6 @@ using Interop = System.Runtime.InteropServices;
             if (n > 0) _crc32.SlurpBlock(buffer, offset, n);
             return n;
         }
-
         /// <summary>
         /// Write to the stream.
         /// </summary>
@@ -696,7 +622,6 @@ using Interop = System.Runtime.InteropServices;
             if (count > 0) _crc32.SlurpBlock(buffer, offset, count);
             _innerStream.Write(buffer, offset, count);
         }
-
         /// <summary>
         /// Indicates whether the stream supports reading.
         /// </summary>
@@ -704,7 +629,6 @@ using Interop = System.Runtime.InteropServices;
         {
             get { return _innerStream.CanRead; }
         }
-
         /// <summary>
         ///   Indicates whether the stream supports seeking.
         /// </summary>
@@ -717,7 +641,6 @@ using Interop = System.Runtime.InteropServices;
         {
             get { return false; }
         }
-
         /// <summary>
         /// Indicates whether the stream supports writing.
         /// </summary>
@@ -725,12 +648,10 @@ using Interop = System.Runtime.InteropServices;
         {
             get { return _innerStream.CanWrite; }
         }
-
     /// <summary>
     /// Flush the stream.
     /// </summary>
     public override void Flush() => _innerStream.Flush();
-
     /// <summary>
     ///   Returns the length of the underlying stream.
     /// </summary>
@@ -741,7 +662,6 @@ using Interop = System.Runtime.InteropServices;
             return _lengthLimit == CrcCalculatorStream.UnsetLengthLimit ? _innerStream.Length : _lengthLimit;
         }
         }
-
         /// <summary>
         ///   The getter for this property returns the total bytes read.
         ///   If you use the setter, it will throw
@@ -752,7 +672,6 @@ using Interop = System.Runtime.InteropServices;
             get { return _crc32.TotalBytesRead; }
             set { throw new NotSupportedException(); }
         }
-
     /// <summary>
     /// Seeking is not supported on this stream. This method always throws
     /// <see cref="NotSupportedException"/>
@@ -761,17 +680,13 @@ using Interop = System.Runtime.InteropServices;
     /// <param name="origin">N/A</param>
     /// <returns>N/A</returns>
     public override long Seek(long offset, System.IO.SeekOrigin origin) => throw new NotSupportedException();
-
     /// <summary>
     /// This method always throws
     /// <see cref="NotSupportedException"/>
     /// </summary>
     /// <param name="value">N/A</param>
     public override void SetLength(long value) => throw new NotSupportedException();
-
-
     void IDisposable.Dispose() => InnerClose();
-
     private void InnerClose()
         {
             if (!_leaveOpen)
@@ -783,7 +698,6 @@ using Interop = System.Runtime.InteropServices;
 #endif
             }
         }
-
         /// <summary>
         /// Closes the stream.
         /// </summary>
@@ -794,6 +708,4 @@ using Interop = System.Runtime.InteropServices;
             InnerClose();
         }
 #endif
-
     }
-

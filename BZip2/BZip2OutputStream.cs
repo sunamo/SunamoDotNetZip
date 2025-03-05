@@ -1,4 +1,5 @@
 namespace Ionic.BZip2;
+
 // BZip2OutputStream.cs
 // ------------------------------------------------------------------
 //
@@ -26,7 +27,6 @@ namespace Ionic.BZip2;
 //
 // ------------------------------------------------------------------
 // flymake: csc.exe /t:module BZip2InputStream.cs BZip2Compressor.cs Rand.cs BCRC32.cs @@FILE@@
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -45,8 +45,6 @@ namespace Ionic.BZip2;
  * specific language governing permissions and limitations
  * under the License.
  */
-
-
 // Design Notes:
 //
 // This class follows the classic Decorator pattern: it is a Stream that
@@ -77,11 +75,6 @@ namespace Ionic.BZip2;
 // in here. Most of the Apache commons compressor magic has been ported
 // into the BZip2Compressor class.
 //
-
-using System;
-using System.IO;
-
-
     /// <summary>
     ///   A write-only decorator stream that compresses data as it is
     ///   written using the BZip2 algorithm.
@@ -95,9 +88,7 @@ using System.IO;
         Stream output;
         BitWriter bw;
     readonly int blockSize100k;  // 0...9
-
         private readonly TraceBits desiredTrace = TraceBits.Crc | TraceBits.Write;
-
         /// <summary>
         ///   Constructs a new <c>BZip2OutputStream</c>, that sends its
         ///   compressed output to the given output stream.
@@ -136,8 +127,6 @@ using System.IO;
             : this(output, BZip2.MaxBlockSize, false)
         {
         }
-
-
         /// <summary>
         ///   Constructs a new <c>BZip2OutputStream</c> with specified blocksize.
         /// </summary>
@@ -150,8 +139,6 @@ using System.IO;
             : this(output, blockSize, false)
         {
         }
-
-
         /// <summary>
         ///   Constructs a new <c>BZip2OutputStream</c>.
         /// </summary>
@@ -163,8 +150,6 @@ using System.IO;
             : this(output, BZip2.MaxBlockSize, leaveOpen)
         {
         }
-
-
         /// <summary>
         ///   Constructs a new <c>BZip2OutputStream</c> with specified blocksize,
         ///   and explicitly specifies whether to leave the wrapped stream open.
@@ -188,11 +173,9 @@ using System.IO;
                                         BZip2.MinBlockSize, BZip2.MaxBlockSize);
                 throw new ArgumentException(msg, nameof(blockSize));
             }
-
             this.output = output;
             if (!this.output.CanWrite)
                 throw new ArgumentException("The stream is not writable.", nameof(output));
-
             this.bw = new BitWriter(this.output);
             this.blockSize100k = blockSize;
             this.compressor = new BZip2Compressor(this.bw, blockSize);
@@ -200,10 +183,6 @@ using System.IO;
             this.combinedCRC = 0;
             EmitHeader();
         }
-
-
-
-
         /// <summary>
         ///   Close the stream.
         /// </summary>
@@ -223,8 +202,6 @@ using System.IO;
                     o.Close();
             }
         }
-
-
         /// <summary>
         ///   Flush the stream.
         /// </summary>
@@ -236,7 +213,6 @@ using System.IO;
                 this.output.Flush();
             }
         }
-
         private void EmitHeader()
         {
             var magic = new byte[] {
@@ -245,19 +221,15 @@ using System.IO;
                 (byte) 'h',
                 (byte) ('0' + this.blockSize100k)
             };
-
             // not necessary to shred the initial magic bytes
             this.output.Write(magic, 0, magic.Length);
         }
-
         private void EmitTrailer()
         {
             // A magic 48-bit number, 0x177245385090, to indicate the end
             // of the last block. (sqrt(pi), if you want to know)
-
             TraceOutput(TraceBits.Write, "total written out: {0} (0x{0:X})",
                         this.bw.TotalBytesWrittenOut);
-
             // must shred
             this.bw.WriteByte(0x17);
             this.bw.WriteByte(0x72);
@@ -265,26 +237,20 @@ using System.IO;
             this.bw.WriteByte(0x38);
             this.bw.WriteByte(0x50);
             this.bw.WriteByte(0x90);
-
             this.bw.WriteInt(this.combinedCRC);
-
             this.bw.FinishAndPad();
-
             TraceOutput(TraceBits.Write, "final total: {0} (0x{0:X})",
                         this.bw.TotalBytesWrittenOut);
         }
-
         void Finish()
         {
             // Console.WriteLine("BZip2:Finish");
-
             try
             {
                 var totalBefore = this.bw.TotalBytesWrittenOut;
                 this.compressor.CompressAndWrite();
                 TraceOutput(TraceBits.Write,"out block length (bytes): {0} (0x{0:X})",
                             this.bw.TotalBytesWrittenOut - totalBefore);
-
                 TraceOutput(TraceBits.Crc, " combined CRC (before): {0:X8}",
                             this.combinedCRC);
                 this.combinedCRC = (this.combinedCRC << 1) | (this.combinedCRC >> 31);
@@ -293,7 +259,6 @@ using System.IO;
                             this.compressor.Crc32);
                 TraceOutput(TraceBits.Crc, " combined CRC (final) : {0:X8}",
                             this.combinedCRC);
-
                 EmitTrailer();
             }
             finally
@@ -303,8 +268,6 @@ using System.IO;
                 this.bw = null;
             }
         }
-
-
         /// <summary>
         ///   The blocksize parameter specified at construction time.
         /// </summary>
@@ -312,8 +275,6 @@ using System.IO;
         {
             get { return this.blockSize100k; }
         }
-
-
         /// <summary>
         ///   Write data to the stream.
         /// </summary>
@@ -347,12 +308,9 @@ using System.IO;
                                                                  offset, count, buffer.Length));
             if (this.output == null)
                 throw new IOException("the stream is not open");
-
             if (count == 0) return;  // nothing to do
-
             int bytesWritten = 0;
             int bytesRemaining = count;
-
             do
             {
                 int n = compressor.Fill(buffer, offset, bytesRemaining);
@@ -361,18 +319,15 @@ using System.IO;
                     // The compressor data block is full.  Compress and
                     // write out the compressed data, then reset the
                     // compressor and continue.
-
                     var totalBefore = this.bw.TotalBytesWrittenOut;
                     this.compressor.CompressAndWrite();
                     TraceOutput(TraceBits.Write,"out block length (bytes): {0} (0x{0:X})",
                                 this.bw.TotalBytesWrittenOut - totalBefore);
-
                             // and now any remaining bits
                             TraceOutput(TraceBits.Write,
                                         " remaining: {0} 0x{1:X}",
                                         this.bw.NumRemainingBits,
                                         this.bw.RemainingBits);
-
                     TraceOutput(TraceBits.Crc, " combined CRC (before): {0:X8}",
                                 this.combinedCRC);
                     this.combinedCRC = (this.combinedCRC << 1) | (this.combinedCRC >> 31);
@@ -386,13 +341,8 @@ using System.IO;
                 bytesRemaining -= n;
                 bytesWritten += n;
             } while (bytesRemaining > 0);
-
             totalBytesWrittenIn += bytesWritten;
         }
-
-
-
-
         /// <summary>
         /// Indicates whether the stream can be read.
         /// </summary>
@@ -403,7 +353,6 @@ using System.IO;
         {
             get { return false; }
         }
-
         /// <summary>
         /// Indicates whether the stream supports Seek operations.
         /// </summary>
@@ -414,7 +363,6 @@ using System.IO;
         {
             get { return false; }
         }
-
         /// <summary>
         /// Indicates whether the stream can be written.
         /// </summary>
@@ -429,7 +377,6 @@ using System.IO;
             return this.output == null ? throw new ObjectDisposedException("BZip2Stream") : output.CanWrite;
         }
     }
-
         /// <summary>
         /// Reading this property always throws a <see cref="NotImplementedException"/>.
         /// </summary>
@@ -437,7 +384,6 @@ using System.IO;
         {
             get { throw new NotImplementedException(); }
         }
-
         /// <summary>
         /// The position of the stream pointer.
         /// </summary>
@@ -455,7 +401,6 @@ using System.IO;
             }
             set { throw new NotImplementedException(); }
         }
-
     /// <summary>
     /// Calling this method always throws a <see cref="NotImplementedException"/>.
     /// </summary>
@@ -463,13 +408,11 @@ using System.IO;
     /// <param name="origin">this is irrelevant, since it will always throw!</param>
     /// <returns>irrelevant!</returns>
     public override long Seek(long offset, System.IO.SeekOrigin origin) => throw new NotImplementedException();
-
     /// <summary>
     /// Calling this method always throws a <see cref="NotImplementedException"/>.
     /// </summary>
     /// <param name="value">this is irrelevant, since it will always throw!</param>
     public override void SetLength(long value) => throw new NotImplementedException();
-
     /// <summary>
     ///   Calling this method always throws a <see cref="NotImplementedException"/>.
     /// </summary>
@@ -478,8 +421,6 @@ using System.IO;
     /// <param name='count'>this parameter is never used</param>
     /// <returns>never returns anything; always throws</returns>
     public override int Read(byte[] buffer, int offset, int count) => throw new NotImplementedException();
-
-
     // used only when Trace is defined
     [Flags]
         enum TraceBits : uint
@@ -489,8 +430,6 @@ using System.IO;
             Write        = 2,
             All          = 0xffffffff,
         }
-
-
         [System.Diagnostics.ConditionalAttribute("Trace")]
         private void TraceOutput(TraceBits bits, string format, params object[] varParams)
         {
@@ -506,7 +445,4 @@ using System.IO;
                 }
             }
         }
-
-
     }
-

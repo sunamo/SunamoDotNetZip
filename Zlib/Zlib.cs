@@ -1,4 +1,5 @@
 namespace Ionic.Zlib;
+
 // Zlib.cs
 // ------------------------------------------------------------------
 //
@@ -86,13 +87,7 @@ namespace Ionic.Zlib;
 //   Mark Adler madler@alumni.caltech.edu
 //
 // -----------------------------------------------------------------------
-
-
-
-using System;
 using Interop=System.Runtime.InteropServices;
-
-
     /// <summary>
     /// Describes how to flush the current deflate operation.
     /// </summary>
@@ -103,14 +98,12 @@ using Interop=System.Runtime.InteropServices;
     {
         /// <summary>No flush at all.</summary>
         None = 0,
-
         /// <summary>Closes the current block, but doesn't flush it to
         /// the output. Used internally only in hypothetical
         /// scenarios.  This was supposed to be removed by Zlib, but it is
         /// still in use in some edge cases.
         /// </summary>
         Partial,
-
         /// <summary>
         /// Use this during compression to specify that all pending output should be
         /// flushed to the output buffer and the output should be aligned on a byte
@@ -121,7 +114,6 @@ using Interop=System.Runtime.InteropServices;
         /// degrade compression and so it should be used only when necessary.
         /// </summary>
         Sync,
-
         /// <summary>
         /// Use this during compression to specify that all output should be flushed, as
         /// with <c>FlushType.Sync</c>, but also, the compression state should be reset
@@ -130,12 +122,9 @@ using Interop=System.Runtime.InteropServices;
         /// <c>FlushType.Full</c> too often can significantly degrade the compression.
         /// </summary>
         Full,
-
         /// <summary>Signals the end of the compression/decompression stream.</summary>
         Finish,
     }
-
-
     /// <summary>
     /// The compression level to be used when using a DeflateStream or ZlibStream with CompressionMode.Compress.
     /// </summary>
@@ -151,37 +140,30 @@ using Interop=System.Runtime.InteropServices;
         /// Same as None.
         /// </summary>
         Level0 = 0,
-
         /// <summary>
         /// The fastest but least effective compression.
         /// </summary>
         BestSpeed = 1,
-
         /// <summary>
         /// A synonym for BestSpeed.
         /// </summary>
         Level1 = 1,
-
         /// <summary>
         /// A little slower, but better, than level 1.
         /// </summary>
         Level2 = 2,
-
         /// <summary>
         /// A little slower, but better, than level 2.
         /// </summary>
         Level3 = 3,
-
         /// <summary>
         /// A little slower, but better, than level 3.
         /// </summary>
         Level4 = 4,
-
         /// <summary>
         /// A little slower than level 4, but with better compression.
         /// </summary>
         Level5 = 5,
-
         /// <summary>
         /// The default compression level, with a good balance of speed and compression efficiency.
         /// </summary>
@@ -190,29 +172,24 @@ using Interop=System.Runtime.InteropServices;
         /// A synonym for Default.
         /// </summary>
         Level6 = 6,
-
         /// <summary>
         /// Pretty good compression!
         /// </summary>
         Level7 = 7,
-
         /// <summary>
         ///  Better compression than Level7!
         /// </summary>
         Level8 = 8,
-
         /// <summary>
         /// The "best" compression, where best means greatest reduction in size of the input data stream.
         /// This is also the slowest compression.
         /// </summary>
         BestCompression = 9,
-
         /// <summary>
         /// A synonym for BestCompression.
         /// </summary>
         Level9 = 9,
     }
-
     /// <summary>
     /// Describes options for how the compression algorithm is executed.  Different strategies
     /// work better on different sorts of data.  The strategy parameter can affect the compression
@@ -224,7 +201,6 @@ using Interop=System.Runtime.InteropServices;
         /// The default strategy is probably the best for normal data.
         /// </summary>
         Default = 0,
-
         /// <summary>
         /// The <c>Filtered</c> strategy is intended to be used most effectively with data produced by a
         /// filter or predictor.  By this definition, filtered data consists mostly of small
@@ -233,15 +209,12 @@ using Interop=System.Runtime.InteropServices;
         /// coding and less string matching; it is a half-step between <c>Default</c> and <c>HuffmanOnly</c>.
         /// </summary>
         Filtered = 1,
-
         /// <summary>
         /// Using <c>HuffmanOnly</c> will force the compressor to do Huffman encoding only, with no
         /// string matching.
         /// </summary>
         HuffmanOnly = 2,
     }
-
-
     /// <summary>
     /// An enum to specify the direction of transcoding - whether to compress or decompress.
     /// </summary>
@@ -256,8 +229,6 @@ using Interop=System.Runtime.InteropServices;
         /// </summary>
         Decompress = 1,
     }
-
-
     /// <summary>
     /// A general purpose exception class for exceptions in the Zlib library.
     /// </summary>
@@ -274,7 +245,6 @@ using Interop=System.Runtime.InteropServices;
             : base()
         {
         }
-
         /// <summary>
         /// This ctor collects a message attached to the exception.
         /// </summary>
@@ -284,8 +254,6 @@ using Interop=System.Runtime.InteropServices;
         {
         }
     }
-
-
     internal class SharedUtils
     {
     /// <summary>
@@ -295,7 +263,6 @@ using Interop=System.Runtime.InteropServices;
     /// <param name="bits">Ammount of bits to shift</param>
     /// <returns>The resulting number from the shift operation</returns>
     public static int URShift(int number, int bits) => (int)((uint)number >> bits);
-
 #if NOT
         /// <summary>
         /// Performs an unsigned bitwise right shift with the specified number
@@ -308,7 +275,6 @@ using Interop=System.Runtime.InteropServices;
             return (long) ((UInt64)number >> bits);
         }
 #endif
-
     /// <summary>
     ///   Reads a number of characters from the current source TextReader and writes
     ///   the data to the target array at the specified index.
@@ -328,26 +294,17 @@ using Interop=System.Runtime.InteropServices;
         {
             // Returns 0 bytes if not enough space in target
             if (target.Length == 0) return 0;
-
             char[] charArray = new char[target.Length];
             int bytesRead = sourceTextReader.Read(charArray, start, count);
-
             // Returns -1 if EOF
             if (bytesRead == 0) return -1;
-
             for (int index = start; index < start + bytesRead; index++)
                 target[index] = (byte)charArray[index];
-
             return bytesRead;
         }
-
-
     internal static byte[] ToByteArray(System.String sourceString) => System.Text.UTF8Encoding.UTF8.GetBytes(sourceString);
-
-
     internal static char[] ToCharArray(byte[] byteArray) => System.Text.UTF8Encoding.UTF8.GetChars(byteArray);
 }
-
     internal static class InternalConstants
     {
         internal static readonly int MAX_BITS     = 15;
@@ -356,21 +313,15 @@ using Interop=System.Runtime.InteropServices;
         internal static readonly int LITERALS     = 256;
         internal static readonly int LENGTH_CODES = 29;
         internal static readonly int L_CODES      = (LITERALS + 1 + LENGTH_CODES);
-
         // Bit length codes must not exceed MAX_BL_BITS bits
         internal static readonly int MAX_BL_BITS  = 7;
-
         // repeat previous bit length 3-6 times (2 bits of repeat count)
         internal static readonly int REP_3_6      = 16;
-
         // repeat a zero length 3-10 times  (3 bits of repeat count)
         internal static readonly int REPZ_3_10    = 17;
-
         // repeat a zero length 11-138 times  (7 bits of repeat count)
         internal static readonly int REPZ_11_138  = 18;
-
     }
-
     internal sealed class StaticTree
     {
         internal static readonly short[] lengthAndLiteralsTreeCodes = [
@@ -411,23 +362,19 @@ using Interop=System.Runtime.InteropServices;
              4, 7, 68, 7, 36, 7, 100, 7, 20, 7, 84, 7, 52, 7, 116, 7,
              3, 8, 131, 8, 67, 8, 195, 8, 35, 8, 163, 8, 99, 8, 227, 8
         ];
-
         internal static readonly short[] distTreeCodes = [
             0, 5, 16, 5, 8, 5, 24, 5, 4, 5, 20, 5, 12, 5, 28, 5,
             2, 5, 18, 5, 10, 5, 26, 5, 6, 5, 22, 5, 14, 5, 30, 5,
             1, 5, 17, 5, 9, 5, 25, 5, 5, 5, 21, 5, 13, 5, 29, 5,
             3, 5, 19, 5, 11, 5, 27, 5, 7, 5, 23, 5 ];
-
         internal static readonly StaticTree Literals;
         internal static readonly StaticTree Distances;
         internal static readonly StaticTree BitLengths;
-
         internal short[] treeCodes; // static tree or null
         internal int[] extraBits;   // extra bits for each code or null
         internal int extraBase;     // base index for extra_bits
         internal int elems;         // max number of elements in the tree
         internal int maxLength;     // max bit length for the codes
-
         private StaticTree(short[] treeCodes, int[] extraBits, int extraBase, int elems, int maxLength)
         {
             this.treeCodes = treeCodes;
@@ -443,9 +390,6 @@ using Interop=System.Runtime.InteropServices;
             BitLengths = new StaticTree(null, Tree.extra_blbits, 0, InternalConstants.BL_CODES, InternalConstants.MAX_BL_BITS);
         }
     }
-
-
-
     /// <summary>
     /// Computes an Adler-32 checksum.
     /// </summary>
@@ -463,11 +407,8 @@ using Interop=System.Runtime.InteropServices;
         private static readonly uint BASE = 65521;
         // NMAX is the largest n such that 255n(n+1)/2 + (n+1)(BASE-1) <= 2^32-1
         private static readonly int NMAX = 5552;
-
-
 #pragma warning disable 3001
 #pragma warning disable 3002
-
         /// <summary>
         ///   Calculates the Adler32 checksum.
         /// </summary>
@@ -487,10 +428,8 @@ using Interop=System.Runtime.InteropServices;
         {
             if (buf == null)
                 return 1;
-
             uint s1 = (uint) (adler & 0xffff);
             uint s2 = (uint) ((adler >> 16) & 0xffff);
-
             while (len > 0)
             {
                 int k = len < NMAX ? len : NMAX;
@@ -532,6 +471,4 @@ using Interop=System.Runtime.InteropServices;
         }
 #pragma warning restore 3001
 #pragma warning restore 3002
-
     }
-

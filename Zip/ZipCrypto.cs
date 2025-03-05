@@ -1,4 +1,5 @@
 namespace Ionic.Zip;
+
 // ZipCrypto.cs
 // ------------------------------------------------------------------
 //
@@ -25,9 +26,6 @@ namespace Ionic.Zip;
 // Created Tue Apr 15 17:39:56 2008
 //
 // ------------------------------------------------------------------
-
-using System;
-
     /// <summary>
     ///   This class implements the "traditional" or "classic" PKZip encryption,
     ///   which today is considered to be weak. On the other hand it is
@@ -60,7 +58,6 @@ using System;
         /// </remarks>
         ///
         private ZipCrypto() { }
-
         public static ZipCrypto ForWrite(string password)
         {
             ZipCrypto z = new();
@@ -69,26 +66,19 @@ using System;
             z.InitCipher(password);
             return z;
         }
-
-
         public static ZipCrypto ForRead(string password, ZipEntry e)
         {
             System.IO.Stream s = e._archiveStream;
             e._WeakEncryptionHeader = new byte[12];
             byte[] eh = e._WeakEncryptionHeader;
             ZipCrypto z = new();
-
             if (password == null)
                 throw new BadPasswordException("This entry requires a password.");
-
             z.InitCipher(password);
-
             ZipEntry.ReadWeakEncryptionHeader(s, eh);
-
             // Decrypt the header.  This has a side effect of "further initializing the
             // encryption keys" in the traditional zip encryption.
             byte[] DecryptedHeader = z.DecryptMessage(eh, eh.Length);
-
             // CRC check
             // According to the pkzip spec, the final byte in the decrypted header
             // is the highest-order byte in the CRC. We check it here.
@@ -119,7 +109,6 @@ using System;
                 // when PKZIP encryption is in use, and instead, reads the stream
                 // twice.
                 //
-
                 if ((e._BitField & 0x0008) != 0x0008)
                 {
                     throw new BadPasswordException("The password did not match.");
@@ -128,7 +117,6 @@ using System;
                 {
                     throw new BadPasswordException("The password did not match.");
                 }
-
                 // We have a good password.
             }
             else
@@ -137,10 +125,6 @@ using System;
             }
             return z;
         }
-
-
-
-
         /// <summary>
         /// From AppNote.txt:
         /// unsigned char decrypt_byte()
@@ -157,7 +141,6 @@ using System;
                 return (byte)((t * (t ^ 1)) >> 8);
             }
         }
-
         // Decrypting:
         // From AppNote.txt:
         // loop for i from 0 to 11
@@ -165,8 +148,6 @@ using System;
         //     update_keys(C)
         //     buffer(i) := C
         // end loop
-
-
         /// <summary>
         ///   Call this method on a cipher text to render the plaintext. You must
         ///   first initialize the cipher with a call to InitCipher.
@@ -192,11 +173,9 @@ using System;
         public byte[] DecryptMessage(byte[] cipherText, int length)
         {
         ArgumentNullException.ThrowIfNull(cipherText);
-
         if (length > cipherText.Length)
                 throw new ArgumentOutOfRangeException(nameof(length),
                                                       "Bad length during Decryption: the length parameter must be smaller than or equal to the size of the destination array.");
-
             byte[] plainText = new byte[length];
             for (int i = 0; i < length; i++)
             {
@@ -206,7 +185,6 @@ using System;
             }
             return plainText;
         }
-
         /// <summary>
         ///   This is the converse of DecryptMessage.  It encrypts the plaintext
         ///   and produces a ciphertext.
@@ -223,11 +201,9 @@ using System;
         public byte[] EncryptMessage(byte[] plainText, int length)
         {
         ArgumentNullException.ThrowIfNull(plainText);
-
         if (length > plainText.Length)
                 throw new ArgumentOutOfRangeException(nameof(length),
                                                       "Bad length during Encryption: The length parameter must be smaller than or equal to the size of the destination array.");
-
             byte[] cipherText = new byte[length];
             for (int i = 0; i < length; i++)
             {
@@ -237,8 +213,6 @@ using System;
             }
             return cipherText;
         }
-
-
         /// <summary>
         ///   This initializes the cipher with the given password.
         ///   See AppNote.txt for details.
@@ -295,8 +269,6 @@ using System;
             for (int i = 0; i < passphrase.Length; i++)
                 UpdateKeys(p[i]);
         }
-
-
         private void UpdateKeys(byte byteValue)
         {
             _Keys[0] = (UInt32)crc32.ComputeCrc32((int)_Keys[0], byteValue);
@@ -304,7 +276,6 @@ using System;
             _Keys[1] = _Keys[1] * 0x08088405 + 1;
             _Keys[2] = (UInt32)crc32.ComputeCrc32((int)_Keys[2], (byte)(_Keys[1] >> 24));
         }
-
         ///// <summary>
         ///// The byte array representing the seed keys used.
         ///// Get this after calling InitCipher.  The 12 bytes represents
@@ -330,19 +301,15 @@ using System;
         //        return result;
         //    }
         //}
-
         // private fields for the crypto stuff:
         private readonly UInt32[] _Keys = [0x12345678, 0x23456789, 0x34567890];
         private readonly Ionic.Zlib.CRC32 crc32 = new();
-
     }
-
     internal enum CryptoMode
     {
         Encrypt,
         Decrypt
     }
-
     /// <summary>
     ///   A Stream for reading and concurrently decrypting data from a zip file,
     ///   or for writing and concurrently encrypting data to a zip file.
@@ -352,7 +319,6 @@ using System;
         private readonly ZipCrypto _cipher;
         private readonly System.IO.Stream _s;
         private readonly CryptoMode _mode;
-
         /// <summary>  The constructor. </summary>
         /// <param name="s">The underlying stream</param>
         /// <param name="mode">To either encrypt or decrypt.</param>
@@ -364,14 +330,11 @@ using System;
             _s = s;
             _mode = mode;
         }
-
         public override int Read(byte[] buffer, int offset, int count)
         {
             if (_mode == CryptoMode.Encrypt)
                 throw new NotSupportedException("This stream does not encrypt via Read()");
-
         ArgumentNullException.ThrowIfNull(buffer);
-
         byte[] db = new byte[count];
             int n = _s.Read(db, 0, count);
             byte[] decrypted = _cipher.DecryptMessage(db, n);
@@ -381,17 +344,13 @@ using System;
             }
             return n;
         }
-
         public override void Write(byte[] buffer, int offset, int count)
         {
             if (_mode == CryptoMode.Decrypt)
                 throw new NotSupportedException("This stream does not Decrypt via Write()");
-
         ArgumentNullException.ThrowIfNull(buffer);
-
         // workitem 7696
         if (count == 0) return;
-
         byte[] plaintext;
         if (offset != 0)
             {
@@ -402,12 +361,9 @@ using System;
                 }
             }
             else plaintext = buffer;
-
             byte[] encrypted = _cipher.EncryptMessage(plaintext, count);
             _s.Write(encrypted, 0, encrypted.Length);
         }
-
-
         public override bool CanRead
         {
             get { return (_mode == CryptoMode.Decrypt); }
@@ -416,28 +372,23 @@ using System;
         {
             get { return false; }
         }
-
         public override bool CanWrite
         {
             get { return (_mode == CryptoMode.Encrypt); }
         }
-
         public override void Flush()
         {
             //throw new NotSupportedException();
         }
-
         public override long Length
         {
             get { throw new NotSupportedException(); }
         }
-
         public override long Position
         {
             get { throw new NotSupportedException(); }
             set { throw new NotSupportedException(); }
         }
     public override long Seek(long offset, System.IO.SeekOrigin origin) => throw new NotSupportedException();
-
     public override void SetLength(long value) => throw new NotSupportedException();
 }

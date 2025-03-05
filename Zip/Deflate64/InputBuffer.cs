@@ -1,6 +1,4 @@
 namespace Ionic.Zip.Deflate64;
-using System;
-using System.Diagnostics;
 
     // This class can be used to read bits from an byte array quickly.
     // Normally we get bits from 'bitBuffer' field and bitsInBuffer stores
@@ -11,7 +9,6 @@ using System.Diagnostics;
     // The byte array is not reused. We will go from 'start' to 'end'.
     // When we reach the end, most read operations will return -1,
     // which means we are running out of input.
-
     internal sealed class InputBuffer
     {
         private byte[] _buffer;           // byte array to store input
@@ -19,20 +16,16 @@ using System.Diagnostics;
         private int _end;                 // end position of the buffer
         private uint _bitBuffer = 0;      // store the bits here, we can quickly shift in this buffer
         private int _bitsInBuffer = 0;    // number of bits available in bitBuffer
-
         /// <summary>Total bits available in the input buffer.</summary>
         public int AvailableBits => _bitsInBuffer;
-
         /// <summary>Total bytes available in the input buffer.</summary>
         public int AvailableBytes => (_end - _start) + (_bitsInBuffer / 8);
-
         /// <summary>Ensure that count bits are in the bit buffer.</summary>
         /// <param name="count">Can be up to 16.</param>
         /// <returns>Returns false if input is not sufficient to make this true.</returns>
         public bool EnsureBitsAvailable(int count)
         {
             Debug.Assert(0 < count && count <= 16, "count is invalid.");
-
             // manual inlining to improve perf
             if (_bitsInBuffer < count)
             {
@@ -44,7 +37,6 @@ using System.Diagnostics;
                 // insert a byte to bitbuffer
                 _bitBuffer |= (uint)_buffer[_start++] << _bitsInBuffer;
                 _bitsInBuffer += 8;
-
                 if (_bitsInBuffer < count)
                 {
                     if (NeedsInput())
@@ -56,10 +48,8 @@ using System.Diagnostics;
                     _bitsInBuffer += 8;
                 }
             }
-
             return true;
         }
-
         /// <summary>
         /// This function will try to load 16 or more bits into bitBuffer.
         /// It returns whatever is contained in bitBuffer after loading.
@@ -77,7 +67,6 @@ using System.Diagnostics;
                     _bitBuffer |= (uint)_buffer[_start++] << _bitsInBuffer;
                     _bitsInBuffer += 8;
                 }
-
                 if (_start < _end)
                 {
                     _bitBuffer |= (uint)_buffer[_start++] << _bitsInBuffer;
@@ -92,28 +81,22 @@ using System.Diagnostics;
                     _bitsInBuffer += 8;
                 }
             }
-
             return _bitBuffer;
         }
-
         private uint GetBitMask(int count) => ((uint)1 << count) - 1;
-
         /// <summary>Gets count bits from the input buffer. Returns -1 if not enough bits available.</summary>
         public int GetBits(int count)
         {
             Debug.Assert(0 < count && count <= 16, "count is invalid.");
-
             if (!EnsureBitsAvailable(count))
             {
                 return -1;
             }
-
             int result = (int)(_bitBuffer & GetBitMask(count));
             _bitBuffer >>= count;
             _bitsInBuffer -= count;
             return result;
         }
-
         /// <summary>
         /// Copies length bytes from input buffer to output buffer starting at output[offset].
         /// You have to make sure, that the buffer is byte aligned. If not enough bytes are
@@ -127,7 +110,6 @@ using System.Diagnostics;
             Debug.Assert(length >= 0);
             Debug.Assert(offset <= output.Length - length);
             Debug.Assert((_bitsInBuffer % 8) == 0);
-
             // Copy the bytes in bitBuffer first.
             int bytesFromBitBuffer = 0;
             while (_bitsInBuffer > 0 && length > 0)
@@ -138,30 +120,25 @@ using System.Diagnostics;
                 length--;
                 bytesFromBitBuffer++;
             }
-
             if (length == 0)
             {
                 return bytesFromBitBuffer;
             }
-
             int avail = _end - _start;
             if (length > avail)
             {
                 length = avail;
             }
-
             Debug.Assert(_buffer != null);
             Array.Copy(_buffer, _start, output, offset, length);
             _start += length;
             return bytesFromBitBuffer + length;
         }
-
         /// <summary>
         /// Return true is all input bytes are used.
         /// This means the caller can call SetInput to add more input.
         /// </summary>
         public bool NeedsInput() => _start == _end;
-
         /// <summary>
         /// Set the byte array to be processed.
         /// All the bits remained in bitBuffer will be processed before the new bytes.
@@ -175,7 +152,6 @@ using System.Diagnostics;
             Debug.Assert(offset >= 0);
             Debug.Assert(length >= 0);
             Debug.Assert(offset <= buffer.Length - length);
-
             if (_start == _end)
             {
                 _buffer = buffer;
@@ -183,7 +159,6 @@ using System.Diagnostics;
                 _end = offset + length;
             }
         }
-
         /// <summary>Skip n bits in the buffer.</summary>
         public void SkipBits(int n)
         {
@@ -191,7 +166,6 @@ using System.Diagnostics;
             _bitBuffer >>= n;
             _bitsInBuffer -= n;
         }
-
         /// <summary>Skips to the next byte boundary.</summary>
         public void SkipToByteBoundary()
         {
