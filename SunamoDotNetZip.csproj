@@ -18,6 +18,7 @@
   <ItemGroup>
     <PackageReference Include="System.Security.Permissions" Version="9.0.0" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="*" Pack="True" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="DotNet.ReproducibleBuilds" Version="1.2.25">

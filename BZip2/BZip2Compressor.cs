@@ -1,4 +1,5 @@
 namespace Ionic.BZip2;
+
 // BZip2Compressor.cs
 // ------------------------------------------------------------------
 //
@@ -27,8 +28,6 @@ namespace Ionic.BZip2;
 // applies to the original Apache code and to this modified variant.
 //
 // ------------------------------------------------------------------
-
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -47,14 +46,11 @@ namespace Ionic.BZip2;
  * specific language governing permissions and limitations
  * under the License.
  */
-
 /*
  * This package is based on the work done by Keiron Liddle, Aftex Software
  * <keiron@aftexsw.com> to whom the Ant project is very grateful for his
  * great code.
  */
-
-
 //
 // Design notes:
 //
@@ -84,12 +80,7 @@ namespace Ionic.BZip2;
 // .bz2 file are not byte-aligned.
 //
 //
-
-using System;
-using System.IO;
-
 // flymake: csc.exe /t:module BZip2InputStream.cs BZip2OutputStream.cs Rand.cs BCRC32.cs @@FILE@@
-
 internal class BZip2Compressor
 {
     private readonly int blockSize100k;  // 0...9
@@ -101,7 +92,6 @@ internal class BZip2Compressor
     private readonly Ionic.Zlib.CRC32 crc = new(true);
     readonly BitWriter bw;
     int runs;
-
     /*
      * The following three vars are used when sorting. If too many long
      * comparisons happen, we stop sorting, randomise the block slightly, and
@@ -114,10 +104,8 @@ internal class BZip2Compressor
     private bool firstAttempt;
     private bool blockRandomised;
     private int origPtr;
-
     private int nInUse;
     private int nMTF;
-
     private static readonly int SETMASK = (1 << 21);
     private static readonly int CLEARMASK = (~SETMASK);
     private static readonly byte GREATER_ICOST = 15;
@@ -125,7 +113,6 @@ internal class BZip2Compressor
     private static readonly int SMALL_THRESH = 20;
     private static readonly int DEPTH_THRESH = 10;
     private static readonly int WORK_FACTOR = 30;
-
     /**
      * Knuth's increments seem to work better than Incerpi-Sedgewick here.
      * Possibly because the number of elems to sort is usually small, typically
@@ -134,7 +121,6 @@ internal class BZip2Compressor
     private static readonly int[] increments = [ 1, 4, 13, 40, 121, 364, 1093, 3280,
                                                      9841, 29524, 88573, 265720, 797161,
                                                      2391484 ];
-
     /// <summary>
     ///   BZip2Compressor writes its compressed data out via a BitWriter. This
     ///   is necessary because BZip2 does byte shredding.
@@ -143,12 +129,10 @@ internal class BZip2Compressor
         : this(writer, BZip2.MaxBlockSize)
     {
     }
-
     public BZip2Compressor(BitWriter writer, int blockSize)
     {
         this.blockSize100k = blockSize;
         this.bw = writer;
-
         // 20 provides a margin of slop (not to say "Safety"). The maximum
         // size of an encoded run in the output block is 5 bytes, so really, 5
         // bytes ought to do, but this is a margin of slop found in the
@@ -158,8 +142,6 @@ internal class BZip2Compressor
         this.cstate = new CompressionState(blockSize);
         Reset();
     }
-
-
     void Reset()
     {
         // initBlock();
@@ -171,23 +153,18 @@ internal class BZip2Compressor
             this.cstate.inUse[i] = false;
         //bw.Reset();  xxx? want this?  no no no
     }
-
-
     public int BlockSize
     {
         get { return this.blockSize100k; }
     }
-
     public uint Crc32
     {
         get; private set;
     }
-
     public int AvailableBytesOut
     {
         get; private set;
     }
-
     /// <summary>
     ///   The number of uncompressed bytes being held in the buffer.
     /// </summary>
@@ -206,8 +183,6 @@ internal class BZip2Compressor
     {
         get { return this.last + 1; }
     }
-
-
     /// <summary>
     ///   Accept new bytes into the compressor data buffer
     /// </summary>
@@ -221,23 +196,17 @@ internal class BZip2Compressor
     {
         if (this.last >= this.outBlockFillThreshold)
             return 0; // We're full, I tell you!
-
         int bytesWritten = 0;
         int limit = offset + count;
         int rc;
-
         // do run-length-encoding until block is full
         do
         {
             rc = write0(buffer[offset++]);
             if (rc > 0) bytesWritten++;
         } while (offset < limit && rc == 1);
-
         return bytesWritten;
     }
-
-
-
     /// <summary>
     ///   Process one input byte into the block.
     /// </summary>
@@ -269,7 +238,6 @@ internal class BZip2Compressor
             this.runLength++;
             return 1;
         }
-
         // this byte is the same as the current run in progress
         if (this.currentByte == b)
         {
@@ -282,12 +250,10 @@ internal class BZip2Compressor
             }
             return 1; // not full
         }
-
         // This byte requires a new run.
         // Put the prior run into the Run-length-encoded block,
         // and try to start a new run.
         rc = AddRunToOutputBlock(false);
-
         if (rc)
         {
             this.currentByte = -1;
@@ -295,13 +261,11 @@ internal class BZip2Compressor
             // returning 0 implies the block is full, and the byte was not written.
             return 0;
         }
-
         // start a new run
         this.runLength = 1;
         this.currentByte = b;
         return 1;
     }
-
     /// <summary>
     ///   Append one run to the output block.
     /// </summary>
@@ -321,7 +285,6 @@ internal class BZip2Compressor
         runs++;
         /* add_pair_to_block ( EState* s ) */
         int previousLast = this.last;
-
         // sanity check only - because of the check done at the
         // bottom of this method, and the logic in write0(), this
         // should never ever happen.
@@ -331,7 +294,6 @@ internal class BZip2Compressor
                                     previousLast, this.outBlockFillThreshold, final);
             throw new Exception(msg);
         }
-
         // NB: the index used here into block is always (last+2).  This is
         // because last is -1 based - the initial value is -1, a flag value
         // used to indicate that nothing has yet been written into the
@@ -340,33 +302,28 @@ internal class BZip2Compressor
         // +1], which is the final byte value that had been written into the
         // rle block. For those two reasons, the base offset from last is
         // always +2.
-
         byte b = (byte)this.currentByte;
         byte[] block = this.cstate.block;
         this.cstate.inUse[b] = true;
         int rl = this.runLength;
         this.crc.UpdateCRC(b, rl);
-
         switch (rl)
         {
             case 1:
                 block[previousLast + 2] = b;
                 this.last = previousLast + 1;
                 break;
-
             case 2:
                 block[previousLast + 2] = b;
                 block[previousLast + 3] = b;
                 this.last = previousLast + 2;
                 break;
-
             case 3:
                 block[previousLast + 2] = b;
                 block[previousLast + 3] = b;
                 block[previousLast + 4] = b;
                 this.last = previousLast + 3;
                 break;
-
             default:
                 rl -= 4;
                 this.cstate.inUse[rl] = true;
@@ -378,12 +335,9 @@ internal class BZip2Compressor
                 this.last = previousLast + 5;
                 break;
         }
-
         // is full?
         return (this.last >= this.outBlockFillThreshold);
     }
-
-
     /// <summary>
     ///   Compress the data that has been placed (Run-length-encoded) into the
     ///   block. The compressed data goes into the CompressedBytes array.
@@ -398,19 +352,14 @@ internal class BZip2Compressor
     {
         if (this.runLength > 0)
             AddRunToOutputBlock(true);
-
         this.currentByte = -1;
-
         // Console.WriteLine("  BZip2Compressor:CompressAndWrite (r={0} bcrc={1:X8})",
         //                   runs, this.crc.Crc32Result);
-
         // has any data been written?
         if (this.last == -1)
             return; // no data; nothing to compress
-
         /* sort the block and establish posn of original string */
         blockSort();
-
         /*
          * A 6-byte block header, the value chosen arbitrarily as 0x314159265359
          * :-). A 32 bit value does not really give a strong enough guarantee
@@ -428,29 +377,21 @@ internal class BZip2Compressor
         this.bw.WriteByte(0x26);
         this.bw.WriteByte(0x53);
         this.bw.WriteByte(0x59);
-
         this.Crc32 = (uint)this.crc.Crc32Result;
         this.bw.WriteInt(this.Crc32);
-
         /* Now a single bit indicating randomisation. */
         this.bw.WriteBits(1, (this.blockRandomised) ? 1U : 0U);
-
         /* Finally, block's contents proper. */
         moveToFrontCodeAndSend();
-
         Reset();
     }
-
-
     private void randomiseBlock()
     {
         bool[] inUse = this.cstate.inUse;
         byte[] block = this.cstate.block;
         int lastShadow = this.last;
-
         for (int i = 256; --i >= 0;)
             inUse[i] = false;
-
         int rNToGo = 0;
         int rTPos = 0;
         for (int i = 0, j = 1; i <= lastShadow; i = j, j++)
@@ -463,17 +404,13 @@ internal class BZip2Compressor
                     rTPos = 0;
                 }
             }
-
             rNToGo--;
             block[j] ^= (byte)((rNToGo == 1) ? 1 : 0);
-
             // handle 16 bit signed numbers
             inUse[block[j] & 0xff] = true;
         }
-
         this.blockRandomised = true;
     }
-
     private void mainSort()
     {
         CompressionState dataShadow = this.cstate;
@@ -487,13 +424,11 @@ internal class BZip2Compressor
         int lastShadow = this.last;
         int workLimitShadow = this.workLimit;
         bool firstAttemptShadow = this.firstAttempt;
-
         // Set up the 2-byte frequency table
         for (int i = 65537; --i >= 0;)
         {
             ftab[i] = 0;
         }
-
         /*
          * In the various block-sized structures, live data runs from 0 to
          * last+NUM_OVERSHOOT_BYTES inclusive. First, set up the overshoot area
@@ -508,9 +443,7 @@ internal class BZip2Compressor
             quadrant[i] = '\0';
         }
         block[0] = block[lastShadow + 1];
-
         // Complete the initial radix sort:
-
         int c1 = block[0] & 0xff;
         for (int i = 0; i <= lastShadow; i++)
         {
@@ -518,10 +451,8 @@ internal class BZip2Compressor
             ftab[(c1 << 8) + c2]++;
             c1 = c2;
         }
-
         for (int i = 1; i <= 65536; i++)
             ftab[i] += ftab[i - 1];
-
         c1 = block[1] & 0xff;
         for (int i = 0; i < lastShadow; i++)
         {
@@ -529,9 +460,7 @@ internal class BZip2Compressor
             fmap[--ftab[(c1 << 8) + c2]] = i;
             c1 = c2;
         }
-
         fmap[--ftab[((block[lastShadow + 1] & 0xff) << 8) + (block[1] & 0xff)]] = lastShadow;
-
         /*
          * Now ftab contains the first loc of every small bucket. Calculate the
          * running order, from smallest to largest big bucket.
@@ -541,7 +470,6 @@ internal class BZip2Compressor
             bigDone[i] = false;
             runningOrder[i] = i;
         }
-
         for (int h = 364; h != 1;)
         {
             h /= 3;
@@ -564,7 +492,6 @@ internal class BZip2Compressor
                 runningOrder[j] = vv;
             }
         }
-
         /*
          * The main sorting loop.
          */
@@ -574,7 +501,6 @@ internal class BZip2Compressor
              * Process big buckets, starting with the least full.
              */
             int ss = runningOrder[i];
-
             // Step 1:
             /*
              * Complete the big bucket [ss] by quicksorting any unsorted small
@@ -602,16 +528,13 @@ internal class BZip2Compressor
                     ftab[sb] = ftab_sb | SETMASK;
                 }
             }
-
             // Step 2:
             // Now scan this big bucket so as to synthesise the
             // sorted order for small buckets [t, ss] for all t != ss.
-
             for (int j = 0; j <= 255; j++)
             {
                 copy[j] = ftab[(j << 8) + ss] & CLEARMASK;
             }
-
             for (int j = ftab[ss << 8] & CLEARMASK, hj = (ftab[(ss + 1) << 8] & CLEARMASK); j < hj; j++)
             {
                 int fmap_j = fmap[j];
@@ -622,10 +545,8 @@ internal class BZip2Compressor
                     copy[c1]++;
                 }
             }
-
             for (int j = 256; --j >= 0;)
                 ftab[(j << 8) + ss] |= SETMASK;
-
             // Step 3:
             /*
              * The ss big bucket is now done. Record this fact, and update the
@@ -635,18 +556,15 @@ internal class BZip2Compressor
              * for the last bucket is pointless.
              */
             bigDone[ss] = true;
-
             if (i < 255)
             {
                 int bbStart = ftab[ss << 8] & CLEARMASK;
                 int bbSize = (ftab[(ss + 1) << 8] & CLEARMASK) - bbStart;
                 int shifts = 0;
-
                 while ((bbSize >> shifts) > 65534)
                 {
                     shifts++;
                 }
-
                 for (int j = 0; j < bbSize; j++)
                 {
                     int a2update = fmap[bbStart + j];
@@ -658,11 +576,8 @@ internal class BZip2Compressor
                     }
                 }
             }
-
         }
     }
-
-
     private void blockSort()
     {
         this.workLimit = WORK_FACTOR * this.last;
@@ -670,7 +585,6 @@ internal class BZip2Compressor
         this.blockRandomised = false;
         this.firstAttempt = true;
         mainSort();
-
         if (this.firstAttempt && (this.workDone > this.workLimit))
         {
             randomiseBlock();
@@ -678,7 +592,6 @@ internal class BZip2Compressor
             this.firstAttempt = false;
             mainSort();
         }
-
         int[] fmap = this.cstate.fmap;
         this.origPtr = -1;
         for (int i = 0, lastShadow = this.last; i <= lastShadow; i++)
@@ -689,11 +602,8 @@ internal class BZip2Compressor
                 break;
             }
         }
-
         // assert (this.origPtr != -1) : this.origPtr;
     }
-
-
     /**
      * This is the most hammered method of this class.
      *
@@ -709,11 +619,9 @@ internal class BZip2Compressor
         {
             return this.firstAttempt && (this.workDone > this.workLimit);
         }
-
         int hp = 0;
         while (increments[hp] < bigN)
             hp++;
-
         int[] fmap = dataShadow.fmap;
         char[] quadrant = dataShadow.quadrant;
         byte[] block = dataShadow.block;
@@ -722,16 +630,13 @@ internal class BZip2Compressor
         bool firstAttemptShadow = this.firstAttempt;
         int workLimitShadow = this.workLimit;
         int workDoneShadow = this.workDone;
-
         // Following block contains unrolled code which could be shortened by
         // coding it in additional loops.
-
         // HP:
         while (--hp >= 0)
         {
             int h = increments[hp];
             int mj = lo + h - 1;
-
             for (int i = lo + h; i <= hi;)
             {
                 // copy
@@ -740,7 +645,6 @@ internal class BZip2Compressor
                     int v = fmap[i];
                     int vd = v + d;
                     int j = i;
-
                     // for (int a;
                     // (j > mj) && mainGtU((a = fmap[j - h]) + d, vd,
                     // block, quadrant, lastShadow);
@@ -749,11 +653,9 @@ internal class BZip2Compressor
                     // }
                     //
                     // unrolled version:
-
                     // start inline mainGTU
                     bool onceRunned = false;
                     int a = 0;
-
                 HAMMER: while (true)
                     {
                         if (onceRunned)
@@ -768,11 +670,9 @@ internal class BZip2Compressor
                         {
                             onceRunned = true;
                         }
-
                         a = fmap[j - h];
                         int i1 = a + d;
                         int i2 = vd;
-
                         // following could be done in a loop, but
                         // unrolled it for performance:
                         if (block[i1 + 1] == block[i2 + 1])
@@ -791,7 +691,6 @@ internal class BZip2Compressor
                                             X: while (x > 0)
                                                 {
                                                     x -= 4;
-
                                                     if (block[i1 + 1] == block[i2 + 1])
                                                     {
                                                         if (quadrant[i1] == quadrant[i2])
@@ -890,7 +789,6 @@ internal class BZip2Compressor
                                                     {
                                                         goto END_HAMMER;
                                                     }
-
                                                 }
                                                 goto END_HAMMER;
                                             } // while x > 0
@@ -950,15 +848,11 @@ internal class BZip2Compressor
                         {
                             goto END_HAMMER;
                         }
-
                     } // HAMMER
-
                 END_HAMMER:
                     // end inline mainGTU
-
                     fmap[j] = v;
                 }
-
                 if (firstAttemptShadow && (i <= hi)
                     && (workDoneShadow > workLimitShadow))
                 {
@@ -967,13 +861,9 @@ internal class BZip2Compressor
             }
         }
     END_HP:
-
         this.workDone = workDoneShadow;
         return firstAttemptShadow && (workDoneShadow > workLimitShadow);
     }
-
-
-
     private static void vswap(int[] fmap, int p1, int p2, int n)
     {
         n += p1;
@@ -984,11 +874,8 @@ internal class BZip2Compressor
             fmap[p2++] = t;
         }
     }
-
     private static byte med3(byte a, byte b, byte c) => (a < b) ? (b < c ? b : a < c ? c : a) : (b > c ? b : a > c ? c
                                                         : a);
-
-
     /**
      * Method "mainQSort3", file "blocksort.c", BZip2 1.0.2
      */
@@ -1000,17 +887,14 @@ internal class BZip2Compressor
         int[] stack_dd = dataShadow.stack_dd;
         int[] fmap = dataShadow.fmap;
         byte[] block = dataShadow.block;
-
         stack_ll[0] = loSt;
         stack_hh[0] = hiSt;
         stack_dd[0] = dSt;
-
         for (int sp = 1; --sp >= 0;)
         {
             int lo = stack_ll[sp];
             int hi = stack_hh[sp];
             int d = stack_dd[sp];
-
             if ((hi - lo < SMALL_THRESH) || (d > DEPTH_THRESH))
             {
                 if (mainSimpleSort(dataShadow, lo, hi, d))
@@ -1023,12 +907,10 @@ internal class BZip2Compressor
                 int d1 = d + 1;
                 int med = med3(block[fmap[lo] + d1],
                                block[fmap[hi] + d1], block[fmap[(lo + hi) >> 1] + d1]) & 0xff;
-
                 int unLo = lo;
                 int unHi = hi;
                 int ltLo = lo;
                 int gtHi = hi;
-
                 while (true)
                 {
                     while (unLo <= unHi)
@@ -1050,7 +932,6 @@ internal class BZip2Compressor
                             break;
                         }
                     }
-
                     while (unLo <= unHi)
                     {
                         int n = (block[fmap[unHi] + d1] & 0xff)
@@ -1070,7 +951,6 @@ internal class BZip2Compressor
                             break;
                         }
                     }
-
                     if (unLo <= unHi)
                     {
                         int temp = fmap[unLo];
@@ -1082,7 +962,6 @@ internal class BZip2Compressor
                         break;
                     }
                 }
-
                 if (gtHi < ltLo)
                 {
                     stack_ll[sp] = lo;
@@ -1098,20 +977,16 @@ internal class BZip2Compressor
                     int m = ((hi - gtHi) < (gtHi - unHi)) ? (hi - gtHi)
                         : (gtHi - unHi);
                     vswap(fmap, unLo, hi - m + 1, m);
-
                     n = lo + unLo - ltLo - 1;
                     m = hi - (gtHi - unHi) + 1;
-
                     stack_ll[sp] = lo;
                     stack_hh[sp] = n;
                     stack_dd[sp] = d;
                     sp++;
-
                     stack_ll[sp] = n + 1;
                     stack_hh[sp] = m - 1;
                     stack_dd[sp] = d1;
                     sp++;
-
                     stack_ll[sp] = m;
                     stack_hh[sp] = hi;
                     stack_dd[sp] = d;
@@ -1120,9 +995,6 @@ internal class BZip2Compressor
             }
         }
     }
-
-
-
     private void generateMTFValues()
     {
         int lastShadow = this.last;
@@ -1134,7 +1006,6 @@ internal class BZip2Compressor
         int[] mtfFreq = dataShadow.mtfFreq;
         byte[] unseqToSeq = dataShadow.unseqToSeq;
         byte[] yy = dataShadow.generateMTFValues_yy;
-
         // make maps
         int nInUseShadow = 0;
         for (int i = 0; i < 256; i++)
@@ -1146,28 +1017,22 @@ internal class BZip2Compressor
             }
         }
         this.nInUse = nInUseShadow;
-
         int eob = nInUseShadow + 1;
-
         for (int i = eob; i >= 0; i--)
         {
             mtfFreq[i] = 0;
         }
-
         for (int i = nInUseShadow; --i >= 0;)
         {
             yy[i] = (byte)i;
         }
-
         int wr = 0;
         int zPend = 0;
-
         for (int i = 0; i <= lastShadow; i++)
         {
             byte ll_i = unseqToSeq[block[fmap[i]] & 0xff];
             byte tmp = yy[0];
             int j = 0;
-
             while (ll_i != tmp)
             {
                 j++;
@@ -1176,7 +1041,6 @@ internal class BZip2Compressor
                 yy[j] = tmp2;
             }
             yy[0] = tmp;
-
             if (j == 0)
             {
                 zPend++;
@@ -1200,7 +1064,6 @@ internal class BZip2Compressor
                             wr++;
                             mtfFreq[BZip2.RUNB]++;
                         }
-
                         if (zPend >= 2)
                         {
                             zPend = (zPend - 2) >> 1;
@@ -1217,7 +1080,6 @@ internal class BZip2Compressor
                 mtfFreq[j + 1]++;
             }
         }
-
         if (zPend > 0)
         {
             zPend--;
@@ -1235,7 +1097,6 @@ internal class BZip2Compressor
                     wr++;
                     mtfFreq[BZip2.RUNB]++;
                 }
-
                 if (zPend >= 2)
                 {
                     zPend = (zPend - 2) >> 1;
@@ -1246,13 +1107,10 @@ internal class BZip2Compressor
                 }
             }
         }
-
         sfmap[wr] = (char)eob;
         mtfFreq[eob]++;
         this.nMTF = wr + 1;
     }
-
-
     private static void hbAssignCodes(int[] code, byte[] length,
                                       int minLen, int maxLen,
                                       int alphaSize)
@@ -1271,15 +1129,10 @@ internal class BZip2Compressor
             vec <<= 1;
         }
     }
-
-
-
-
     private void sendMTFValues()
     {
         byte[][] len = this.cstate.sendMTFValues_len;
         int alphaSize = this.nInUse + 2;
-
         for (int t = BZip2.NGroups; --t >= 0;)
         {
             byte[] len_t = len[t];
@@ -1288,64 +1141,49 @@ internal class BZip2Compressor
                 len_t[v] = GREATER_ICOST;
             }
         }
-
         /* Decide how many coding tables to use */
         // assert (this.nMTF > 0) : this.nMTF;
         int nGroups = (this.nMTF < 200) ? 2 : (this.nMTF < 600) ? 3
             : (this.nMTF < 1200) ? 4 : (this.nMTF < 2400) ? 5 : 6;
-
         /* Generate an initial set of coding tables */
         sendMTFValues0(nGroups, alphaSize);
-
         /*
          * Iterate up to N_ITERS times to improve the tables.
          */
         int nSelectors = sendMTFValues1(nGroups, alphaSize);
-
         /* Compute MTF values for the selectors. */
         sendMTFValues2(nGroups, nSelectors);
-
         /* Assign actual codes for the tables. */
         sendMTFValues3(nGroups, alphaSize);
-
         /* Transmit the mapping table. */
         sendMTFValues4();
-
         /* Now the selectors. */
         sendMTFValues5(nGroups, nSelectors);
-
         /* Now the coding tables. */
         sendMTFValues6(nGroups, alphaSize);
-
         /* And finally, the block data proper */
         sendMTFValues7(nSelectors);
     }
-
     private void sendMTFValues0(int nGroups, int alphaSize)
     {
         byte[][] len = this.cstate.sendMTFValues_len;
         int[] mtfFreq = this.cstate.mtfFreq;
-
         int remF = this.nMTF;
         int gs = 0;
-
         for (int nPart = nGroups; nPart > 0; nPart--)
         {
             int tFreq = remF / nPart;
             int ge = gs - 1;
             int aFreq = 0;
-
             for (int a = alphaSize - 1; (aFreq < tFreq) && (ge < a);)
             {
                 aFreq += mtfFreq[++ge];
             }
-
             if ((ge > gs) && (nPart != nGroups) && (nPart != 1)
                 && (((nGroups - nPart) & 1) != 0))
             {
                 aFreq -= mtfFreq[ge--];
             }
-
             byte[] len_np = len[nPart - 1];
             for (int v = alphaSize; --v >= 0;)
             {
@@ -1358,13 +1196,10 @@ internal class BZip2Compressor
                     len_np[v] = GREATER_ICOST;
                 }
             }
-
             gs = ge + 1;
             remF -= aFreq;
         }
     }
-
-
     private static void hbMakeCodeLengths(byte[] len, int[] freq,
                                           CompressionState state1, int alphaSize,
                                           int maxLen)
@@ -1376,28 +1211,23 @@ internal class BZip2Compressor
         int[] heap = state1.heap;
         int[] weight = state1.weight;
         int[] parent = state1.parent;
-
         for (int i = alphaSize; --i >= 0;)
         {
             weight[i + 1] = (freq[i] == 0 ? 1 : freq[i]) << 8;
         }
-
         for (bool tooLong = true; tooLong;)
         {
             tooLong = false;
-
             int nNodes = alphaSize;
             int nHeap = 0;
             heap[0] = 0;
             weight[0] = 0;
             parent[0] = -2;
-
             for (int i = 1; i <= alphaSize; i++)
             {
                 parent[i] = -1;
                 nHeap++;
                 heap[nHeap] = i;
-
                 int zz = nHeap;
                 int tmp = heap[zz];
                 while (weight[tmp] < weight[heap[zz >> 1]])
@@ -1407,7 +1237,6 @@ internal class BZip2Compressor
                 }
                 heap[zz] = tmp;
             }
-
             while (nHeap > 1)
             {
                 int n1 = heap[1];
@@ -1415,69 +1244,54 @@ internal class BZip2Compressor
                 nHeap--;
                 int zz = 1;
                 int tmp = heap[1];
-
-
                 int yy;
                 while (true)
                 {
                     yy = zz << 1;
-
                     if (yy > nHeap)
                     {
                         break;
                     }
-
                     if ((yy < nHeap)
                         && (weight[heap[yy + 1]] < weight[heap[yy]]))
                     {
                         yy++;
                     }
-
                     if (weight[tmp] < weight[heap[yy]])
                     {
                         break;
                     }
-
                     heap[zz] = heap[yy];
                     zz = yy;
                 }
-
                 heap[zz] = tmp;
-
                 int n2 = heap[1];
                 heap[1] = heap[nHeap];
                 nHeap--;
                 zz = 1;
                 tmp = heap[1];
-
                 while (true)
                 {
                     yy = zz << 1;
-
                     if (yy > nHeap)
                     {
                         break;
                     }
-
                     if ((yy < nHeap)
                         && (weight[heap[yy + 1]] < weight[heap[yy]]))
                     {
                         yy++;
                     }
-
                     if (weight[tmp] < weight[heap[yy]])
                     {
                         break;
                     }
-
                     heap[zz] = heap[yy];
                     zz = yy;
                 }
-
                 heap[zz] = tmp;
                 nNodes++;
                 parent[n1] = parent[n2] = nNodes;
-
                 int weight_n1 = weight[n1];
                 int weight_n2 = weight[n2];
                 weight[nNodes] = (int)(((uint)weight_n1 & 0xffffff00U)
@@ -1486,7 +1300,6 @@ internal class BZip2Compressor
                              > (weight_n2 & 0x000000ff))
                             ? (weight_n1 & 0x000000ff)
                             : (weight_n2 & 0x000000ff)));
-
                 parent[nNodes] = -1;
                 nHeap++;
                 heap[nHeap] = nNodes;
@@ -1499,27 +1312,22 @@ internal class BZip2Compressor
                     zz >>= 1;
                 }
                 heap[zz] = tmp;
-
             }
-
             for (int i = 1; i <= alphaSize; i++)
             {
                 int j = 0;
                 int k = i;
-
                 for (int parent_k; (parent_k = parent[k]) >= 0;)
                 {
                     k = parent_k;
                     j++;
                 }
-
                 len[i - 1] = (byte)j;
                 if (j > maxLen)
                 {
                     tooLong = true;
                 }
             }
-
             if (tooLong)
             {
                 for (int i = 1; i < alphaSize; i++)
@@ -1531,8 +1339,6 @@ internal class BZip2Compressor
             }
         }
     }
-
-
     private int sendMTFValues1(int nGroups, int alphaSize)
     {
         CompressionState dataShadow = this.cstate;
@@ -1549,9 +1355,7 @@ internal class BZip2Compressor
         byte[] len_4 = len[4];
         byte[] len_5 = len[5];
         int nMTFShadow = this.nMTF;
-
         int nSelectors = 0;
-
         for (int iter = 0; iter < BZip2.N_ITERS; iter++)
         {
             for (int t = nGroups; --t >= 0;)
@@ -1563,26 +1367,19 @@ internal class BZip2Compressor
                     rfreqt[i] = 0;
                 }
             }
-
             nSelectors = 0;
-
             for (int gs = 0; gs < this.nMTF;)
             {
                 /* Set group start & end marks. */
-
                 /*
                  * Calculate the cost of this group as coded by each of the
                  * coding tables.
                  */
-
                 int ge = Math.Min(gs + BZip2.G_SIZE - 1, nMTFShadow - 1);
-
                 if (nGroups == BZip2.NGroups)
                 {
                     // unrolled version of the else-block
-
                     int[] c = new int[6];
-
                     for (int i = gs; i <= ge; i++)
                     {
                         int icv = sfmap[i];
@@ -1593,7 +1390,6 @@ internal class BZip2Compressor
                         c[4] += len_4[icv] & 0xff;
                         c[5] += len_5[icv] & 0xff;
                     }
-
                     cost[0] = (short)c[0];
                     cost[1] = (short)c[1];
                     cost[2] = (short)c[2];
@@ -1607,7 +1403,6 @@ internal class BZip2Compressor
                     {
                         cost[t] = 0;
                     }
-
                     for (int i = gs; i <= ge; i++)
                     {
                         int icv = sfmap[i];
@@ -1617,7 +1412,6 @@ internal class BZip2Compressor
                         }
                     }
                 }
-
                 /*
                  * Find the coding table which is best for this group, and
                  * record its identity in the selector table.
@@ -1632,11 +1426,9 @@ internal class BZip2Compressor
                         bt = t;
                     }
                 }
-
                 fave[bt]++;
                 selector[nSelectors] = (byte)bt;
                 nSelectors++;
-
                 /*
                  * Increment the symbol frequencies for the selected table.
                  */
@@ -1645,10 +1437,8 @@ internal class BZip2Compressor
                 {
                     rfreq_bt[sfmap[i]]++;
                 }
-
                 gs = ge + 1;
             }
-
             /*
              * Recompute the tables based on the accumulated frequencies.
              */
@@ -1657,28 +1447,22 @@ internal class BZip2Compressor
                 hbMakeCodeLengths(len[t], rfreq[t], this.cstate, alphaSize, 20);
             }
         }
-
         return nSelectors;
     }
-
     private void sendMTFValues2(int nGroups, int nSelectors)
     {
         // assert (nGroups < 8) : nGroups;
-
         CompressionState dataShadow = this.cstate;
         byte[] pos = dataShadow.sendMTFValues2_pos;
-
         for (int i = nGroups; --i >= 0;)
         {
             pos[i] = (byte)i;
         }
-
         for (int i = 0; i < nSelectors; i++)
         {
             byte ll_i = dataShadow.selector[i];
             byte tmp = pos[0];
             int j = 0;
-
             while (ll_i != tmp)
             {
                 j++;
@@ -1686,17 +1470,14 @@ internal class BZip2Compressor
                 tmp = pos[j];
                 pos[j] = tmp2;
             }
-
             pos[0] = tmp;
             dataShadow.selectorMtf[i] = (byte)j;
         }
     }
-
     private void sendMTFValues3(int nGroups, int alphaSize)
     {
         int[][] code = this.cstate.sendMTFValues_code;
         byte[][] len = this.cstate.sendMTFValues_len;
-
         for (int t = 0; t < nGroups; t++)
         {
             int minLen = 32;
@@ -1714,19 +1495,15 @@ internal class BZip2Compressor
                     minLen = l;
                 }
             }
-
             // assert (maxLen <= 20) : maxLen;
             // assert (minLen >= 1) : minLen;
-
             hbAssignCodes(code[t], len[t], minLen, maxLen, alphaSize);
         }
     }
-
     private void sendMTFValues4()
     {
         bool[] inUse = this.cstate.inUse;
         bool[] inUse16 = this.cstate.sentMTFValues4_inUse16;
-
         for (int i = 16; --i >= 0;)
         {
             inUse16[i] = false;
@@ -1739,7 +1516,6 @@ internal class BZip2Compressor
                 }
             }
         }
-
         uint u = 0;
         for (int i = 0; i < 16; i++)
         {
@@ -1747,8 +1523,6 @@ internal class BZip2Compressor
                 u |= 1U << (16 - i - 1);
         }
         this.bw.WriteBits(16, u);
-
-
         for (int i = 0; i < 16; i++)
         {
             if (inUse16[i])
@@ -1766,36 +1540,28 @@ internal class BZip2Compressor
             }
         }
     }
-
-
     private void sendMTFValues5(int nGroups, int nSelectors)
     {
         this.bw.WriteBits(3, (uint)nGroups);
         this.bw.WriteBits(15, (uint)nSelectors);
-
         byte[] selectorMtf = this.cstate.selectorMtf;
-
         for (int i = 0; i < nSelectors; i++)
         {
             for (int j = 0, hj = selectorMtf[i] & 0xff; j < hj; j++)
             {
                 this.bw.WriteBits(1, 1);
             }
-
             this.bw.WriteBits(1, 0);
         }
     }
-
     private void sendMTFValues6(int nGroups, int alphaSize)
     {
         byte[][] len = this.cstate.sendMTFValues_len;
-
         for (int t = 0; t < nGroups; t++)
         {
             byte[] len_t = len[t];
             uint curr = (uint)(len_t[0] & 0xff);
             this.bw.WriteBits(5, curr);
-
             for (int i = 0; i < alphaSize; i++)
             {
                 int lti = len_t[i] & 0xff;
@@ -1804,19 +1570,15 @@ internal class BZip2Compressor
                     this.bw.WriteBits(2, 2U);
                     curr++; /* 10 */
                 }
-
                 while (curr > lti)
                 {
                     this.bw.WriteBits(2, 3U);
                     curr--; /* 11 */
                 }
-
                 this.bw.WriteBits(1, 0U);
             }
         }
     }
-
-
     private void sendMTFValues7(int nSelectors)
     {
         byte[][] len = this.cstate.sendMTFValues_len;
@@ -1824,16 +1586,13 @@ internal class BZip2Compressor
         byte[] selector = this.cstate.selector;
         char[] sfmap = this.cstate.sfmap;
         int nMTFShadow = this.nMTF;
-
         int selCtr = 0;
-
         for (int gs = 0; gs < nMTFShadow;)
         {
             int ge = Math.Min(gs + BZip2.G_SIZE - 1, nMTFShadow - 1);
             int ix = selector[selCtr] & 0xff;
             int[] code_selCtr = code[ix];
             byte[] len_selCtr = len[ix];
-
             while (gs <= ge)
             {
                 int sfmap_i = sfmap[gs];
@@ -1841,24 +1600,16 @@ internal class BZip2Compressor
                 this.bw.WriteBits(n, (uint)code_selCtr[sfmap_i]);
                 gs++;
             }
-
             gs = ge + 1;
             selCtr++;
         }
     }
-
     private void moveToFrontCodeAndSend()
     {
         this.bw.WriteBits(24, (uint)this.origPtr);
         generateMTFValues();
         sendMTFValues();
     }
-
-
-
-
-
-
     private class CompressionState
     {
         // with blockSize 900k
@@ -1867,53 +1618,41 @@ internal class BZip2Compressor
         public readonly int[] mtfFreq = new int[BZip2.MaxAlphaSize]; // 1032 byte
         public readonly byte[] selector = new byte[BZip2.MaxSelectors]; // 18002 byte
         public readonly byte[] selectorMtf = new byte[BZip2.MaxSelectors]; // 18002 byte
-
         public readonly byte[] generateMTFValues_yy = new byte[256]; // 256 byte
         public byte[][] sendMTFValues_len;
-
         // byte
         public int[][] sendMTFValues_rfreq;
-
         // byte
         public readonly int[] sendMTFValues_fave = new int[BZip2.NGroups]; // 24 byte
         public readonly short[] sendMTFValues_cost = new short[BZip2.NGroups]; // 12 byte
         public int[][] sendMTFValues_code;
-
         // byte
         public readonly byte[] sendMTFValues2_pos = new byte[BZip2.NGroups]; // 6 byte
         public readonly bool[] sentMTFValues4_inUse16 = new bool[16]; // 16 byte
-
         public readonly int[] stack_ll = new int[BZip2.QSORT_STACK_SIZE]; // 4000 byte
         public readonly int[] stack_hh = new int[BZip2.QSORT_STACK_SIZE]; // 4000 byte
         public readonly int[] stack_dd = new int[BZip2.QSORT_STACK_SIZE]; // 4000 byte
-
         public readonly int[] mainSort_runningOrder = new int[256]; // 1024 byte
         public readonly int[] mainSort_copy = new int[256]; // 1024 byte
         public readonly bool[] mainSort_bigDone = new bool[256]; // 256 byte
-
         public int[] heap = new int[BZip2.MaxAlphaSize + 2]; // 1040 byte
         public int[] weight = new int[BZip2.MaxAlphaSize * 2]; // 2064 byte
         public int[] parent = new int[BZip2.MaxAlphaSize * 2]; // 2064 byte
-
         public readonly int[] ftab = new int[65537]; // 262148 byte
                                                      // ------------
                                                      // 333408 byte
-
         public byte[] block; // 900021 byte
         public int[] fmap; // 3600000 byte
         public char[] sfmap; // 3600000 byte
-
         // ------------
         // 8433529 byte
         // ============
-
         /**
          * Array instance identical to sfmap, both are used only
          * temporarily and independently, so we do not need to allocate
          * additional memory.
          */
         public char[] quadrant;
-
         public CompressionState(int blockSize100k)
         {
             int n = blockSize100k * BZip2.BlockSizeMultiple;
@@ -1925,9 +1664,5 @@ internal class BZip2Compressor
             this.sendMTFValues_rfreq = BZip2.InitRectangularArray<int>(BZip2.NGroups, BZip2.MaxAlphaSize);
             this.sendMTFValues_code = BZip2.InitRectangularArray<int>(BZip2.NGroups, BZip2.MaxAlphaSize);
         }
-
     }
-
-
-
 }

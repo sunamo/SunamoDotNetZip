@@ -1,4 +1,5 @@
 namespace Ionic.Zip;
+
 // ZipFile.AddUpdate.cs
 // ------------------------------------------------------------------
 //
@@ -25,12 +26,6 @@ namespace Ionic.Zip;
 //
 // ------------------------------------------------------------------
 //
-
-
-using System;
-using System.IO;
-using System.Collections.Generic;
-
     public partial class ZipFile
     {
     /// <summary>
@@ -80,8 +75,6 @@ using System.Collections.Generic;
     ///
     /// <returns>The <c>ZipEntry</c> added.</returns>
     public ZipEntry AddItem(string fileOrDirectoryName) => AddItem(fileOrDirectoryName, null);
-
-
     /// <summary>
     ///   Adds an item, either a file or a directory, to a zip file archive,
     ///   explicitly specifying the directory path to be used in the archive.
@@ -200,13 +193,11 @@ using System.Collections.Generic;
         {
             if (File.Exists(fileOrDirectoryName))
                 return AddFile(fileOrDirectoryName, directoryPathInArchive);
-
         return Directory.Exists(fileOrDirectoryName)
                 ? AddDirectory(fileOrDirectoryName, directoryPathInArchive)
                 : throw new FileNotFoundException(String.Format("That file or directory ({0}) does not exist!",
                                                           fileOrDirectoryName));
     }
-
     /// <summary>
     ///   Adds a File to a Zip file archive.
     /// </summary>
@@ -287,11 +278,6 @@ using System.Collections.Generic;
     /// </param>
     /// <returns>The <c>ZipEntry</c> corresponding to the File added.</returns>
     public ZipEntry AddFile(string fileName) => AddFile(fileName, null);
-
-
-
-
-
     /// <summary>
     ///   Adds a File to a Zip file archive, potentially overriding the path to be
     ///   used within the zip archive.
@@ -399,8 +385,6 @@ using System.Collections.Generic;
             if (Verbose) StatusMessageTextWriter.WriteLine("adding {0}...", fileName);
             return _InternalAddEntry(ze);
         }
-
-
         /// <summary>
         ///   This method removes a collection of entries from the <c>ZipFile</c>.
         /// </summary>
@@ -418,14 +402,11 @@ using System.Collections.Generic;
         public void RemoveEntries(System.Collections.Generic.ICollection<ZipEntry> entriesToRemove)
         {
         ArgumentNullException.ThrowIfNull(entriesToRemove);
-
         foreach (ZipEntry e in entriesToRemove)
             {
                 this.RemoveEntry(e);
             }
         }
-
-
         /// <summary>
         ///   This method removes a collection of entries from the <c>ZipFile</c>, by name.
         /// </summary>
@@ -441,14 +422,11 @@ using System.Collections.Generic;
         public void RemoveEntries(System.Collections.Generic.ICollection<String> entriesToRemove)
         {
         ArgumentNullException.ThrowIfNull(entriesToRemove);
-
         foreach (String e in entriesToRemove)
             {
                 this.RemoveEntry(e);
             }
         }
-
-
     /// <summary>
     ///   This method adds a set of files to the <c>ZipFile</c>.
     /// </summary>
@@ -505,8 +483,6 @@ using System.Collections.Generic;
     ///
     /// <seealso cref="Ionic.Zip.ZipFile.AddSelectedFiles(String, String)" />
     public void AddFiles(System.Collections.Generic.IEnumerable<String> fileNames) => this.AddFiles(fileNames, null);
-
-
     /// <summary>
     ///   Adds or updates a set of files in the <c>ZipFile</c>.
     /// </summary>
@@ -533,8 +509,6 @@ using System.Collections.Generic;
     /// </param>
     ///
     public void UpdateFiles(System.Collections.Generic.IEnumerable<String> fileNames) => this.UpdateFiles(fileNames, null);
-
-
     /// <summary>
     ///   Adds a set of files to the <c>ZipFile</c>, using the
     ///   specified directory path in the archive.
@@ -578,9 +552,6 @@ using System.Collections.Generic;
     ///
     /// <seealso cref="Ionic.Zip.ZipFile.AddSelectedFiles(String, String)" />
     public void AddFiles(System.Collections.Generic.IEnumerable<String> fileNames, String directoryPathInArchive) => AddFiles(fileNames, false, directoryPathInArchive);
-
-
-
     /// <summary>
     ///   Adds a set of files to the <c>ZipFile</c>, using the specified directory
     ///   path in the archive, and preserving the full directory structure in the
@@ -645,7 +616,6 @@ using System.Collections.Generic;
                              String directoryPathInArchive)
         {
         ArgumentNullException.ThrowIfNull(fileNames);
-
         _addOperationCanceled = false;
             OnAddStarted();
             if (preserveDirHierarchy)
@@ -674,8 +644,6 @@ using System.Collections.Generic;
             if (!_addOperationCanceled)
                 OnAddCompleted();
         }
-
-
         /// <summary>
         ///   Adds or updates a set of files to the <c>ZipFile</c>, using the specified
         ///   directory path in the archive.
@@ -718,16 +686,11 @@ using System.Collections.Generic;
         public void UpdateFiles(System.Collections.Generic.IEnumerable<String> fileNames, String directoryPathInArchive)
         {
         ArgumentNullException.ThrowIfNull(fileNames);
-
         OnAddStarted();
             foreach (var f in fileNames)
                 this.UpdateFile(f, directoryPathInArchive);
             OnAddCompleted();
         }
-
-
-
-
     /// <summary>
     ///   Adds or Updates a File in a Zip file archive.
     /// </summary>
@@ -811,9 +774,6 @@ using System.Collections.Generic;
     ///   The <c>ZipEntry</c> corresponding to the File that was added or updated.
     /// </returns>
     public ZipEntry UpdateFile(string fileName) => UpdateFile(fileName, null);
-
-
-
     /// <summary>
     ///   Adds or Updates a File in a Zip file archive.
     /// </summary>
@@ -878,11 +838,6 @@ using System.Collections.Generic;
                 this.RemoveEntry(key);
             return this.AddFile(fileName, directoryPathInArchive);
         }
-
-
-
-
-
     /// <summary>
     ///   Add or update a directory in a zip archive.
     /// </summary>
@@ -910,8 +865,6 @@ using System.Collections.Generic;
     /// The <c>ZipEntry</c> corresponding to the Directory that was added or updated.
     /// </returns>
     public ZipEntry UpdateDirectory(string directoryName) => UpdateDirectory(directoryName, null);
-
-
     /// <summary>
     ///   Add or update a directory in the zip archive at the specified root
     ///   directory in the archive.
@@ -950,11 +903,6 @@ using System.Collections.Generic;
     ///   The <c>ZipEntry</c> corresponding to the Directory that was added or updated.
     /// </returns>
     public ZipEntry UpdateDirectory(string directoryName, String directoryPathInArchive) => this.AddOrUpdateDirectoryImpl(directoryName, directoryPathInArchive, AddOrUpdateAction.AddOrUpdate);
-
-
-
-
-
     /// <summary>
     ///   Add or update a file or directory in the zip archive.
     /// </summary>
@@ -986,8 +934,6 @@ using System.Collections.Generic;
     ///  the path to the file or directory to be added or updated.
     /// </param>
     public void UpdateItem(string itemName) => UpdateItem(itemName, null);
-
-
     /// <summary>
     ///   Add or update a file or directory.
     /// </summary>
@@ -1039,17 +985,11 @@ using System.Collections.Generic;
         {
             if (File.Exists(itemName))
                 UpdateFile(itemName, directoryPathInArchive);
-
             else if (Directory.Exists(itemName))
                 UpdateDirectory(itemName, directoryPathInArchive);
-
             else
                 throw new FileNotFoundException(String.Format("That file or directory ({0}) does not exist!", itemName));
         }
-
-
-
-
     /// <summary>
     ///   Adds a named entry into the zip archive, taking content for the entry
     ///   from a string.
@@ -1102,9 +1042,6 @@ using System.Collections.Generic;
     /// </code>
     /// </example>
     public ZipEntry AddEntry(string entryName, string content) => AddEntry(entryName, content, System.Text.Encoding.Default);
-
-
-
     /// <summary>
     ///   Adds a named entry into the zip archive, taking content for the entry
     ///   from a string, and using the specified text encoding.
@@ -1154,22 +1091,16 @@ using System.Collections.Generic;
             // cannot employ a using clause here.  We need the stream to
             // persist after exit from this method.
             var ms = new MemoryStream();
-
             // cannot use a using clause here; StreamWriter takes
             // ownership of the stream and Disposes it before we are ready.
             var sw = new StreamWriter(ms, encoding);
             sw.Write(content);
             sw.Flush();
-
             // reset to allow reading later
             ms.Seek(0, SeekOrigin.Begin);
-
             return AddEntry(entryName, ms);
-
             // must not dispose the MemoryStream - it will be used later.
         }
-
-
         /// <summary>
         ///   Create an entry in the <c>ZipFile</c> using the given <c>Stream</c>
         ///   as input.  The entry will have the given filename.
@@ -1258,9 +1189,6 @@ using System.Collections.Generic;
             if (Verbose) StatusMessageTextWriter.WriteLine("adding {0}...", entryName);
             return _InternalAddEntry(ze);
         }
-
-
-
         /// <summary>
         ///   Add a ZipEntry for which content is written directly by the application.
         /// </summary>
@@ -1448,8 +1376,6 @@ using System.Collections.Generic;
             if (Verbose) StatusMessageTextWriter.WriteLine("adding {0}...", entryName);
             return _InternalAddEntry(ze);
         }
-
-
         /// <summary>
         ///   Add an entry, for which the application will provide a stream
         ///   containing the entry data, on a just-in-time basis.
@@ -1563,7 +1489,6 @@ using System.Collections.Generic;
             if (Verbose) StatusMessageTextWriter.WriteLine("adding {0}...", entryName);
             return _InternalAddEntry(ze);
         }
-
         /// <summary>
         /// Adds a <see cref="ZipEntry"/> to the zip file.
         /// </summary>
@@ -1577,12 +1502,10 @@ using System.Collections.Generic;
             {
                 throw new InvalidOperationException("Entry already belongs to a zip file");
             }
-
             ze._container = new ZipContainer(this);
             InternalAddEntry(ze.FileName, ze);
             AfterAddEntry(ze);
         }
-
         private ZipEntry _InternalAddEntry(ZipEntry ze)
         {
             // stamp all the props onto the entry
@@ -1603,10 +1526,6 @@ using System.Collections.Generic;
             AfterAddEntry(ze);
             return ze;
         }
-
-
-
-
     /// <summary>
     ///   Updates the given entry in the <c>ZipFile</c>, using the given
     ///   string as content for the <c>ZipEntry</c>.
@@ -1637,8 +1556,6 @@ using System.Collections.Generic;
     /// <returns>The <c>ZipEntry</c> added.</returns>
     ///
     public ZipEntry UpdateEntry(string entryName, string content) => UpdateEntry(entryName, content, System.Text.Encoding.Default);
-
-
     /// <summary>
     ///   Updates the given entry in the <c>ZipFile</c>, using the given string as
     ///   content for the <c>ZipEntry</c>.
@@ -1672,9 +1589,6 @@ using System.Collections.Generic;
             RemoveEntryForUpdate(entryName);
             return AddEntry(entryName, content, encoding);
         }
-
-
-
         /// <summary>
         ///   Updates the given entry in the <c>ZipFile</c>, using the given delegate
         ///   as the source for content for the <c>ZipEntry</c>.
@@ -1700,9 +1614,6 @@ using System.Collections.Generic;
             RemoveEntryForUpdate(entryName);
             return AddEntry(entryName, writer);
         }
-
-
-
         /// <summary>
         ///   Updates the given entry in the <c>ZipFile</c>, using the given delegates
         ///   to open and close the stream that provides the content for the <c>ZipEntry</c>.
@@ -1733,8 +1644,6 @@ using System.Collections.Generic;
             RemoveEntryForUpdate(entryName);
             return AddEntry(entryName, opener, closer);
         }
-
-
         /// <summary>
         ///   Updates the given entry in the <c>ZipFile</c>, using the given stream as
         ///   input, and the given filename and given directory Path.
@@ -1779,13 +1688,10 @@ using System.Collections.Generic;
             RemoveEntryForUpdate(entryName);
             return AddEntry(entryName, stream);
         }
-
-
         private void RemoveEntryForUpdate(string entryName)
         {
             if (String.IsNullOrEmpty(entryName))
                 throw new ArgumentNullException(nameof(entryName));
-
             string directoryPathInArchive = null;
             if (entryName.IndexOf('\\') != -1)
             {
@@ -1796,10 +1702,6 @@ using System.Collections.Generic;
             if (this[key] != null)
                 this.RemoveEntry(key);
         }
-
-
-
-
         /// <summary>
         ///   Add an entry into the zip archive using the given filename and
         ///   directory path within the archive, and the given content for the
@@ -1819,8 +1721,6 @@ using System.Collections.Generic;
             var ms = new MemoryStream(byteContent);
             return AddEntry(entryName, ms);
         }
-
-
         /// <summary>
         ///   Updates the given entry in the <c>ZipFile</c>, using the given byte
         ///   array as content for the entry.
@@ -1846,15 +1746,11 @@ using System.Collections.Generic;
             RemoveEntryForUpdate(entryName);
             return AddEntry(entryName, byteContent);
         }
-
-
     //         private string DictionaryKeyForEntry(ZipEntry ze1)
     //         {
     //             var filename = SharedUtilities.NormalizePathForUseInZipFile(ze1.FileName);
     //             return filename;
     //         }
-
-
     /// <summary>
     ///   Adds the contents of a filesystem directory to a Zip file archive.
     /// </summary>
@@ -1901,8 +1797,6 @@ using System.Collections.Generic;
     /// <param name="directoryName">The name of the directory to add.</param>
     /// <returns>The <c>ZipEntry</c> added.</returns>
     public ZipEntry AddDirectory(string directoryName) => AddDirectory(directoryName, null);
-
-
     /// <summary>
     ///   Adds the contents of a filesystem directory to a Zip file archive,
     ///   overriding the path to be used for entries in the archive.
@@ -1968,8 +1862,6 @@ using System.Collections.Generic;
     ///
     /// <returns>The <c>ZipEntry</c> added.</returns>
     public ZipEntry AddDirectory(string directoryName, string directoryPathInArchive) => AddOrUpdateDirectoryImpl(directoryName, directoryPathInArchive, AddOrUpdateAction.AddOnly);
-
-
     /// <summary>
     ///   Creates a directory in the zip archive.
     /// </summary>
@@ -2012,9 +1904,6 @@ using System.Collections.Generic;
             AfterAddEntry(dir);
             return dir;
         }
-
-
-
         private ZipEntry AddOrUpdateDirectoryImpl(string directoryName,
                                                   string rootDirectoryPathInArchive,
                                                   AddOrUpdateAction action)
@@ -2023,11 +1912,8 @@ using System.Collections.Generic;
             {
                 rootDirectoryPathInArchive = "";
             }
-
             return AddOrUpdateDirectoryImpl(directoryName, rootDirectoryPathInArchive, action, true, 0);
         }
-
-
         internal void InternalAddEntry(String name, ZipEntry entry)
         {
             _entries.Add(name, entry);
@@ -2035,9 +1921,6 @@ using System.Collections.Generic;
         _zipEntriesAsList = null;
             _contentsChanged = true;
         }
-
-
-
         private ZipEntry AddOrUpdateDirectoryImpl(string directoryName,
                                                   string rootDirectoryPathInArchive,
                                                   AddOrUpdateAction action,
@@ -2048,30 +1931,24 @@ using System.Collections.Generic;
                 StatusMessageTextWriter.WriteLine("{0} {1}...",
                                                   (action == AddOrUpdateAction.AddOnly) ? "adding" : "Adding or updating",
                                                   directoryName);
-
             if (level == 0)
             {
                 _addOperationCanceled = false;
                 OnAddStarted();
             }
-
             // workitem 13371
             if (_addOperationCanceled)
                 return null;
-
             string dirForEntries = rootDirectoryPathInArchive;
             ZipEntry baseDir = null;
-
             if (level > 0)
             {
                 int f = directoryName.Length;
                 for (int i = level; i > 0; i--)
                     f = directoryName.LastIndexOfAny("/\\".ToCharArray(), f - 1, f - 1);
-
                 dirForEntries = directoryName[(f + 1)..];
                 dirForEntries = Path.Combine(rootDirectoryPathInArchive, dirForEntries);
             }
-
             // if not top level, or if the root is non-empty, then explicitly add the directory
             if (level > 0 || rootDirectoryPathInArchive != "")
             {
@@ -2082,7 +1959,6 @@ using System.Collections.Generic;
                 baseDir.MarkAsDirectory();
                 baseDir.EmitTimesInWindowsFormatWhenSaving = _emitNtfsTimes;
                 baseDir.EmitTimesInUnixFormatWhenSaving = _emitUnixTimes;
-
                 // add the directory only if it does not exist.
                 // It's not an error if it already exists.
                 if (!_entries.ContainsKey(baseDir.FileName))
@@ -2092,12 +1968,9 @@ using System.Collections.Generic;
                 }
                 dirForEntries = baseDir.FileName;
             }
-
             if (!_addOperationCanceled)
             {
-
                 String[] filenames = Directory.GetFiles(directoryName);
-
                 if (recurse)
                 {
                     // add the files:
@@ -2109,7 +1982,6 @@ using System.Collections.Generic;
                         else
                             UpdateFile(filename, dirForEntries);
                     }
-
                     if (!_addOperationCanceled)
                     {
                         // add the subdirectories:
@@ -2122,18 +1994,12 @@ using System.Collections.Generic;
                                 || ((fileAttrs & FileAttributes.ReparsePoint) == 0)
                                 )
                                 AddOrUpdateDirectoryImpl(dir, rootDirectoryPathInArchive, action, recurse, level + 1);
-
                         }
-
                     }
                 }
             }
-
             if (level == 0)
                 OnAddCompleted();
-
             return baseDir;
         }
-
     }
-

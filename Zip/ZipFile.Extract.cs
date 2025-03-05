@@ -1,4 +1,5 @@
 namespace Ionic.Zip;
+
 // ZipFile.Extract.cs
 // ------------------------------------------------------------------
 //
@@ -24,16 +25,8 @@ namespace Ionic.Zip;
 //
 // ------------------------------------------------------------------
 //
-
-
-using System;
-using System.IO;
-using System.Collections.Generic;
-
-
     public partial class ZipFile
     {
-
     /// <summary>
     /// Extracts all of the items in the zip archive, to the specified path in the
     /// filesystem.  The path can be relative or fully-qualified.
@@ -147,9 +140,6 @@ using System.Collections.Generic;
     /// </param>
     ///
     public void ExtractAll(string path) => _InternalExtractAll(path, true);
-
-
-
     /// <summary>
     /// Extracts all of the items in the zip archive, to the specified path in the
     /// filesystem, using the specified behavior when extraction would overwrite an
@@ -217,8 +207,6 @@ using System.Collections.Generic;
             ExtractExistingFile = extractExistingFile;
             _InternalExtractAll(path, true);
         }
-
-
         private void _InternalExtractAll(string path, bool overrideExtractExistingProperty)
         {
             bool header = Verbose;
@@ -226,7 +214,6 @@ using System.Collections.Generic;
             try
             {
                 OnExtractAllStarted(path);
-
                 int n = 0;
                 foreach (ZipEntry e in _entries.Values)
                 {
@@ -258,7 +245,6 @@ using System.Collections.Generic;
                     if (_extractOperationCanceled)
                         break;
                 }
-
                 if (!_extractOperationCanceled)
                 {
                     // workitem 8264:
@@ -274,20 +260,15 @@ using System.Collections.Generic;
                             string outputFile = (e.FileName.StartsWith("/"))
                                 ? Path.Combine(path, e.FileName[1..])
                                 : Path.Combine(path, e.FileName);
-
                             e._SetTimes(outputFile, false);
                         }
                     }
                     OnExtractAllCompleted(path);
                 }
-
             }
             finally
             {
-
                 _inExtractAll = false;
             }
         }
-
-
     }

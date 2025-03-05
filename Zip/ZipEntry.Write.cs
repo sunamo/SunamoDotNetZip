@@ -1,4 +1,5 @@
 namespace Ionic.Zip;
+
 // ZipEntry.Write.cs
 // ------------------------------------------------------------------
 //
@@ -23,13 +24,7 @@ namespace Ionic.Zip;
 // zip file.
 //
 // ------------------------------------------------------------------
-
-
-using System;
-using System.IO;
-using System.Threading;
 using RE = System.Text.RegularExpressions;
-
     public partial class ZipEntry
     {
         internal void WriteCentralDirectoryEntry(Stream s)
@@ -42,7 +37,6 @@ using RE = System.Text.RegularExpressions;
             bytes[i++] = (byte)((ZipConstants.ZipDirEntrySignature & 0x0000FF00) >> 8);
             bytes[i++] = (byte)((ZipConstants.ZipDirEntrySignature & 0x00FF0000) >> 16);
             bytes[i++] = (byte)((ZipConstants.ZipDirEntrySignature & 0xFF000000) >> 24);
-
             // Version Made By
             // workitem 7071
             // We must not overwrite the VersionMadeBy field when writing out a zip
@@ -57,19 +51,15 @@ using RE = System.Text.RegularExpressions;
             // should get the VersionMadeBy indicating Windows/NTFS.
             bytes[i++] = (byte)(_VersionMadeBy & 0x00FF);
             bytes[i++] = (byte)((_VersionMadeBy & 0xFF00) >> 8);
-
             // Apparently we want to duplicate the extra field here; we cannot
             // simply zero it out and assume tools and apps will use the right one.
-
             ////Int16 extraFieldLengthSave = (short)(_EntryHeader[28] + _EntryHeader[29] * 256);
             ////_EntryHeader[28] = 0;
             ////_EntryHeader[29] = 0;
-
             // Version Needed, Bitfield, compression method, lastmod,
             // crc, compressed and uncompressed sizes, filename length and extra field length.
             // These are all present in the local file header, but they may be zero values there.
             // So we cannot just copy them.
-
             // workitem 11969: Version Needed To Extract in central directory must be
             // the same as the local entry or MS .NET System.IO.Zip fails read.
             Int16 vNeeded = (Int16)(VersionNeeded != 0 ? VersionNeeded : 20);
@@ -79,22 +69,17 @@ using RE = System.Text.RegularExpressions;
                 // a zipentry in a zipoutputstream, with zero bytes written
                 _OutputUsesZip64 = new Nullable<bool>(_container.Zip64 == Zip64Option.Always);
             }
-
             Int16 versionNeededToExtract = (Int16)(_OutputUsesZip64.Value ? 45 : vNeeded);
 #if BZIP
             if (this.CompressionMethod == Ionic.Zip.CompressionMethod.BZip2)
                 versionNeededToExtract = 46;
 #endif
-
             bytes[i++] = (byte)(versionNeededToExtract & 0x00FF);
             bytes[i++] = (byte)((versionNeededToExtract & 0xFF00) >> 8);
-
             bytes[i++] = (byte)(_BitField & 0x00FF);
             bytes[i++] = (byte)((_BitField & 0xFF00) >> 8);
-
             bytes[i++] = (byte)(_CompressionMethod & 0x00FF);
             bytes[i++] = (byte)((_CompressionMethod & 0xFF00) >> 8);
-
 #if AESCRYPTO
             if (Encryption == EncryptionAlgorithm.WinZipAes128 ||
             Encryption == EncryptionAlgorithm.WinZipAes256)
@@ -104,7 +89,6 @@ using RE = System.Text.RegularExpressions;
                 bytes[i++] = 0;
             }
 #endif
-
             bytes[i++] = (byte)(_TimeBlob & 0x000000FF);
             bytes[i++] = (byte)((_TimeBlob & 0x0000FF00) >> 8);
             bytes[i++] = (byte)((_TimeBlob & 0x00FF0000) >> 16);
@@ -113,7 +97,6 @@ using RE = System.Text.RegularExpressions;
             bytes[i++] = (byte)((_Crc32 & 0x0000FF00) >> 8);
             bytes[i++] = (byte)((_Crc32 & 0x00FF0000) >> 16);
             bytes[i++] = (byte)((_Crc32 & 0xFF000000) >> 24);
-
             int j = 0;
             if (_OutputUsesZip64.Value)
             {
@@ -127,21 +110,17 @@ using RE = System.Text.RegularExpressions;
                 bytes[i++] = (byte)((_CompressedSize & 0x0000FF00) >> 8);
                 bytes[i++] = (byte)((_CompressedSize & 0x00FF0000) >> 16);
                 bytes[i++] = (byte)((_CompressedSize & 0xFF000000) >> 24);
-
                 bytes[i++] = (byte)(_UncompressedSize & 0x000000FF);
                 bytes[i++] = (byte)((_UncompressedSize & 0x0000FF00) >> 8);
                 bytes[i++] = (byte)((_UncompressedSize & 0x00FF0000) >> 16);
                 bytes[i++] = (byte)((_UncompressedSize & 0xFF000000) >> 24);
             }
-
             byte[] fileNameBytes = GetEncodedFileNameBytes();
             Int16 filenameLength = (Int16)fileNameBytes.Length;
             bytes[i++] = (byte)(filenameLength & 0x00FF);
             bytes[i++] = (byte)((filenameLength & 0xFF00) >> 8);
-
             // do this again because now we have real data
             _presumeZip64 = _OutputUsesZip64.Value;
-
             // workitem 11131
             //
             // cannot generate the extra field again, here's why: In the case of a
@@ -171,20 +150,15 @@ using RE = System.Text.RegularExpressions;
             // changed, the length definitely has not. Also, the _EntryHeader
             // contains the "updated" extra field (after PostProcessOutput) at
             // offset (30 + filenameLength).
-
             _Extra = ConstructExtraField(true);
-
             Int16 extraFieldLength = (Int16)((_Extra == null) ? 0 : _Extra.Length);
             bytes[i++] = (byte)(extraFieldLength & 0x00FF);
             bytes[i++] = (byte)((extraFieldLength & 0xFF00) >> 8);
-
             // File (entry) Comment Length
             // the _CommentBytes private field was set during WriteHeader()
             int commentLength = (_CommentBytes == null) ? 0 : _CommentBytes.Length;
-
             // skip comment length because we set it at the end
             i += 2;
-
             // Disk number start
             bool segmented = (this._container.ZipFile != null) &&
                 (this._container.ZipFile.MaxOutputSegmentSize64 != 0);
@@ -195,7 +169,6 @@ using RE = System.Text.RegularExpressions;
                     /*
                      * From spec:
                        4.5.3 -Zip64 Extended Information Extra Field (0x0001):
-
                           The following is the layout of the zip64 extended 
                           information "extra" block. If one of the size or
                           offset fields in the Local or Central directory
@@ -205,9 +178,7 @@ using RE = System.Text.RegularExpressions;
                           information record is fixed, but the fields MUST
                           only appear if the corresponding Local or Central
                           directory record field is set to 0xFFFF or 0xFFFFFFFF.
-
                           Note: all fields stored in Intel low-byte/high-byte order.
-
                             Value      Size       Description
                             -----      ----       -----------
                     (ZIP64) 0x0001     2 bytes    Tag for this "extra" block type
@@ -221,7 +192,6 @@ using RE = System.Text.RegularExpressions;
                             Disk Start
                             Number     4 bytes    Number of the disk on which
                                                   this file starts
-
                     *
                     * As of 2019, major tools actually enforce this constraint and
                     * would display warnings (7-Zip) or even not unzip archives (WinZip)
@@ -252,19 +222,16 @@ using RE = System.Text.RegularExpressions;
                 bytes[i++] = 0;
                 bytes[i++] = 0;
             }
-
             // internal file attrs
             // workitem 7801
             bytes[i++] = (byte)((_IsText) ? 1 : 0); // lo bit: filetype hint.  0=bin, 1=txt.
             bytes[i++] = 0;
-
             // external file attrs
             // workitem 7071
             bytes[i++] = (byte)(_ExternalFileAttrs & 0x000000FF);
             bytes[i++] = (byte)((_ExternalFileAttrs & 0x0000FF00) >> 8);
             bytes[i++] = (byte)((_ExternalFileAttrs & 0x00FF0000) >> 16);
             bytes[i++] = (byte)((_ExternalFileAttrs & 0xFF000000) >> 24);
-
             // workitem 11131
             // relative offset of local header.
             //
@@ -293,11 +260,9 @@ using RE = System.Text.RegularExpressions;
                 bytes[i++] = (byte)((_RelativeOffsetOfLocalHeader & 0x00FF0000) >> 16);
                 bytes[i++] = (byte)((_RelativeOffsetOfLocalHeader & 0xFF000000) >> 24);
             }
-
             // actual filename
             Buffer.BlockCopy(fileNameBytes, 0, bytes, i, filenameLength);
             i += filenameLength;
-
             // "Extra field"
             if (_Extra != null)
             {
@@ -307,21 +272,17 @@ using RE = System.Text.RegularExpressions;
                 // if not, copy from Extra. This would be unnecessary if I just
                 // updated the Extra field when updating EntryHeader, in
                 // PostProcessOutput.
-
                 //?? I don't understand why I wouldn't want to just use
                 // the recalculated Extra field. ??
-
                 // byte[] h = _EntryHeader ?? _Extra;
                 // int offx = (h == _EntryHeader) ? 30 + filenameLength : 0;
                 // Buffer.BlockCopy(h, offx, bytes, i, extraFieldLength);
                 // i += extraFieldLength;
-
                 byte[] h = _Extra;
                 int offx = 0;
                 Buffer.BlockCopy(h, offx, bytes, i, extraFieldLength);
                 i += extraFieldLength;
             }
-
             // file (entry) comment
             if (commentLength != 0)
             {
@@ -334,14 +295,10 @@ using RE = System.Text.RegularExpressions;
                 //     bytes[i + j] = _CommentBytes[j];
                 i += commentLength;
             }
-
             bytes[32] = (byte)(commentLength & 0x00FF);
             bytes[33] = (byte)((commentLength & 0xFF00) >> 8);
-
             s.Write(bytes, 0, i);
         }
-
-
 #if INFOZIP_UTF8
         static private bool FileNameIsUtf8(char[] FileNameChars)
         {
@@ -354,17 +311,13 @@ using RE = System.Text.RegularExpressions;
                 isUnicode |= (b[1] != 0);
                 isUTF8 |= ((b[0] & 0x80) != 0);
             }
-
             return isUTF8;
         }
 #endif
-
-
         private byte[] ConstructExtraField(bool forCentralDirectory)
         {
             var listOfBlocks = new System.Collections.Generic.List<byte[]>();
             byte[] block;
-
             // Conditionally emit an extra field with Zip64 information.  If the
             // Zip64 option is Always, we emit the field, before knowing that it's
             // necessary.  Later, if it turns out this entry does not need zip64,
@@ -395,10 +348,8 @@ using RE = System.Text.RegularExpressions;
                     (_presumeZip64 || _diskNumber > 0xFFFF);
                 if (forCentralDirectory && diskNumberInExtraField)
                     sz += 4;
-
                 block = new byte[sz];
                 int i = 0;
-
                 if (_presumeZip64 || forCentralDirectory)
                 {
                     // HeaderId = always use zip64 extensions.
@@ -411,20 +362,16 @@ using RE = System.Text.RegularExpressions;
                     block[i++] = 0x99;
                     block[i++] = 0x99;
                 }
-
                 // DataSize
                 block[i++] = (byte)(sz - 4);  // decimal 24/28 or 16  (workitem 7924)
                 block[i++] = 0x00;
-
                 // The actual metadata - we may or may not have real values yet...
-
                 // uncompressed size
                 Array.Copy(BitConverter.GetBytes(_UncompressedSize), 0, block, i, 8);
                 i += 8;
                 // compressed size
                 Array.Copy(BitConverter.GetBytes(_CompressedSize), 0, block, i, 8);
                 i += 8;
-
                 // workitem 7924 - only include this if the "extra" field is for
                 // use in the central directory.  It is unnecessary and not useful
                 // for local header; makes WinZip choke.
@@ -433,18 +380,14 @@ using RE = System.Text.RegularExpressions;
                     // relative offset
                     Array.Copy(BitConverter.GetBytes(_RelativeOffsetOfLocalHeader), 0, block, i, 8);
                     i += 8;
-
                     if (diskNumberInExtraField)
                     {
                         // starting disk number
                         Array.Copy(BitConverter.GetBytes(_diskNumber), 0, block, i, 4);
                     }
                 }
-
                 listOfBlocks.Add(block);
             }
-
-
 #if AESCRYPTO
             if (Encryption == EncryptionAlgorithm.WinZipAes128 ||
                 Encryption == EncryptionAlgorithm.WinZipAes256)
@@ -455,19 +398,15 @@ using RE = System.Text.RegularExpressions;
                 // header id
                 block[i++] = 0x01;
                 block[i++] = 0x99;
-
                 // data size
                 block[i++] = 0x07;
                 block[i++] = 0x00;
-
                 // vendor number
                 block[i++] = 0x01;  // AE-1 - means "Verify CRC"
                 block[i++] = 0x00;
-
                 // vendor id "AE"
                 block[i++] = 0x41;
                 block[i++] = 0x45;
-
                 // key strength
                 int keystrength = GetKeyStrengthInBits(Encryption);
                 if (keystrength == 128)
@@ -477,15 +416,12 @@ using RE = System.Text.RegularExpressions;
                 else
                     block[i] = 0xFF;
                 i++;
-
                 // actual compression method
                 block[i++] = (byte)(_CompressionMethod & 0x00FF);
                 block[i++] = (byte)(_CompressionMethod & 0xFF00);
-
                 listOfBlocks.Add(block);
             }
 #endif
-
             if (_ntfsTimesAreSet && _emitNtfsTimes)
             {
                 block = new byte[32 + 4];
@@ -502,21 +438,16 @@ using RE = System.Text.RegularExpressions;
                 // header id
                 block[i++] = 0x0a;
                 block[i++] = 0x00;
-
                 // data size
                 block[i++] = 32;
                 block[i++] = 0;
-
                 i += 4; // reserved
-
                 // time tag
                 block[i++] = 0x01;
                 block[i++] = 0x00;
-
                 // data size (again)
                 block[i++] = 24;
                 block[i++] = 0;
-
                 Int64 z = _Mtime.ToFileTime();
                 Array.Copy(BitConverter.GetBytes(z), 0, block, i, 8);
                 i += 8;
@@ -526,15 +457,12 @@ using RE = System.Text.RegularExpressions;
                 z = _Ctime.ToFileTime();
                 Array.Copy(BitConverter.GetBytes(z), 0, block, i, 8);
                 i += 8;
-
                 listOfBlocks.Add(block);
             }
-
             if (_ntfsTimesAreSet && _emitUnixTimes)
             {
                 int len = 5 + 4;
                 if (!forCentralDirectory) len += 8;
-
                 block = new byte[len];
                 // local form:
                 // --------------
@@ -557,14 +485,11 @@ using RE = System.Text.RegularExpressions;
                 // header id
                 block[i++] = 0x55;
                 block[i++] = 0x54;
-
                 // data size
                 block[i++] = unchecked((byte)(len - 4));
                 block[i++] = 0;
-
                 // flags
                 block[i++] = 0x07;
-
                 Int32 z = unchecked((int)((_Mtime - _unixEpoch).TotalSeconds));
                 Array.Copy(BitConverter.GetBytes(z), 0, block, i, 4);
                 i += 4;
@@ -579,11 +504,7 @@ using RE = System.Text.RegularExpressions;
                 }
                 listOfBlocks.Add(block);
             }
-
-
             // inject other blocks here...
-
-
             // concatenate any blocks we've got:
             byte[] aggregateBlock = null;
             if (listOfBlocks.Count > 0)
@@ -599,12 +520,8 @@ using RE = System.Text.RegularExpressions;
                     current += listOfBlocks[i].Length;
                 }
             }
-
             return aggregateBlock;
         }
-
-
-
         // private System.Text.Encoding GenerateCommentBytes()
         // {
         //     var getEncoding = new Func<System.Text.Encoding>({
@@ -626,14 +543,11 @@ using RE = System.Text.RegularExpressions;
         //     _CommentBytes = encoding.GetBytes(_Comment);
         //     return encoding;
         // }
-
-
         private string NormalizeFileName()
         {
             // here, we need to flip the backslashes to forward-slashes,
             // also, we need to trim the \\server\share syntax from any UNC path.
             // and finally, we need to remove any leading .\
-
             string SlashFixed = FileName.Replace("\\", "/");
         string s1;
         if ((_TrimVolumeFromFullyQualifiedPaths) && (FileName.Length >= 3)
@@ -662,8 +576,6 @@ using RE = System.Text.RegularExpressions;
             }
             return s1;
         }
-
-
         /// <summary>
         ///   generate and return a byte array that encodes the filename
         ///   for the entry.
@@ -681,7 +593,6 @@ using RE = System.Text.RegularExpressions;
         {
             // workitem 6513
             var s1 = NormalizeFileName();
-
             switch(AlternateEncodingUsage)
             {
                 case ZipOption.Always:
@@ -689,21 +600,17 @@ using RE = System.Text.RegularExpressions;
                         _CommentBytes = AlternateEncoding.GetBytes(_Comment);
                     _actualEncoding = AlternateEncoding;
                     return AlternateEncoding.GetBytes(s1);
-
                 case ZipOption.Never:
                     if (!(_Comment == null || _Comment.Length == 0))
                         _CommentBytes = ibm437.GetBytes(_Comment);
                     _actualEncoding = ibm437;
                     return ibm437.GetBytes(s1);
             }
-
             // arriving here means AlternateEncodingUsage is "AsNecessary"
-
             // case ZipOption.AsNecessary:
             // workitem 6513: when writing, use the alternative encoding
             // only when _actualEncoding is not yet set (it can be set
             // during Read), and when ibm437 will not do.
-
             byte[] result = ibm437.GetBytes(s1);
             string s2 = ibm437.GetString(result);
             _CommentBytes = null;
@@ -718,57 +625,41 @@ using RE = System.Text.RegularExpressions;
                 _actualEncoding = AlternateEncoding;
                 return result;
             }
-
             _actualEncoding = ibm437;
-
             // Using ibm437, FileName can be encoded without information
             // loss; now try the Comment.
-
             // if there is no comment, use ibm437.
             if (_Comment == null || _Comment.Length == 0)
                 return result;
-
             // there is a comment. Get the encoded form.
             byte[] cbytes = ibm437.GetBytes(_Comment);
             string c2 = ibm437.GetString(cbytes,0,cbytes.Length);
-
             // Check for round-trip.
             if (c2 != Comment)
             {
                 // Comment cannot correctly be encoded with ibm437.  Use
                 // the alternate encoding.
-
                 result = AlternateEncoding.GetBytes(s1);
                 _CommentBytes = AlternateEncoding.GetBytes(_Comment);
                 _actualEncoding = AlternateEncoding;
                 return result;
             }
-
             // use IBM437
             _CommentBytes = cbytes;
             return result;
         }
-
-
-
         private bool WantReadAgain()
         {
             if (_UncompressedSize < 0x10) return false;
             if (_CompressionMethod == 0x00) return false;
             if (CompressionLevel == CompressionLevel.None) return false;
             if (_CompressedSize < _UncompressedSize) return false;
-
             if (this._Source == ZipEntrySource.Stream && !this._sourceStream.CanSeek) return false;
-
 #if AESCRYPTO
             if (_aesCrypto_forWrite != null && (CompressedSize - _aesCrypto_forWrite.SizeOfEncryptionMetadata) <= UncompressedSize + 0x10) return false;
 #endif
-
         return _zipCrypto_forWrite == null || (CompressedSize - 12) > UncompressedSize;
     }
-
-
-
     private void MaybeUnsetCompressionMethodForWriting(int cycle)
         {
             // if we've already tried with compression... turn it off this time
@@ -783,18 +674,14 @@ using RE = System.Text.RegularExpressions;
                 _CompressionMethod = 0x0;
                 return;
             }
-
             if (this._Source == ZipEntrySource.ZipFile)
             {
                 return; // do nothing
             }
-
             // If __FileDataPosition is zero, then that means we will get the data
             // from a file or stream.
-
             // It is never possible to compress a zero-length file, so we check for
             // this condition.
-
             if (this._Source == ZipEntrySource.Stream)
             {
                 // workitem 7742
@@ -814,7 +701,6 @@ using RE = System.Text.RegularExpressions;
                 _CompressionMethod = 0x00;
                 return;
             }
-
             // Ok, we're getting the data to be compressed from a
             // non-zero-length file or stream, or a file or stream of
             // unknown length, and we presume that it is non-zero.  In
@@ -822,17 +708,12 @@ using RE = System.Text.RegularExpressions;
             // to tell us whether to compress or not.
             if (SetCompression != null)
                 CompressionLevel = SetCompression(LocalFileName, _FileNameInArchive);
-
             // finally, set CompressionMethod to None if CompressionLevel is None
             if (CompressionLevel == (short)CompressionLevel.None &&
                 CompressionMethod == Ionic.Zip.CompressionMethod.Deflate)
                 _CompressionMethod = 0x00;
-
             return;
         }
-
-
-
         // write the header info for an entry
         internal void WriteHeader(Stream s, int cycle)
         {
@@ -870,11 +751,8 @@ using RE = System.Text.RegularExpressions;
         // All this means we have to preserve the starting offset before computing
         // the header, and also we have to compute the offset later, to handle the
         // case of split archives.
-
-
         // workitem 8098: ok (output)
         // This may change later, for split archives
-
         // Don't set _RelativeOffsetOfLocalHeader. Instead, set a temp variable.
         // This allows for re-streaming, where a zip entry might be read from a
         // zip archive (and maybe decrypted, and maybe decompressed) and then
@@ -883,17 +761,13 @@ using RE = System.Text.RegularExpressions;
         _future_ROLH = (s is CountingStream counter)
             ? counter.ComputedPosition
             : s.Position;
-
         int j = 0, i = 0;
-
             byte[] block = new byte[30];
-
             // signature
             block[i++] = (byte)(ZipConstants.ZipEntrySignature & 0x000000FF);
             block[i++] = (byte)((ZipConstants.ZipEntrySignature & 0x0000FF00) >> 8);
             block[i++] = (byte)((ZipConstants.ZipEntrySignature & 0x00FF0000) >> 16);
             block[i++] = (byte)((ZipConstants.ZipEntrySignature & 0xFF000000) >> 24);
-
             // Design notes for ZIP64:
             //
             // The specification says that the header must include the Compressed
@@ -942,14 +816,11 @@ using RE = System.Text.RegularExpressions;
             // changed.  Therefore, on non-seekable devices,
             // Zip64Option.AsNecessary is the same as Zip64Option.Always.
             //
-
-
             // version needed- see AppNote.txt.
             //
             // need v5.1 for PKZIP strong encryption, or v2.0 for no encryption or
             // for PK encryption, 4.5 for zip64.  We may reset this later, as
             // necessary or zip64.
-
             _presumeZip64 = (_container.Zip64 == Zip64Option.Always ||
                              (_container.Zip64 == Zip64Option.AsNecessary && !s.CanSeek));
             Int16 VersionNeededToExtract = (Int16)(_presumeZip64 ? 45 : 20);
@@ -957,17 +828,14 @@ using RE = System.Text.RegularExpressions;
             if (this.CompressionMethod == Ionic.Zip.CompressionMethod.BZip2)
                 VersionNeededToExtract = 46;
 #endif
-
             // (i==4)
             block[i++] = (byte)(VersionNeededToExtract & 0x00FF);
             block[i++] = (byte)((VersionNeededToExtract & 0xFF00) >> 8);
-
             // Get byte array. Side effect: sets ActualEncoding.
             // Must determine encoding before setting the bitfield.
             // workitem 6513
             byte[] fileNameBytes = GetEncodedFileNameBytes();
             Int16 filenameLength = (Int16)fileNameBytes.Length;
-
             // general purpose bitfield
             // In the current implementation, this library uses only these bits
             // in the GP bitfield:
@@ -975,8 +843,6 @@ using RE = System.Text.RegularExpressions;
             //  bit 3 = if set, indicates the CRC, C and UC sizes follow the file data.
             //  bit 6 = strong encryption - for pkware's meaning of strong encryption
             //  bit 11 = UTF-8 encoding is used in the comment and filename
-
-
             // Here we set or unset the encryption bit.
             // _BitField may already be set, as with a ZipEntry added into ZipOutputStream, which
             // has bit 3 always set. We only want to set one bit
@@ -984,16 +850,12 @@ using RE = System.Text.RegularExpressions;
                 _BitField &= ~1;  // encryption bit OFF
             else
                 _BitField |= 1;   // encryption bit ON
-
-
             // workitem 7941: WinZip does not the "strong encryption" bit  when using AES.
             // This "Strong Encryption" is a PKWare Strong encryption thing.
             //                 _BitField |= 0x0020;
-
             // set the UTF8 bit if necessary
             if (_actualEncoding.CodePage == System.Text.Encoding.UTF8.CodePage)
                 _BitField |= 0x0800;
-
             // The PKZIP spec says that if bit 3 is set (0x0008) in the General
             // Purpose BitField, then the CRC, Compressed size, and uncompressed
             // size are written directly after the file data.
@@ -1022,11 +884,9 @@ using RE = System.Text.RegularExpressions;
             // an interesting approach - it always sets bit 3 if ZIP64 in use.
             // DotNetZip now does the same; this gives better compatibility with
             // WinZip 12.
-
             if (IsDirectory || cycle == 99)
             {
                 // (cycle == 99) indicates a zero-length entry written by ZipOutputStream
-
                 _BitField &= ~0x0008;  // unset bit 3 - no "data descriptor" - ever
                 _BitField &= ~0x0001;  // unset bit 1 - no encryption - ever
                 Encryption = EncryptionAlgorithm.None;
@@ -1034,7 +894,6 @@ using RE = System.Text.RegularExpressions;
             }
             else if (!s.CanSeek)
                 _BitField |= 0x0008;
-
 #if DONT_GO_THERE
             else if (this.Encryption == EncryptionAlgorithm.PkzipWeak  &&
                      this._Source != ZipEntrySource.ZipFile)
@@ -1062,11 +921,9 @@ using RE = System.Text.RegularExpressions;
                 _BitField |= 0x0008;
             }
 #endif
-
             // (i==6)
             block[i++] = (byte)(_BitField & 0x00FF);
             block[i++] = (byte)((_BitField & 0xFF00) >> 8);
-
             // Here, we want to set values for Compressed Size, Uncompressed Size,
             // and CRC.  If we have __FileDataPosition as not -1 (zero is a valid
             // FDP), then that means we are reading this zip entry from a zip
@@ -1084,20 +941,16 @@ using RE = System.Text.RegularExpressions;
                 _CompressedSize = 0;
                 _crcCalculated = false;
             }
-
             // set compression method here
             MaybeUnsetCompressionMethodForWriting(cycle);
-
             // (i==8) compression method
             block[i++] = (byte)(_CompressionMethod & 0x00FF);
             block[i++] = (byte)((_CompressionMethod & 0xFF00) >> 8);
-
             if (cycle == 99)
             {
                 // (cycle == 99) indicates a zero-length entry written by ZipOutputStream
                 SetZip64Flags();
             }
-
 #if AESCRYPTO
             else if (Encryption == EncryptionAlgorithm.WinZipAes128 || Encryption == EncryptionAlgorithm.WinZipAes256)
             {
@@ -1106,7 +959,6 @@ using RE = System.Text.RegularExpressions;
                 block[i++] = 0;
             }
 #endif
-
             // LastMod
             if (_dontEmitLastModified)
             {
@@ -1116,14 +968,11 @@ using RE = System.Text.RegularExpressions;
             {
                 _TimeBlob = Ionic.Zip.SharedUtilities.DateTimeToPacked(LastModified);
             }
-            
-
             // (i==10) time blob
             block[i++] = (byte)(_TimeBlob & 0x000000FF);
             block[i++] = (byte)((_TimeBlob & 0x0000FF00) >> 8);
             block[i++] = (byte)((_TimeBlob & 0x00FF0000) >> 16);
             block[i++] = (byte)((_TimeBlob & 0xFF000000) >> 24);
-
             // (i==14) CRC - if source==filesystem, this is zero now, actual value
             // will be calculated later.  if source==archive, this is a bonafide
             // value.
@@ -1131,7 +980,6 @@ using RE = System.Text.RegularExpressions;
             block[i++] = (byte)((_Crc32 & 0x0000FF00) >> 8);
             block[i++] = (byte)((_Crc32 & 0x00FF0000) >> 16);
             block[i++] = (byte)((_Crc32 & 0xFF000000) >> 24);
-
             if (_presumeZip64)
             {
                 // (i==18) CompressedSize (Int32) and UncompressedSize - all 0xFF for now
@@ -1148,7 +996,6 @@ using RE = System.Text.RegularExpressions;
                 block[i++] = (byte)((_CompressedSize & 0x0000FF00) >> 8);
                 block[i++] = (byte)((_CompressedSize & 0x00FF0000) >> 16);
                 block[i++] = (byte)((_CompressedSize & 0xFF000000) >> 24);
-
                 // (i==22) UncompressedSize (Int32) - this value may or may not be
                 // bonafide.
                 block[i++] = (byte)(_UncompressedSize & 0x000000FF);
@@ -1156,32 +1003,24 @@ using RE = System.Text.RegularExpressions;
                 block[i++] = (byte)((_UncompressedSize & 0x00FF0000) >> 16);
                 block[i++] = (byte)((_UncompressedSize & 0xFF000000) >> 24);
             }
-
             // (i==26) filename length (Int16)
             block[i++] = (byte)(filenameLength & 0x00FF);
             block[i++] = (byte)((filenameLength & 0xFF00) >> 8);
-
             _Extra = ConstructExtraField(false);
-
             // (i==28) extra field length (short)
             Int16 extraFieldLength = (Int16)((_Extra == null) ? 0 : _Extra.Length);
             block[i++] = (byte)(extraFieldLength & 0x00FF);
             block[i++] = (byte)((extraFieldLength & 0xFF00) >> 8);
-
             // workitem 13542
             byte[] bytes = new byte[i + filenameLength + extraFieldLength];
-
             // get the fixed portion
             Buffer.BlockCopy(block, 0, bytes, 0, i);
             //for (j = 0; j < i; j++) bytes[j] = block[j];
-
             // The filename written to the archive.
             Buffer.BlockCopy(fileNameBytes, 0, bytes, i, fileNameBytes.Length);
             // for (j = 0; j < fileNameBytes.Length; j++)
             //     bytes[i + j] = fileNameBytes[j];
-
             i += fileNameBytes.Length;
-
             // "Extra field"
             if (_Extra != null)
             {
@@ -1190,9 +1029,7 @@ using RE = System.Text.RegularExpressions;
                 //     bytes[i + j] = _Extra[j];
                 i += _Extra.Length;
             }
-
             _LengthOfHeader = i;
-
             // handle split archives
             var zss = s as ZipSegmentedStream;
             if (zss != null)
@@ -1203,29 +1040,22 @@ using RE = System.Text.RegularExpressions;
                     _future_ROLH = 0; // rollover!
                 else
                     _future_ROLH = zss.Position;
-
                 _diskNumber = requiredSegment;
             }
-
             // validate the ZIP64 usage
             if (_container.Zip64 == Zip64Option.Never && (uint)_RelativeOffsetOfLocalHeader >= 0xFFFFFFFF)
                 throw new ZipException("Offset within the zip archive exceeds 0xFFFFFFFF. Consider setting the UseZip64WhenSaving property on the ZipFile instance.");
-
-
             // finally, write the header to the stream
             s.Write(bytes, 0, i);
-
             // now that the header is written, we can turn off the contiguous write restriction.
             if (zss != null)
                 zss.ContiguousWrite = false;
-
             // Preserve this header data, we'll use it again later.
             // ..when seeking backward, to write again, after we have the Crc, compressed
             //   and uncompressed sizes.
             // ..and when writing the central directory structure.
             _EntryHeader = bytes;
         }
-
         Int32 FigureCrc32()
         {
             if (_crcCalculated == false)
@@ -1266,10 +1096,8 @@ using RE = System.Text.RegularExpressions;
                         //input = File.OpenRead(LocalFileName);
                         input = File.Open(LocalFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                     }
-
                     var crc32 = new Ionic.Zlib.CRC32();
                     _Crc32 = crc32.GetCrc32(input);
-
                     if (_sourceStream == null)
                     {
                         input.Dispose();
@@ -1279,8 +1107,6 @@ using RE = System.Text.RegularExpressions;
             }
             return _Crc32;
         }
-
-
         /// <summary>
         ///   Stores the position of the entry source stream, or, if the position is
         ///   already stored, seeks to that position.
@@ -1306,7 +1132,6 @@ using RE = System.Text.RegularExpressions;
         {
             if (_sourceStream == null)
                 throw new ZipException(String.Format("The input stream is null for entry '{0}'.", FileName));
-
             if (this._sourceStreamOriginalPosition != null)
             {
                 // this will happen the 2nd cycle through, if the stream is seekable
@@ -1348,13 +1173,10 @@ using RE = System.Text.RegularExpressions;
                 // when the source for the data is a ZipEntry (when the zip file is
                 // being updated). In this case we already know the CRC and can just use
                 // what we know.
-
                 if (this._Source != ZipEntrySource.ZipFile && ((this._BitField & 0x0008) != 0x0008))
                     throw new ZipException("It is not possible to use PKZIP encryption on a non-seekable input stream");
             }
         }
-
-
         /// <summary>
         /// Copy metadata that may have been changed by the app.  We do this when
         /// resetting the zipFile instance.  If the app calls Save() on a ZipFile, then
@@ -1378,22 +1200,16 @@ using RE = System.Text.RegularExpressions;
             this._emitUnixTimes = source._emitUnixTimes;
             this._emitNtfsTimes = source._emitNtfsTimes;
         }
-
-
         private void OnWriteBlock(Int64 bytesXferred, Int64 totalBytesToXfer)
         {
             if (_container.ZipFile != null)
                 _ioOperationCanceled = _container.ZipFile.OnSaveBlock(this, bytesXferred, totalBytesToXfer);
         }
-
-
-
         private void _WriteEntryData(Stream s)
         {
             // Read in the data from the input stream (often a file in the filesystem),
             // and write it to the output stream, calculating a CRC on it as we go.
             // We will also compress and encrypt as necessary.
-
             Stream input = null;
             long fdp = -1L;
             try
@@ -1414,32 +1230,26 @@ using RE = System.Text.RegularExpressions;
                 fdp = s.Position;
             }
             catch (Exception) { }
-
             try
             {
                 // Use fileLength for progress updates, and to decide whether we can
                 // skip encryption and compression altogether (in case of length==zero)
                 long fileLength = SetInputAndFigureFileLength(ref input);
-
                 // Wrap a counting stream around the raw output stream:
                 // This is the last thing that happens before the bits go to the
                 // application-provided stream.
                 //
                 // Sometimes s is a CountingStream. Doesn't matter. Wrap it with a
                 // counter anyway. We need to count at both levels.
-
                 CountingStream entryCounter = new(s);
-
                 Stream encryptor;
                 Stream compressor;
-
                 if (fileLength != 0L)
                 {
                     // Maybe wrap an encrypting stream around the counter: This will
                     // happen BEFORE output counting, and AFTER compression, if encryption
                     // is used.
                     encryptor = MaybeApplyEncryption(entryCounter);
-
                     // Maybe wrap a compressing Stream around that.
                     // This will happen BEFORE encryption (if any) as we write data out.
                     compressor = MaybeApplyCompression(encryptor, fileLength);
@@ -1448,14 +1258,11 @@ using RE = System.Text.RegularExpressions;
                 {
                     encryptor = compressor = entryCounter;
                 }
-
                 // Wrap a CrcCalculatorStream around that.
                 // This will happen BEFORE compression (if any) as we write data out.
                 var output = new Ionic.Zlib.CrcCalculatorStream(compressor, true);
-
                 // output.Write() causes this flow:
                 // calc-crc -> compress -> encrypt -> count -> actually write
-
                 if (this._Source == ZipEntrySource.WriteDelegate)
                 {
                     // allow the application to write the data
@@ -1474,7 +1281,6 @@ using RE = System.Text.RegularExpressions;
                             break;
                     }
                 }
-
                 FinishOutputStream(s, entryCounter, encryptor, compressor, output);
             }
             finally
@@ -1491,16 +1297,12 @@ using RE = System.Text.RegularExpressions;
                     input.Dispose();
                 }
             }
-
             if (_ioOperationCanceled)
                 return;
-
             // set FDP now, to allow for re-streaming
             this.__FileDataPosition = fdp;
             PostProcessOutput(s);
         }
-
-
         /// <summary>
         ///   Set the input stream and get its length, if possible.  The length is
         ///   used for progress updates, AND, to allow an optimization in case of
@@ -1515,7 +1317,6 @@ using RE = System.Text.RegularExpressions;
             {
                 PrepSourceStream();
                 input = this._sourceStream;
-
                 // Try to get the length, no big deal if not available.
                 try { fileLength = this._sourceStream.Length; }
                 catch (NotSupportedException) { }
@@ -1546,12 +1347,8 @@ using RE = System.Text.RegularExpressions;
                 input = File.Open(LocalFileName, FileMode.Open, FileAccess.Read, fs);
                 fileLength = input.Length;
             }
-
             return fileLength;
         }
-
-
-
         internal void FinishOutputStream(Stream s,
                                          CountingStream entryCounter,
                                          Stream encryptor,
@@ -1559,9 +1356,7 @@ using RE = System.Text.RegularExpressions;
                                          Ionic.Zlib.CrcCalculatorStream output)
         {
             if (output == null) return;
-
             output.Close();
-
             // by calling Close() on the deflate stream, we write the footer bytes, as necessary.
             if ((compressor as DeflateStream) != null)
                 compressor.Close();
@@ -1573,14 +1368,10 @@ using RE = System.Text.RegularExpressions;
 #endif
             else if ((compressor as ParallelDeflateOutputStream) != null)
                 compressor.Close();
-
             encryptor.Flush();
             encryptor.Close();
-
             _LengthOfTrailer = 0;
-
             _UncompressedSize = output.TotalBytesSlurped;
-
 #if AESCRYPTO
             WinZipAesCipherStream wzacs = encryptor as WinZipAesCipherStream;
             if (wzacs != null && _UncompressedSize > 0)
@@ -1592,18 +1383,12 @@ using RE = System.Text.RegularExpressions;
             _CompressedFileDataSize = entryCounter.BytesWritten;
             _CompressedSize = _CompressedFileDataSize;   // may be adjusted
             _Crc32 = output.Crc;
-
             // Set _RelativeOffsetOfLocalHeader now, to allow for re-streaming
             StoreRelativeOffset();
         }
-
-
-
-
         internal void PostProcessOutput(Stream s)
         {
             var s1 = s as CountingStream;
-
             // workitem 8931 - for WriteDelegate.
             // The WriteDelegate changes things because there can be a zero-byte stream
             // written. In all other cases DotNetZip knows the length of the stream
@@ -1612,7 +1397,6 @@ using RE = System.Text.RegularExpressions;
             if (_UncompressedSize == 0 && _CompressedSize == 0)
             {
                 if (this._Source == ZipEntrySource.ZipOutputStream) return;  // nothing to do...
-
                 if (_Password != null)
                 {
                     int headerBytesToRetract = 0;
@@ -1627,31 +1411,25 @@ using RE = System.Text.RegularExpressions;
 #endif
                     if (this._Source == ZipEntrySource.ZipOutputStream && !s.CanSeek)
                         throw new ZipException("Zero bytes written, encryption in use, and non-seekable output.");
-
                     if (Encryption != EncryptionAlgorithm.None)
                     {
                         // seek back in the stream to un-output the security metadata
                         s.Seek(-1 * headerBytesToRetract, SeekOrigin.Current);
                         s.SetLength(s.Position);
-
                         // workitem 11131
                         // adjust the count on the CountingStream as necessary
                         s1?.Adjust(headerBytesToRetract);
-
                         // subtract the size of the security header from the _LengthOfHeader
                         _LengthOfHeader -= headerBytesToRetract;
                         __FileDataPosition -= headerBytesToRetract;
                     }
                     _Password = null;
-
                     // turn off the encryption bit
                     _BitField &= ~(0x0001);
-
                     // copy the updated bitfield value into the header
                     int j = 6;
                     _EntryHeader[j++] = (byte)(_BitField & 0x00FF);
                     _EntryHeader[j++] = (byte)((_BitField & 0xFF00) >> 8);
-
 #if AESCRYPTO
                     if (Encryption == EncryptionAlgorithm.WinZipAes128 ||
                         Encryption == EncryptionAlgorithm.WinZipAes256)
@@ -1669,7 +1447,6 @@ using RE = System.Text.RegularExpressions;
                     }
 #endif
                 }
-
                 CompressionMethod = 0;
                 Encryption = EncryptionAlgorithm.None;
             }
@@ -1678,7 +1455,6 @@ using RE = System.Text.RegularExpressions;
                      || _aesCrypto_forWrite != null
 #endif
                      )
-
             {
                 if (Encryption == EncryptionAlgorithm.PkzipWeak)
                 {
@@ -1696,51 +1472,40 @@ using RE = System.Text.RegularExpressions;
                 }
 #endif
             }
-
             int i = 8;
             _EntryHeader[i++] = (byte)(_CompressionMethod & 0x00FF);
             _EntryHeader[i++] = (byte)((_CompressionMethod & 0xFF00) >> 8);
-
             i = 14;
             // CRC - the correct value now
             _EntryHeader[i++] = (byte)(_Crc32 & 0x000000FF);
             _EntryHeader[i++] = (byte)((_Crc32 & 0x0000FF00) >> 8);
             _EntryHeader[i++] = (byte)((_Crc32 & 0x00FF0000) >> 16);
             _EntryHeader[i++] = (byte)((_Crc32 & 0xFF000000) >> 24);
-
             SetZip64Flags();
-
             // (i==26) filename length (Int16)
             Int16 filenameLength = (short)(_EntryHeader[26] + _EntryHeader[27] * 256);
             Int16 extraFieldLength = (short)(_EntryHeader[28] + _EntryHeader[29] * 256);
-
             if (_OutputUsesZip64.Value)
             {
                 // VersionNeededToExtract - set to 45 to indicate zip64
                 _EntryHeader[4] = (byte)(45 & 0x00FF);
                 _EntryHeader[5] = 0x00;
-
                 // workitem 7924 - don't need bit 3
                 // // workitem 7917
                 // // set bit 3 for ZIP64 compatibility with WinZip12
                 // _BitField |= 0x0008;
                 // _EntryHeader[6] = (byte)(_BitField & 0x00FF);
-
                 // CompressedSize and UncompressedSize - 0xFF
                 for (int j = 0; j < 8; j++)
                     _EntryHeader[i++] = 0xff;
-
                 // At this point we need to find the "Extra field" that follows the
                 // filename.  We had already emitted it, but the data (uncomp, comp,
                 // ROLH) was not available at the time we did so.  Here, we emit it
                 // again, with final values.
-
                 i = 30 + filenameLength;
                 _EntryHeader[i++] = 0x01;  // zip64
                 _EntryHeader[i++] = 0x00;
-
                 i += 2; // skip over data size, which is 16+4
-
                 Array.Copy(BitConverter.GetBytes(_UncompressedSize), 0, _EntryHeader, i, 8);
                 i += 8;
                 Array.Copy(BitConverter.GetBytes(_CompressedSize), 0, _EntryHeader, i, 8);
@@ -1750,20 +1515,17 @@ using RE = System.Text.RegularExpressions;
                 // VersionNeededToExtract - reset to 20 since no zip64
                 _EntryHeader[4] = (byte)(20 & 0x00FF);
                 _EntryHeader[5] = 0x00;
-
                 // CompressedSize - the correct value now
                 i = 18;
                 _EntryHeader[i++] = (byte)(_CompressedSize & 0x000000FF);
                 _EntryHeader[i++] = (byte)((_CompressedSize & 0x0000FF00) >> 8);
                 _EntryHeader[i++] = (byte)((_CompressedSize & 0x00FF0000) >> 16);
                 _EntryHeader[i++] = (byte)((_CompressedSize & 0xFF000000) >> 24);
-
                 // UncompressedSize - the correct value now
                 _EntryHeader[i++] = (byte)(_UncompressedSize & 0x000000FF);
                 _EntryHeader[i++] = (byte)((_UncompressedSize & 0x0000FF00) >> 8);
                 _EntryHeader[i++] = (byte)((_UncompressedSize & 0x00FF0000) >> 16);
                 _EntryHeader[i++] = (byte)((_UncompressedSize & 0xFF000000) >> 24);
-
                 // The HeaderId in the extra field header, is already dummied out.
                 if (extraFieldLength != 0)
                 {
@@ -1784,10 +1546,7 @@ using RE = System.Text.RegularExpressions;
                     }
                 }
             }
-
-
 #if AESCRYPTO
-
             if (Encryption == EncryptionAlgorithm.WinZipAes128 ||
                 Encryption == EncryptionAlgorithm.WinZipAes256)
             {
@@ -1795,11 +1554,9 @@ using RE = System.Text.RegularExpressions;
                 //
                 // and then set the compression method bytes inside the extra
                 // field to the actual compression method value.
-
                 i = 8;
                 _EntryHeader[i++] = 0x63;
                 _EntryHeader[i++] = 0;
-
                 i = 30 + filenameLength;
                 do
                 {
@@ -1820,9 +1577,7 @@ using RE = System.Text.RegularExpressions;
                 } while (i < (extraFieldLength - 30 - filenameLength));
             }
 #endif
-
             // finally, write the data.
-
             // workitem 7216 - sometimes we don't seek even if we CAN.  ASP.NET
             // Response.OutputStream, or stdout are non-seekable.  But we may also want
             // to NOT seek in other cases, eg zip64.  For all cases, we just check bit 3
@@ -1832,7 +1587,6 @@ using RE = System.Text.RegularExpressions;
             // PKZip Encryption Header can be done on the current time, as opposed to
             // the CRC, to prevent streaming the file twice.  So, test for
             // ZipOutputStream and seekable, and if so, seek back, even if bit 3 is set.
-
             if ((_BitField & 0x0008) != 0x0008 ||
                  (this._Source == ZipEntrySource.ZipOutputStream && s.CanSeek))
             {
@@ -1851,40 +1605,32 @@ using RE = System.Text.RegularExpressions;
                 // this entry.
                 // workitem 8098: ok (output)
                 s.Seek(this._RelativeOffsetOfLocalHeader, SeekOrigin.Begin);
-
                 // write the updated header to the output stream
                 s.Write(_EntryHeader, 0, _EntryHeader.Length);
-
                 // adjust the count on the CountingStream as necessary
                 s1?.Adjust(_EntryHeader.Length);
-
                 // seek in the raw output stream, to the end of the file data
                 // for this entry
                 s.Seek(_CompressedSize, SeekOrigin.Current);
             }
         }
-
             // emit the descriptor - only if not a directory.
             if (((_BitField & 0x0008) == 0x0008) && !IsDirectory)
             {
                 byte[] Descriptor = new byte[16 + (_OutputUsesZip64.Value ? 8 : 0)];
                 i = 0;
-
                 // signature
                 Array.Copy(BitConverter.GetBytes(ZipConstants.ZipEntryDataDescriptorSignature), 0, Descriptor, i, 4);
                 i += 4;
-
                 // CRC - the correct value now
                 Array.Copy(BitConverter.GetBytes(_Crc32), 0, Descriptor, i, 4);
                 i += 4;
-
                 // workitem 7917
                 if (_OutputUsesZip64.Value)
                 {
                     // CompressedSize - the correct value now
                     Array.Copy(BitConverter.GetBytes(_CompressedSize), 0, Descriptor, i, 8);
                     i += 8;
-
                     // UncompressedSize - the correct value now
                     Array.Copy(BitConverter.GetBytes(_UncompressedSize), 0, Descriptor, i, 8);
                     i += 8;
@@ -1896,38 +1642,27 @@ using RE = System.Text.RegularExpressions;
                     Descriptor[i++] = (byte)((_CompressedSize & 0x0000FF00) >> 8);
                     Descriptor[i++] = (byte)((_CompressedSize & 0x00FF0000) >> 16);
                     Descriptor[i++] = (byte)((_CompressedSize & 0xFF000000) >> 24);
-
                     // UncompressedSize - (lower 32 bits) the correct value now
                     Descriptor[i++] = (byte)(_UncompressedSize & 0x000000FF);
                     Descriptor[i++] = (byte)((_UncompressedSize & 0x0000FF00) >> 8);
                     Descriptor[i++] = (byte)((_UncompressedSize & 0x00FF0000) >> 16);
                     Descriptor[i++] = (byte)((_UncompressedSize & 0xFF000000) >> 24);
                 }
-
                 // finally, write the trailing descriptor to the output stream
                 s.Write(Descriptor, 0, Descriptor.Length);
-
                 _LengthOfTrailer += Descriptor.Length;
             }
         }
-
-
-
         private void SetZip64Flags()
         {
             // zip64 housekeeping
             _entryRequiresZip64 = new Nullable<bool>
                 (_CompressedSize >= 0xFFFFFFFF || _UncompressedSize >= 0xFFFFFFFF || _RelativeOffsetOfLocalHeader >= 0xFFFFFFFF);
-
             // validate the ZIP64 usage
             if (_container.Zip64 == Zip64Option.Never && _entryRequiresZip64.Value)
                 throw new ZipException("Compressed or Uncompressed size, or offset exceeds the maximum value. Consider setting the UseZip64WhenSaving property on the ZipFile instance.");
-
             _OutputUsesZip64 = new Nullable<bool>(_container.Zip64 == Zip64Option.Always || _entryRequiresZip64.Value);
         }
-
-
-
         /// <summary>
         ///   Prepare the given stream for output - wrap it in a CountingStream, and
         ///   then in a CRC stream, and an encryptor and deflator as appropriate.
@@ -1951,23 +1686,19 @@ using RE = System.Text.RegularExpressions;
                            CompressionLevel,
                            Encryption,
                            _container.Name);
-
             // Wrap a counting stream around the raw output stream:
             // This is the last thing that happens before the bits go to the
             // application-provided stream.
             outputCounter = new CountingStream(s);
-
             // Sometimes the incoming "raw" output stream is already a CountingStream.
             // Doesn't matter. Wrap it with a counter anyway. We need to count at both
             // levels.
-
             if (streamLength != 0L)
             {
                 // Maybe wrap an encrypting stream around that:
                 // This will happen BEFORE output counting, and AFTER deflation, if encryption
                 // is used.
                 encryptor = MaybeApplyEncryption(outputCounter);
-
                 // Maybe wrap a compressing Stream around that.
                 // This will happen BEFORE encryption (if any) as we write data out.
                 compressor = MaybeApplyCompression(encryptor, streamLength);
@@ -1980,9 +1711,6 @@ using RE = System.Text.RegularExpressions;
             // This will happen BEFORE compression (if any) as we write data out.
             output = new Ionic.Zlib.CrcCalculatorStream(compressor, true);
         }
-
-
-
         private Stream MaybeApplyCompression(Stream s, long streamLength)
         {
             if (_CompressionMethod == 0x08 && CompressionLevel != CompressionLevel.None)
@@ -2011,7 +1739,6 @@ using RE = System.Text.RegularExpressions;
                     // approach, where multiple entries within the zip file are being
                     // compressed and saved at the same time.  But for now it's ok.
                     //
-
                     // instantiate the ParallelDeflateOutputStream
                     if (_container.ParallelDeflater == null)
                     {
@@ -2040,8 +1767,6 @@ using RE = System.Text.RegularExpressions;
                 o.Strategy = _container.Strategy;
                 return o;
             }
-
-
 #if BZIP
             if (_CompressionMethod == 0x0c)
             {
@@ -2049,7 +1774,6 @@ using RE = System.Text.RegularExpressions;
                     (streamLength > _container.ParallelDeflateThreshold &&
                      _container.ParallelDeflateThreshold > 0L))
                 {
-
                     var o1 = new ParallelBZip2OutputStream(s, true);
                     return o1;
                 }
@@ -2057,18 +1781,13 @@ using RE = System.Text.RegularExpressions;
                 return o;
             }
 #endif
-
             return s;
         }
-
-
-
         private Stream MaybeApplyEncryption(Stream s)
         {
             if (Encryption == EncryptionAlgorithm.PkzipWeak)
             {
                 TraceWriteLine("MaybeApplyEncryption: e({0}) PKZIP", FileName);
-
                 return new ZipCipherStream(s, _zipCrypto_forWrite, CryptoMode.Encrypt);
             }
 #if AESCRYPTO
@@ -2076,30 +1795,21 @@ using RE = System.Text.RegularExpressions;
                      Encryption == EncryptionAlgorithm.WinZipAes256)
             {
                 TraceWriteLine("MaybeApplyEncryption: e({0}) AES", FileName);
-
                 return new WinZipAesCipherStream(s, _aesCrypto_forWrite, CryptoMode.Encrypt);
             }
 #endif
             TraceWriteLine("MaybeApplyEncryption: e({0}) None", FileName);
-
             return s;
         }
-
-
-
         private void OnZipErrorWhileSaving(Exception e)
         {
             if (_container.ZipFile != null)
                 _ioOperationCanceled = _container.ZipFile.OnZipErrorSaving(this, e);
         }
-
-
-
         internal void Write(Stream s)
         {
             var cs1 = s as CountingStream;
             var zss1 = s as ZipSegmentedStream;
-
             bool done = false;
             do
             {
@@ -2129,13 +1839,11 @@ using RE = System.Text.RegularExpressions;
                     // This test checks if the source for the entry data is a zip file, and
                     // if a restream is necessary.  If NOT, then it just copies through
                     // one entry, potentially changing the metadata.
-
                     if (_Source == ZipEntrySource.ZipFile && !_restreamRequiredOnSave)
                     {
                         CopyThroughOneEntry(s);
                         return;
                     }
-
                     // Is the entry a directory?  If so, the write is relatively simple.
                     if (IsDirectory)
                     {
@@ -2146,10 +1854,8 @@ using RE = System.Text.RegularExpressions;
                         // handle case for split archives
                         if (zss1 != null)
                             _diskNumber = zss1.CurrentSegment;
-
                         return;
                     }
-
                     // At this point, the source for this entry is not a directory, and
                     // not a previously created zip file, or the source for the entry IS
                     // a previously created zip but the settings whave changed in
@@ -2161,37 +1867,27 @@ using RE = System.Text.RegularExpressions;
                     // requested, maybe with compression and maybe encryption.  If that
                     // causes the bytestream to inflate in size, and if compression was
                     // on, then we turn off compression and do it again.
-
-
                     bool readAgain = true;
                     int nCycles = 0;
                     do
                     {
                         nCycles++;
-
                         WriteHeader(s, nCycles);
-
                         // write the encrypted header
                         WriteSecurityMetadata(s);
-
                         // write the (potentially compressed, potentially encrypted) file data
                         _WriteEntryData(s);
-
                         // track total entry size (including the trailing descriptor and MAC)
                         _TotalEntrySize = _LengthOfHeader + _CompressedFileDataSize + _LengthOfTrailer;
-
                         // The file data has now been written to the stream, and
                         // the file pointer is positioned directly after file data.
-
                         if (nCycles > 1) readAgain = false;
                         else if (!s.CanSeek) readAgain = false;
                         else readAgain = WantReadAgain();
-
                         if (readAgain)
                         {
                             // Seek back in the raw output stream, to the beginning of the file
                             // data for this entry.
-
                             // handle case for split archives
                             if (zss1 != null)
                             {
@@ -2202,14 +1898,11 @@ using RE = System.Text.RegularExpressions;
                             else
                                 // workitem 8098: ok (output).
                                 s.Seek(_RelativeOffsetOfLocalHeader, SeekOrigin.Begin);
-
                             // If the last entry expands, we read again; but here, we must
                             // truncate the stream to prevent garbage data after the
                             // end-of-central-directory.
-
                             // workitem 8098: ok (output).
                             s.SetLength(s.Position);
-
                             // Adjust the count on the CountingStream as necessary.
                             cs1?.Adjust(_TotalEntrySize);
                         }
@@ -2226,7 +1919,6 @@ using RE = System.Text.RegularExpressions;
                     {
                         if (ZipErrorAction == ZipErrorAction.Throw)
                             throw;
-
                         if (ZipErrorAction == ZipErrorAction.Skip ||
                             ZipErrorAction == ZipErrorAction.Retry)
                         {
@@ -2246,7 +1938,6 @@ using RE = System.Text.RegularExpressions;
                             if (ZipErrorAction == ZipErrorAction.Skip)
                             {
                                 WriteStatus("Skipping file {0} (exception: {1})", LocalFileName, exc1.ToString());
-
                                 _skippedDuringSave = true;
                                 done = true;
                             }
@@ -2254,9 +1945,7 @@ using RE = System.Text.RegularExpressions;
                                 this.ZipErrorAction = orig;
                             break;
                         }
-
                         if (loop > 0) throw;
-
                         if (ZipErrorAction == ZipErrorAction.InvokeErrorEvent)
                         {
                             OnZipErrorWhileSaving(exc1);
@@ -2273,12 +1962,7 @@ using RE = System.Text.RegularExpressions;
             }
             while (!done);
         }
-
-
     internal void StoreRelativeOffset() => _RelativeOffsetOfLocalHeader = _future_ROLH;
-
-
-
     internal void NotifySaveComplete()
         {
             // When updating a zip file, there are two contexts for properties
@@ -2296,28 +1980,21 @@ using RE = System.Text.RegularExpressions;
             //_Source = ZipEntrySource.None;
             _Source = ZipEntrySource.ZipFile; // workitem 10694
         }
-
-
         internal void WriteSecurityMetadata(Stream outstream)
         {
             if (Encryption == EncryptionAlgorithm.None)
                 return;
-
             string pwd = this._Password;
-
             // special handling for source == ZipFile.
             // Want to support the case where we re-stream an encrypted entry. This will involve,
             // at runtime, reading, decrypting, and decompressing from the original zip file, then
             // compressing, encrypting, and writing to the output zip file.
-
             // If that's what we're doing, and the password hasn't been set on the entry,
             // we use the container (ZipFile/ZipOutputStream) password to decrypt.
             // This test here says to use the container password to re-encrypt, as well,
             // with that password, if the entry password is null.
-
             if (this._Source == ZipEntrySource.ZipFile && pwd == null)
                 pwd = this._container.Password;
-
             if (pwd == null)
             {
                 _zipCrypto_forWrite = null;
@@ -2326,22 +2003,17 @@ using RE = System.Text.RegularExpressions;
 #endif
                 return;
             }
-
             TraceWriteLine("WriteSecurityMetadata: e({0}) crypto({1}) pw({2})",
                            FileName, Encryption.ToString(), pwd);
-
             if (Encryption == EncryptionAlgorithm.PkzipWeak)
             {
                 // If PKZip (weak) encryption is in use, then the encrypted entry data
                 // is preceded by 12-byte "encryption header" for the entry.
-
                 _zipCrypto_forWrite = ZipCrypto.ForWrite(pwd);
-
                 // generate the random 12-byte header:
                 var rnd = new System.Random();
                 byte[] encryptionHeader = new byte[12];
                 rnd.NextBytes(encryptionHeader);
-
                 // workitem 8271
                 if ((this._BitField & 0x0008) == 0x0008)
                 {
@@ -2356,7 +2028,6 @@ using RE = System.Text.RegularExpressions;
                     // This was discovered this by analysis of the Crypt.c source file in the
                     // InfoZip library
                     // http://www.info-zip.org/pub/infozip/
-
                     // Also, winzip insists on this!
                     if (_dontEmitLastModified)
                     {
@@ -2366,7 +2037,6 @@ using RE = System.Text.RegularExpressions;
                     {
                         _TimeBlob = Ionic.Zip.SharedUtilities.DateTimeToPacked(LastModified);
                     }
-                    
                     encryptionHeader[11] = (byte)((this._TimeBlob >> 8) & 0xff);
                 }
                 else
@@ -2378,20 +2048,16 @@ using RE = System.Text.RegularExpressions;
                     FigureCrc32();
                     encryptionHeader[11] = (byte)((this._Crc32 >> 24) & 0xff);
                 }
-
                 // Encrypt the random header, INCLUDING the final byte which is either
                 // the high-order byte of the CRC32, or the high-order byte of the
                 // _TimeBlob.  Must do this BEFORE encrypting the file data.  This
                 // step changes the state of the cipher, or in the words of the PKZIP
                 // spec, it "further initializes" the cipher keys.
-
                 byte[] cipherText = _zipCrypto_forWrite.EncryptMessage(encryptionHeader, encryptionHeader.Length);
-
                 // Write the ciphered bonafide encryption header.
                 outstream.Write(cipherText, 0, cipherText.Length);
                 _LengthOfHeader += cipherText.Length;  // 12 bytes
             }
-
 #if AESCRYPTO
             else if (Encryption == EncryptionAlgorithm.WinZipAes128 ||
                 Encryption == EncryptionAlgorithm.WinZipAes256)
@@ -2399,23 +2065,16 @@ using RE = System.Text.RegularExpressions;
                 // If WinZip AES encryption is in use, then the encrypted entry data is
                 // preceded by a variable-sized Salt and a 2-byte "password
                 // verification" value for the entry.
-
                 int keystrength = GetKeyStrengthInBits(Encryption);
                 _aesCrypto_forWrite = WinZipAesCrypto.Generate(pwd, keystrength);
                 outstream.Write(_aesCrypto_forWrite.Salt, 0, _aesCrypto_forWrite._Salt.Length);
                 outstream.Write(_aesCrypto_forWrite.GeneratedPV, 0, _aesCrypto_forWrite.GeneratedPV.Length);
                 _LengthOfHeader += _aesCrypto_forWrite._Salt.Length + _aesCrypto_forWrite.GeneratedPV.Length;
-
                 TraceWriteLine("WriteSecurityMetadata: AES e({0}) keybits({1}) _LOH({2})",
                                FileName, keystrength, _LengthOfHeader);
-
             }
 #endif
-
         }
-
-
-
         private void CopyThroughOneEntry(Stream outStream)
         {
             // Just read the entry from the existing input zipfile and write to the output.
@@ -2424,71 +2083,54 @@ using RE = System.Text.RegularExpressions;
             // metadata.
             if (this.LengthOfHeader == 0)
                 throw new BadStateException("Bad header length.");
-
             // is it necessary to re-constitute new metadata for this entry?
             bool needRecompute = _metadataChanged ||
                 (this.ArchiveStream is ZipSegmentedStream) ||
                 (outStream is ZipSegmentedStream) ||
                 (_InputUsesZip64 && _container.UseZip64WhenSaving == Zip64Option.Never) ||
                 (!_InputUsesZip64 && _container.UseZip64WhenSaving == Zip64Option.Always);
-
             if (needRecompute)
                 CopyThroughWithRecompute(outStream);
             else
                 CopyThroughWithNoChange(outStream);
-
             // zip64 housekeeping
             _entryRequiresZip64 = new Nullable<bool>
                 (_CompressedSize >= 0xFFFFFFFF || _UncompressedSize >= 0xFFFFFFFF ||
                 _RelativeOffsetOfLocalHeader >= 0xFFFFFFFF
                 );
-
             _OutputUsesZip64 = new Nullable<bool>(_container.Zip64 == Zip64Option.Always || _entryRequiresZip64.Value);
         }
-
-
-
         private void CopyThroughWithRecompute(Stream outstream)
         {
             int n;
             byte[] bytes = new byte[BufferSize];
             var input = new CountingStream(this.ArchiveStream);
-
             long origRelativeOffsetOfHeader = _RelativeOffsetOfLocalHeader;
-
             // The header length may change due to rename of file, add a comment, etc.
             // We need to retain the original.
             int origLengthOfHeader = LengthOfHeader; // including crypto bytes!
-
             // WriteHeader() has the side effect of changing _RelativeOffsetOfLocalHeader
             // and setting _LengthOfHeader.  While ReadHeader() reads the crypto header if
             // present, WriteHeader() does not write the crypto header.
             WriteHeader(outstream, 0);
             StoreRelativeOffset();
-
             if (!this.FileName.EndsWith("/"))
             {
                 // Not a directory; there is file data.
                 // Seek to the beginning of the entry data in the input stream.
-
                 long pos = origRelativeOffsetOfHeader + origLengthOfHeader;
                 int len = GetLengthOfCryptoHeaderBytes(_Encryption_FromZipFile);
                 pos -= len; // want to keep the crypto header
                 _LengthOfHeader += len;
-
                 input.Seek(pos, SeekOrigin.Begin);
-
                 // copy through everything after the header to the output stream
                 long remaining = this._CompressedSize;
-
                 while (remaining > 0)
                 {
                     len = (remaining > bytes.Length) ? bytes.Length : (int)remaining;
-
                     // read
                     n = input.Read(bytes, 0, len);
                     _CheckRead(n);
-
                     // write
                     outstream.Write(bytes, 0, n);
                     remaining -= n;
@@ -2496,7 +2138,6 @@ using RE = System.Text.RegularExpressions;
                     if (_ioOperationCanceled)
                         break;
                 }
-
                 // bit 3 descriptor
                 if ((this._BitField & 0x0008) == 0x0008)
                 {
@@ -2504,19 +2145,16 @@ using RE = System.Text.RegularExpressions;
                     if (_InputUsesZip64) size += 8;
                     byte[] Descriptor = new byte[size];
                     input.Read(Descriptor, 0, size);
-
                     if (_InputUsesZip64 && _container.UseZip64WhenSaving == Zip64Option.Never)
                     {
                         // original descriptor was 24 bytes, now we need 16.
                         // Must check for underflow here.
                         // signature + CRC.
                         outstream.Write(Descriptor, 0, 8);
-
                         // Compressed
                         if (_CompressedSize > 0xFFFFFFFF)
                             throw new InvalidOperationException("ZIP64 is required");
                         outstream.Write(Descriptor, 8, 4);
-
                         // UnCompressed
                         if (_UncompressedSize > 0xFFFFFFFF)
                             throw new InvalidOperationException("ZIP64 is required");
@@ -2545,41 +2183,31 @@ using RE = System.Text.RegularExpressions;
                     }
                 }
             }
-
             _TotalEntrySize = _LengthOfHeader + _CompressedFileDataSize + _LengthOfTrailer;
         }
-
-
         private void CopyThroughWithNoChange(Stream outstream)
         {
             int n;
             byte[] bytes = new byte[BufferSize];
             var input = new CountingStream(this.ArchiveStream);
-
             // seek to the beginning of the entry data in the input stream
             input.Seek(this._RelativeOffsetOfLocalHeader, SeekOrigin.Begin);
-
             if (this._TotalEntrySize == 0)
             {
                 // We've never set the length of the entry.
                 // Set it here.
                 this._TotalEntrySize = this._LengthOfHeader + this._CompressedFileDataSize + _LengthOfTrailer;
-
                 // The CompressedSize includes all the leading metadata associated
                 // to encryption, if any, as well as the compressed data, or
                 // compressed-then-encrypted data, and the trailer in case of AES.
-
                 // The CompressedFileData size is the same, less the encryption
                 // framing data (12 bytes header for PKZip; 10/18 bytes header and
                 // 10 byte trailer for AES).
-
                 // The _LengthOfHeader includes all the zip entry header plus the
                 // crypto header, if any.  The _LengthOfTrailer includes the
                 // 10-byte MAC for AES, where appropriate, and the bit-3
                 // Descriptor, where applicable.
             }
-
-
         // workitem 5616
         // remember the offset, within the output stream, of this particular entry header.
         // This may have changed if any of the other entries changed (eg, if a different
@@ -2587,17 +2215,14 @@ using RE = System.Text.RegularExpressions;
         _RelativeOffsetOfLocalHeader = (outstream is CountingStream counter)
             ? counter.ComputedPosition
             : outstream.Position;  // BytesWritten
-
         // copy through the header, filedata, trailer, everything...
         long remaining = this._TotalEntrySize;
             while (remaining > 0)
             {
                 int len = (remaining > bytes.Length) ? bytes.Length : (int)remaining;
-
                 // read
                 n = input.Read(bytes, 0, len);
                 _CheckRead(n);
-
                 // write
                 outstream.Write(bytes, 0, n);
                 remaining -= n;
@@ -2606,10 +2231,6 @@ using RE = System.Text.RegularExpressions;
                     break;
             }
         }
-
-
-
-
         [System.Diagnostics.ConditionalAttribute("Trace")]
         private void TraceWriteLine(string format, params object[] varParams)
         {
@@ -2626,6 +2247,5 @@ using RE = System.Text.RegularExpressions;
 #endif
             }
         }
-
         private readonly Lock _outputLock = new();
     }

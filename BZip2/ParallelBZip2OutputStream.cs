@@ -1,4 +1,5 @@
 namespace Ionic.BZip2;
+
 // ParallelBZip2OutputStream.cs
 // ------------------------------------------------------------------
 //
@@ -26,8 +27,6 @@ namespace Ionic.BZip2;
 //
 // ------------------------------------------------------------------
 // flymake: csc.exe /t:module BZip2InputStream.cs BZip2Compressor.cs Rand.cs BCRC32.cs @@FILE@@
-
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -46,8 +45,6 @@ namespace Ionic.BZip2;
  * specific language governing permissions and limitations
  * under the License.
  */
-
-
 // Design Notes:
 //
 // This class follows the classic Decorator pattern: it is a Stream that
@@ -98,7 +95,6 @@ namespace Ionic.BZip2;
 //
 // along with the bit accumulator described above. The MemoryStream
 // would gather the byte-aligned compressed output of the compressor.
-
 // When reducing the output of the various workers, this class must
 // again do the byte-shredding thing. The data from the compressors is
 // therefore shredded twice: once when being placed into the
@@ -126,12 +122,6 @@ namespace Ionic.BZip2;
 // left the license in here. Most of the Apache commons compressor magic
 // has been ported into the BZip2Compressor class.
 //
-
-using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Threading;
-
 internal class WorkItem
 {
     public int index;
@@ -139,7 +129,6 @@ internal class WorkItem
     public MemoryStream ms;
     public int ordinal;
     public BitWriter bw;
-
     public WorkItem(int ix, int blockSize)
     {
         // compressed data gets written to a MemoryStream
@@ -149,8 +138,6 @@ internal class WorkItem
         this.index = ix;
     }
 }
-
-
 /// <summary>
 ///   A write-only decorator stream that compresses data as it is
 ///   written using the BZip2 algorithm. This stream compresses by
@@ -200,7 +187,6 @@ public class ParallelBZip2OutputStream : System.IO.Stream
     private readonly Lock eLock = new(); // for exceptions
     private readonly Lock outputLock = new(); // for multi-thread output
     private AutoResetEvent newlyCompressedBlob;
-
     long totalBytesWrittenIn;
     long totalBytesWrittenOut;
     readonly bool leaveOpen;
@@ -208,9 +194,7 @@ public class ParallelBZip2OutputStream : System.IO.Stream
     Stream output;
     BitWriter bw;
     readonly int blockSize100k;  // 0...9
-
     private readonly TraceBits desiredTrace = TraceBits.Crc | TraceBits.Write;
-
     /// <summary>
     ///   Constructs a new <c>ParallelBZip2OutputStream</c>, that sends its
     ///   compressed output to the given output stream.
@@ -249,7 +233,6 @@ public class ParallelBZip2OutputStream : System.IO.Stream
         : this(output, BZip2.MaxBlockSize, false)
     {
     }
-
     /// <summary>
     ///   Constructs a new <c>ParallelBZip2OutputStream</c> with specified blocksize.
     /// </summary>
@@ -262,7 +245,6 @@ public class ParallelBZip2OutputStream : System.IO.Stream
         : this(output, blockSize, false)
     {
     }
-
     /// <summary>
     ///   Constructs a new <c>ParallelBZip2OutputStream</c>.
     /// </summary>
@@ -274,7 +256,6 @@ public class ParallelBZip2OutputStream : System.IO.Stream
         : this(output, BZip2.MaxBlockSize, leaveOpen)
     {
     }
-
     /// <summary>
     ///   Constructs a new <c>ParallelBZip2OutputStream</c> with specified blocksize,
     ///   and explicitly specifies whether to leave the wrapped stream open.
@@ -297,11 +278,9 @@ public class ParallelBZip2OutputStream : System.IO.Stream
                                     BZip2.MinBlockSize, BZip2.MaxBlockSize);
             throw new ArgumentException(msg, nameof(blockSize));
         }
-
         this.output = output;
         if (!this.output.CanWrite)
             throw new ArgumentException("The stream is not writable.", nameof(output));
-
         this.bw = new BitWriter(this.output);
         this.blockSize100k = blockSize;
         this.leaveOpen = leaveOpen;
@@ -309,8 +288,6 @@ public class ParallelBZip2OutputStream : System.IO.Stream
         this.MaxWorkers = 16; // default
         EmitHeader();
     }
-
-
     private void InitializePoolOfWorkItems()
     {
         this.toWrite = new Queue<int>();
@@ -323,15 +300,12 @@ public class ParallelBZip2OutputStream : System.IO.Stream
             this.pool.Add(new WorkItem(i, this.blockSize100k));
             this.toFill.Enqueue(i);
         }
-
         this.newlyCompressedBlob = new AutoResetEvent(false);
         this.currentlyFilling = -1;
         this.lastFilled = -1;
         this.lastWritten = -1;
         this.latestCompressed = -1;
     }
-
-
     /// <summary>
     ///   The maximum number of concurrent compression worker threads to use.
     /// </summary>
@@ -408,7 +382,6 @@ public class ParallelBZip2OutputStream : System.IO.Stream
             _maxWorkers = value;
         }
     }
-
     /// <summary>
     ///   Close the stream.
     /// </summary>
@@ -427,15 +400,11 @@ public class ParallelBZip2OutputStream : System.IO.Stream
             this.pendingException = null;
             throw pe;
         }
-
         if (this.handlingException)
             return;
-
         if (output == null)
             return;
-
         Stream o = this.output;
-
         try
         {
             FlushOutput(true);
@@ -445,16 +414,12 @@ public class ParallelBZip2OutputStream : System.IO.Stream
             this.output = null;
             this.bw = null;
         }
-
         if (!leaveOpen)
             o.Close();
     }
-
-
     private void FlushOutput(bool lastInput)
     {
         if (this.emitting) return;
-
         // compress and write whatever is ready
         if (this.currentlyFilling >= 0)
         {
@@ -462,7 +427,6 @@ public class ParallelBZip2OutputStream : System.IO.Stream
             CompressOne(workitem);
             this.currentlyFilling = -1; // get a new buffer next Write()
         }
-
         if (lastInput)
         {
             EmitPendingBuffers(true, false);
@@ -473,9 +437,6 @@ public class ParallelBZip2OutputStream : System.IO.Stream
             EmitPendingBuffers(false, false);
         }
     }
-
-
-
     /// <summary>
     ///   Flush the stream.
     /// </summary>
@@ -488,7 +449,6 @@ public class ParallelBZip2OutputStream : System.IO.Stream
             this.output.Flush();
         }
     }
-
     private void EmitHeader()
     {
         var magic = new byte[] {
@@ -497,19 +457,15 @@ public class ParallelBZip2OutputStream : System.IO.Stream
                 (byte) 'h',
                 (byte) ('0' + this.blockSize100k)
             };
-
         // not necessary to shred the initial magic bytes
         this.output.Write(magic, 0, magic.Length);
     }
-
     private void EmitTrailer()
     {
         // A magic 48-bit number, 0x177245385090, to indicate the end
         // of the last block. (sqrt(pi), if you want to know)
-
         TraceOutput(TraceBits.Write, "total written out: {0} (0x{0:X})",
                     this.bw.TotalBytesWrittenOut);
-
         // must shred
         this.bw.WriteByte(0x17);
         this.bw.WriteByte(0x72);
@@ -517,16 +473,11 @@ public class ParallelBZip2OutputStream : System.IO.Stream
         this.bw.WriteByte(0x38);
         this.bw.WriteByte(0x50);
         this.bw.WriteByte(0x90);
-
         this.bw.WriteInt(this.combinedCRC);
-
         this.bw.FinishAndPad();
-
         TraceOutput(TraceBits.Write, "final total : {0} (0x{0:X})",
                     this.bw.TotalBytesWrittenOut);
     }
-
-
     /// <summary>
     ///   The blocksize parameter specified at construction time.
     /// </summary>
@@ -534,8 +485,6 @@ public class ParallelBZip2OutputStream : System.IO.Stream
     {
         get { return this.blockSize100k; }
     }
-
-
     /// <summary>
     ///   Write data to the stream.
     /// </summary>
@@ -563,16 +512,13 @@ public class ParallelBZip2OutputStream : System.IO.Stream
     public override void Write(byte[] buffer, int offset, int count)
     {
         bool mustWait = false;
-
         // This method does this:
         //   0. handles any pending exceptions
         //   1. write any buffers that are ready to be written
         //   2. fills a compressor buffer; when full, flip state to 'Filled',
         //   3. if more data to be written,  goto step 1
-
         if (this.output == null)
             throw new IOException("the stream is not open");
-
         // dispense any exceptions that occurred on the BG threads
         if (this.pendingException != null)
         {
@@ -581,7 +527,6 @@ public class ParallelBZip2OutputStream : System.IO.Stream
             this.pendingException = null;
             throw pe;
         }
-
         if (offset < 0)
             throw new IndexOutOfRangeException(String.Format("offset ({0}) must be > 0", offset));
         if (count < 0)
@@ -589,11 +534,7 @@ public class ParallelBZip2OutputStream : System.IO.Stream
         if (offset + count > buffer.Length)
             throw new IndexOutOfRangeException(String.Format("offset({0}) count({1}) bLength({2})",
                                                              offset, count, buffer.Length));
-
-
         if (count == 0) return;  // nothing to do
-
-
         if (!this.firstWriteDone)
         {
             // Want to do this on first Write, first session, and not in the
@@ -602,17 +543,13 @@ public class ParallelBZip2OutputStream : System.IO.Stream
             InitializePoolOfWorkItems();
             this.firstWriteDone = true;
         }
-
         int bytesWritten = 0;
         int bytesRemaining = count;
-
         do
         {
             // may need to make buffers available
             EmitPendingBuffers(false, mustWait);
-
             mustWait = false;
-
             // get a compressor to fill
             int ix = -1;
             if (this.currentlyFilling >= 0)
@@ -628,37 +565,28 @@ public class ParallelBZip2OutputStream : System.IO.Stream
                     mustWait = true;
                     continue;
                 }
-
                 ix = this.toFill.Dequeue();
                 ++this.lastFilled;
             }
-
             WorkItem workitem = this.pool[ix];
             workitem.ordinal = this.lastFilled;
-
             int n = workitem.Compressor.Fill(buffer, offset, bytesRemaining);
             if (n != bytesRemaining)
             {
                 if (!ThreadPool.QueueUserWorkItem(CompressOne, workitem))
                     throw new Exception("Cannot enqueue workitem");
-
                 this.currentlyFilling = -1; // will get a new buffer next time
                 offset += n;
             }
             else
                 this.currentlyFilling = ix;
-
             bytesRemaining -= n;
             bytesWritten += n;
         }
         while (bytesRemaining > 0);
-
         totalBytesWrittenIn += bytesWritten;
         return;
     }
-
-
-
     private void EmitPendingBuffers(bool doAll, bool mustWait)
     {
         // When combining parallel compression with a ZipSegmentedStream, it's
@@ -668,19 +596,15 @@ public class ParallelBZip2OutputStream : System.IO.Stream
         // this stream is unaware of the pending exception, so the Close()
         // method invokes this method AGAIN. This can lead to a deadlock.
         // Therefore, failfast if re-entering.
-
         if (emitting) return;
         emitting = true;
-
         if (doAll || mustWait)
             this.newlyCompressedBlob.WaitOne();
-
         do
         {
             int firstSkip = -1;
             int millisecondsToWait = doAll ? 200 : (mustWait ? -1 : 0);
             int nextToWrite = -1;
-
             do
             {
                 if (Monitor.TryEnter(this.toWrite, millisecondsToWait))
@@ -695,7 +619,6 @@ public class ParallelBZip2OutputStream : System.IO.Stream
                     {
                         Monitor.Exit(this.toWrite);
                     }
-
                     if (nextToWrite >= 0)
                     {
                         WorkItem workitem = this.pool[nextToWrite];
@@ -706,7 +629,6 @@ public class ParallelBZip2OutputStream : System.IO.Stream
                             {
                                 this.toWrite.Enqueue(nextToWrite);
                             }
-
                             if (firstSkip == nextToWrite)
                             {
                                 // We went around the list once.
@@ -717,21 +639,16 @@ public class ParallelBZip2OutputStream : System.IO.Stream
                             }
                             else if (firstSkip == -1)
                                 firstSkip = nextToWrite;
-
                             continue;
                         }
-
                         firstSkip = -1;
-
                         TraceOutput(TraceBits.Write,
                                     "Writing block {0}", workitem.ordinal);
-
                         // write the data to the output
                         var bw2 = workitem.bw;
                         bw2.Flush(); // not bw2.FinishAndPad()!
                         var ms = workitem.ms;
                         ms.Seek(0, SeekOrigin.Begin);
-
                         // cannot dump bytes!!
                         // ms.WriteTo(this.output);
                         //
@@ -767,7 +684,6 @@ public class ParallelBZip2OutputStream : System.IO.Stream
                                 sb.Append(String.Format(" {0:X2}", buffer[y-1-12+z]));
                             TraceOutput(TraceBits.Write, sb.ToString());
 #endif
-
                         // and now any remaining bits
                         TraceOutput(TraceBits.Write,
                                     " remaining bits: {0} 0x{1:X}",
@@ -777,12 +693,10 @@ public class ParallelBZip2OutputStream : System.IO.Stream
                         {
                             this.bw.WriteBits(bw2.NumRemainingBits, bw2.RemainingBits);
                         }
-
                         TraceOutput(TraceBits.Crc, " combined CRC (before): {0:X8}",
                                     this.combinedCRC);
                         this.combinedCRC = (this.combinedCRC << 1) | (this.combinedCRC >> 31);
                         this.combinedCRC ^= (uint)workitem.Compressor.Crc32;
-
                         TraceOutput(TraceBits.Crc,
                                     " block    CRC         : {0:X8}",
                                     workitem.Compressor.Crc32);
@@ -793,35 +707,26 @@ public class ParallelBZip2OutputStream : System.IO.Stream
                                     "total written out: {0} (0x{0:X})",
                                     this.bw.TotalBytesWrittenOut);
                         TraceOutput(TraceBits.Write | TraceBits.Crc, "");
-
                         this.totalBytesWrittenOut += totOut;
-
                         bw2.Reset();
                         this.lastWritten = workitem.ordinal;
                         workitem.ordinal = -1;
                         this.toFill.Enqueue(workitem.index);
-
                         // don't wait next time through
                         if (millisecondsToWait == -1) millisecondsToWait = 0;
                     }
                 }
                 else
                     nextToWrite = -1;
-
             } while (nextToWrite >= 0);
-
         } while (doAll && (this.lastWritten != this.latestCompressed));
-
         if (doAll)
         {
             TraceOutput(TraceBits.Crc,
                         " combined CRC (final) : {0:X8}", this.combinedCRC);
         }
-
         emitting = false;
     }
-
-
     private void CompressOne(Object wi)
     {
         // compress and one buffer
@@ -830,7 +735,6 @@ public class ParallelBZip2OutputStream : System.IO.Stream
         {
             // compress and write to the compressor's MemoryStream
             workitem.Compressor.CompressAndWrite();
-
             lock (this.latestLock)
             {
                 if (workitem.ordinal > this.latestCompressed)
@@ -852,10 +756,6 @@ public class ParallelBZip2OutputStream : System.IO.Stream
             }
         }
     }
-
-
-
-
     /// <summary>
     /// Indicates whether the stream can be read.
     /// </summary>
@@ -866,7 +766,6 @@ public class ParallelBZip2OutputStream : System.IO.Stream
     {
         get { return false; }
     }
-
     /// <summary>
     /// Indicates whether the stream supports Seek operations.
     /// </summary>
@@ -877,7 +776,6 @@ public class ParallelBZip2OutputStream : System.IO.Stream
     {
         get { return false; }
     }
-
     /// <summary>
     /// Indicates whether the stream can be written.
     /// </summary>
@@ -891,7 +789,6 @@ public class ParallelBZip2OutputStream : System.IO.Stream
             return this.output == null ? throw new ObjectDisposedException("BZip2Stream") : output.CanWrite;
         }
     }
-
     /// <summary>
     /// Reading this property always throws a <see cref="NotImplementedException"/>.
     /// </summary>
@@ -899,7 +796,6 @@ public class ParallelBZip2OutputStream : System.IO.Stream
     {
         get { throw new NotImplementedException(); }
     }
-
     /// <summary>
     /// The position of the stream pointer.
     /// </summary>
@@ -917,7 +813,6 @@ public class ParallelBZip2OutputStream : System.IO.Stream
         }
         set { throw new NotImplementedException(); }
     }
-
     /// <summary>
     /// The total number of bytes written out by the stream.
     /// </summary>
@@ -925,7 +820,6 @@ public class ParallelBZip2OutputStream : System.IO.Stream
     /// This value is meaningful only after a call to Close().
     /// </remarks>
     public Int64 BytesWrittenOut { get { return totalBytesWrittenOut; } }
-
     /// <summary>
     /// Calling this method always throws a <see cref="NotImplementedException"/>.
     /// </summary>
@@ -933,13 +827,11 @@ public class ParallelBZip2OutputStream : System.IO.Stream
     /// <param name="origin">this is irrelevant, since it will always throw!</param>
     /// <returns>irrelevant!</returns>
     public override long Seek(long offset, System.IO.SeekOrigin origin) => throw new NotImplementedException();
-
     /// <summary>
     /// Calling this method always throws a <see cref="NotImplementedException"/>.
     /// </summary>
     /// <param name="value">this is irrelevant, since it will always throw!</param>
     public override void SetLength(long value) => throw new NotImplementedException();
-
     /// <summary>
     /// Calling this method always throws a <see cref="NotImplementedException"/>.
     /// </summary>
@@ -948,8 +840,6 @@ public class ParallelBZip2OutputStream : System.IO.Stream
     /// <param name='count'>this parameter is never used</param>
     /// <returns>never returns anything; always throws</returns>
     public override int Read(byte[] buffer, int offset, int count) => throw new NotImplementedException();
-
-
     // used only when Trace is defined
     [Flags]
     enum TraceBits : uint
@@ -959,8 +849,6 @@ public class ParallelBZip2OutputStream : System.IO.Stream
         Write = 2,
         All = 0xffffffff,
     }
-
-
     [System.Diagnostics.ConditionalAttribute("Trace")]
     private void TraceOutput(TraceBits bits, string format, params object[] varParams)
     {
@@ -976,6 +864,4 @@ public class ParallelBZip2OutputStream : System.IO.Stream
             }
         }
     }
-
 }
-

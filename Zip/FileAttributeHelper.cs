@@ -1,5 +1,5 @@
 namespace Ionic.Zip;
-using System.IO;
+
 using Interop = System.Runtime.InteropServices;
 
     /// Helper class for file attribute operations.
@@ -31,7 +31,6 @@ using Interop = System.Runtime.InteropServices;
             FileAttributes.Encrypted |
             FileAttributes.IntegrityStream |
             FileAttributes.NoScrubData;
-
         private static readonly FileAttributes ValidAttributesNonWindows =
             FileAttributes.ReadOnly |
             FileAttributes.Hidden |
@@ -40,7 +39,6 @@ using Interop = System.Runtime.InteropServices;
             FileAttributes.Archive |
             FileAttributes.Normal |
             FileAttributes.Temporary;
-
         /// <summary>
         /// Strips invalid file attributes, leaving only those valid for the current operating system. 
         /// </summary> 

@@ -1,4 +1,5 @@
 namespace Ionic.Zlib;
+
 // ZlibStream.cs
 // ------------------------------------------------------------------
 //
@@ -25,11 +26,6 @@ namespace Ionic.Zlib;
 // System.IO.Compression.GZipStream classes in the .NET BCL.
 //
 // ------------------------------------------------------------------
-
-using System;
-using System.IO;
-
-
     /// <summary>
     /// Represents a Zlib stream for compression or decompression.
     /// </summary>
@@ -71,7 +67,6 @@ using System.IO;
     {
         internal ZlibBaseStream _baseStream;
         bool _disposed;
-
         /// <summary>
         /// Create a <c>ZlibStream</c> using the specified <c>CompressionMode</c>.
         /// </summary>
@@ -129,7 +124,6 @@ using System.IO;
             : this(stream, mode, CompressionLevel.Default, false)
         {
         }
-
         /// <summary>
         ///   Create a <c>ZlibStream</c> using the specified <c>CompressionMode</c> and
         ///   the specified <c>CompressionLevel</c>.
@@ -193,7 +187,6 @@ using System.IO;
             : this(stream, mode, level, false)
         {
         }
-
         /// <summary>
         ///   Create a <c>ZlibStream</c> using the specified <c>CompressionMode</c>, and
         ///   explicitly specify whether the captive stream should be left open after
@@ -232,7 +225,6 @@ using System.IO;
             : this(stream, mode, CompressionLevel.Default, leaveOpen)
         {
         }
-
         /// <summary>
         ///   Create a <c>ZlibStream</c> using the specified <c>CompressionMode</c>
         ///   and the specified <c>CompressionLevel</c>, and explicitly specify
@@ -318,9 +310,7 @@ using System.IO;
         {
             _baseStream = new ZlibBaseStream(stream, mode, level, ZlibStreamFlavor.ZLIB, leaveOpen);
         }
-
         #region Zlib properties
-
         /// <summary>
         /// This property sets the flush behavior on the stream.
         /// Sorry, though, not sure exactly how to describe all the various settings.
@@ -334,7 +324,6 @@ using System.IO;
                 this._baseStream._flushMode = value;
             }
         }
-
         /// <summary>
         ///   The size of the working buffer for the compression codec.
         /// </summary>
@@ -368,23 +357,18 @@ using System.IO;
                 this._baseStream._bufferSize = value;
             }
         }
-
         /// <summary> Returns the total number of bytes input so far.</summary>
         virtual public long TotalIn
         {
             get { return this._baseStream._z.TotalBytesIn; }
         }
-
         /// <summary> Returns the total number of bytes output so far.</summary>
         virtual public long TotalOut
         {
             get { return this._baseStream._z.TotalBytesOut; }
         }
-
         #endregion
-
         #region System.IO.Stream methods
-
         /// <summary>
         ///   Dispose the stream.
         /// </summary>
@@ -424,8 +408,6 @@ using System.IO;
                 base.Dispose(disposing);
             }
         }
-
-
         /// <summary>
         /// Indicates whether the stream can be read.
         /// </summary>
@@ -439,7 +421,6 @@ using System.IO;
             return _disposed ? throw new ObjectDisposedException("ZlibStream") : _baseStream._stream.CanRead;
         }
     }
-
         /// <summary>
         /// Indicates whether the stream supports Seek operations.
         /// </summary>
@@ -450,7 +431,6 @@ using System.IO;
         {
             get { return false; }
         }
-
         /// <summary>
         /// Indicates whether the stream can be written.
         /// </summary>
@@ -464,7 +444,6 @@ using System.IO;
             return _disposed ? throw new ObjectDisposedException("ZlibStream") : _baseStream._stream.CanWrite;
         }
     }
-
         /// <summary>
         /// Flush the stream.
         /// </summary>
@@ -473,7 +452,6 @@ using System.IO;
             if (_disposed) throw new ObjectDisposedException("ZlibStream");
             _baseStream.Flush();
         }
-
         /// <summary>
         /// Reading this property always throws a <see cref="NotSupportedException"/>.
         /// </summary>
@@ -481,7 +459,6 @@ using System.IO;
         {
             get { throw new NotSupportedException(); }
         }
-
         /// <summary>
         ///   The position of the stream pointer.
         /// </summary>
@@ -501,10 +478,8 @@ using System.IO;
                     return this._baseStream._z.TotalBytesOut;
             return this._baseStream._streamMode == ZlibBaseStream.StreamMode.Reader ? _baseStream._z.TotalBytesIn : 0;
         }
-
         set { throw new NotSupportedException(); }
         }
-
     /// <summary>
     /// Read data from the stream.
     /// </summary>
@@ -539,7 +514,6 @@ using System.IO;
     ///
     /// <returns>the number of bytes read</returns>
     public override int Read(byte[] buffer, int offset, int count) => _disposed ? throw new ObjectDisposedException("ZlibStream") : _baseStream.Read(buffer, offset, count);
-
     /// <summary>
     /// Calling this method always throws a <see cref="NotSupportedException"/>.
     /// </summary>
@@ -554,7 +528,6 @@ using System.IO;
     ///
     /// <returns>nothing. This method always throws.</returns>
     public override long Seek(long offset, System.IO.SeekOrigin origin) => throw new NotSupportedException();
-
     /// <summary>
     /// Calling this method always throws a <see cref="NotSupportedException"/>.
     /// </summary>
@@ -563,7 +536,6 @@ using System.IO;
     ///   THIS METHOD ACTUALLY DID ANYTHING.
     /// </param>
     public override void SetLength(long value) => throw new NotSupportedException();
-
     /// <summary>
     /// Write data to the stream.
     /// </summary>
@@ -596,8 +568,6 @@ using System.IO;
             _baseStream.Write(buffer, offset, count);
         }
         #endregion
-
-
         /// <summary>
         ///   Compress a string into a byte array using ZLIB.
         /// </summary>
@@ -624,8 +594,6 @@ using System.IO;
         ZlibBaseStream.CompressString(s, compressor);
         return ms.ToArray();
     }
-
-
         /// <summary>
         ///   Compress a byte array into a new byte array using ZLIB.
         /// </summary>
@@ -647,12 +615,9 @@ using System.IO;
         using var ms = new MemoryStream();
         Stream compressor =
             new ZlibStream(ms, CompressionMode.Compress, CompressionLevel.BestCompression);
-
         ZlibBaseStream.CompressBuffer(b, compressor);
         return ms.ToArray();
     }
-
-
         /// <summary>
         ///   Uncompress a ZLIB-compressed byte array into a single string.
         /// </summary>
@@ -670,11 +635,8 @@ using System.IO;
         using var input = new MemoryStream(compressed);
         Stream decompressor =
             new ZlibStream(input, CompressionMode.Decompress);
-
         return ZlibBaseStream.UncompressString(compressed, decompressor);
     }
-
-
         /// <summary>
         ///   Uncompress a ZLIB-compressed byte array into a byte array.
         /// </summary>
@@ -692,10 +654,6 @@ using System.IO;
         using var input = new MemoryStream(compressed);
         Stream decompressor =
             new ZlibStream(input, CompressionMode.Decompress);
-
         return ZlibBaseStream.UncompressBuffer(compressed, decompressor);
     }
-
     }
-
-

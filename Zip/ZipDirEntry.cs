@@ -1,4 +1,5 @@
 namespace Ionic.Zip;
+
 // ZipDirEntry.cs
 // ------------------------------------------------------------------
 //
@@ -26,12 +27,6 @@ namespace Ionic.Zip;
 // Created: Tue, 27 Mar 2007  15:30
 //
 // ------------------------------------------------------------------
-
-
-using System;
-using System.Collections.Generic;
-
-
     partial class ZipEntry
     {
         /// <summary>
@@ -41,29 +36,21 @@ using System.Collections.Generic;
         {
             get { return ((_InternalFileAttrs == 0) && ((_ExternalFileAttrs & 0x0010) == 0x0010)); }
         }
-
-
         internal void ResetDirEntry()
         {
             // __FileDataPosition is the position of the file data for an entry.
             // It is _RelativeOffsetOfLocalHeader + size of local header.
-
             // We cannot know the __FileDataPosition until we read the local
             // header.
-
             // The local header is not necessarily the same length as the record
             // in the central directory.
-
             // Set to -1, to indicate we need to read this later.
             this.__FileDataPosition = -1;
-
             // set _LengthOfHeader to 0, to indicate we need to read later.
             this._LengthOfHeader = 0;
-
             // reset the copy counter because we've got a good entry now
             CopyHelper.Reset();
         }
-
         /// <summary>
         /// Provides a human-readable string with information about the ZipEntry.
         /// </summary>
@@ -76,7 +63,6 @@ using System.Collections.Generic;
                     .Append(string.Format("          ZipEntry: {0}\n", this.FileName))
                     .Append(string.Format("   Version Made By: {0}\n", this._VersionMadeBy))
                     .Append(string.Format(" Needed to extract: {0}\n", this.VersionNeeded));
-
                 if (this._IsDirectory)
                     builder.Append("        Entry type: directory\n");
                 else
@@ -94,13 +80,11 @@ using System.Collections.Generic;
                         else
                     builder
                         .Append(string.Format("   Relative Offset: 0x{0:X8}\n", this._RelativeOffsetOfLocalHeader));
-
                     builder
                     .Append(string.Format("         Bit Field: 0x{0:X4}\n", this._BitField))
                     .Append(string.Format("        Encrypted?: {0}\n", this._sourceIsEncrypted))
                     .Append(string.Format("          Timeblob: 0x{0:X8}\n", this._TimeBlob))
                         .Append(string.Format("              Time: {0}\n", Ionic.Zip.SharedUtilities.PackedToDateTime(this._TimeBlob)));
-
                 builder.Append(string.Format("         Is Zip64?: {0}\n", this._InputUsesZip64));
                 if (!string.IsNullOrEmpty(this._Comment))
                 {
@@ -110,27 +94,20 @@ using System.Collections.Generic;
                 return builder.ToString();
             }
         }
-
-
         // workitem 10330
         private class CopyHelper
         {
             private static readonly System.Text.RegularExpressions.Regex re =
                 new(" \\(copy (\\d+)\\)$");
-
             private static int callCount = 0;
-
         internal static void Reset() => callCount = 0;
-
         internal static string AppendCopyToFileName(string f)
             {
                 callCount++;
                 if (callCount > 25)
                     throw new OverflowException("overflow while creating filename");
-
                 int n = 1;
                 int r = f.LastIndexOf(".");
-
                 if (r == -1)
                 {
                     // there is no extension
@@ -162,15 +139,11 @@ using System.Collections.Generic;
                         string copy = String.Format(" (copy {0})", n);
                         f = f[..r] + copy + f[r..];
                     }
-
                     //System.Console.WriteLine("returning f({0})", f);
                 }
                 return f;
             }
         }
-
-
-
         /// <summary>
         ///   Reads one entry from the zip directory structure in the zip file.
         /// </summary>
@@ -194,7 +167,6 @@ using System.Collections.Generic;
             System.Text.Encoding expectedEncoding = (zf.AlternateEncodingUsage == ZipOption.Always)
                 ? zf.AlternateEncoding
                 : ZipFile.DefaultEncoding;
-
             while (true)
             {
                 int signature = Ionic.Zip.SharedUtilities.ReadSignature(s);
@@ -202,7 +174,6 @@ using System.Collections.Generic;
                 if (IsNotValidZipDirEntrySig(signature))
                 {
                     s.Seek(-4, System.IO.SeekOrigin.Current);
-
                 // Getting "not a ZipDirEntry signature" here is not always wrong or an
                 // error.  This can happen when walking through a zipfile.  After the
                 // last ZipDirEntry, we expect to read an
@@ -214,12 +185,10 @@ using System.Collections.Generic;
                         ? throw new BadReadException(String.Format("  Bad signature (0x{0:X8}) at position 0x{1:X8}", signature, s.Position))
                         : null;
             }
-
             int bytesRead = 42 + 4;
                 byte[] block = new byte[42];
                 int n = s.Read(block, 0, block.Length);
                 if (n != block.Length) return null;
-
                 int i = 0;
             ZipEntry zde = new()
             {
@@ -227,7 +196,6 @@ using System.Collections.Generic;
                 _Source = ZipEntrySource.ZipFile,
                 _container = new ZipContainer(zf)
             };
-
             unchecked
                 {
                     zde._VersionMadeBy = (short)(block[i++] + block[i++] * 256);
@@ -237,28 +205,21 @@ using System.Collections.Generic;
                     zde._TimeBlob = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
                     zde._LastModified = Ionic.Zip.SharedUtilities.PackedToDateTime(zde._TimeBlob);
                     zde._timestamp |= ZipEntryTimestamp.DOS;
-
                     zde._Crc32 = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
                     zde._CompressedSize = (uint)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
                     zde._UncompressedSize = (uint)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
                 }
-
                 // preserve
                 zde._CompressionMethod_FromZipFile = zde._CompressionMethod;
-
                 zde._filenameLength = (short)(block[i++] + block[i++] * 256);
                 zde._extraFieldLength = (short)(block[i++] + block[i++] * 256);
                 zde._commentLength = (short)(block[i++] + block[i++] * 256);
                 zde._diskNumber = (UInt32)(block[i++] + block[i++] * 256);
-
                 zde._InternalFileAttrs = (short)(block[i++] + block[i++] * 256);
                 zde._ExternalFileAttrs = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
-
                 zde._RelativeOffsetOfLocalHeader = (uint)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
-
                 // workitem 7801
                 zde.IsText = ((zde._InternalFileAttrs & 0x01) == 0x01);
-
                 block = new byte[zde._filenameLength];
                 n = s.Read(block, 0, block.Length);
                 bytesRead += n;
@@ -271,7 +232,6 @@ using System.Collections.Generic;
                 {
                     zde._FileNameInArchive = Ionic.Zip.SharedUtilities.StringFromBuffer(block, expectedEncoding);
                 }
-
                 // workitem 10330
                 // insure unique entry names
                 while (!zf.IgnoreDuplicateFiles && previouslySeen.ContainsKey(zde._FileNameInArchive))
@@ -279,12 +239,10 @@ using System.Collections.Generic;
                     zde._FileNameInArchive = CopyHelper.AppendCopyToFileName(zde._FileNameInArchive);
                     zde._metadataChanged = true;
                 }
-
                 if (zde.AttributesIndicateDirectory)
                     zde.MarkAsDirectory();  // may append a slash to filename if nec.
                     // workitem 6898
                 else if (zde._FileNameInArchive.EndsWith("/")) zde.MarkAsDirectory();
-
                 zde._CompressedFileDataSize = zde._CompressedSize;
                 if ((zde._BitField & 0x01) == 0x01)
                 {
@@ -293,19 +251,15 @@ using System.Collections.Generic;
                         EncryptionAlgorithm.PkzipWeak;
                     zde._sourceIsEncrypted = true;
                 }
-
                 if (zde._extraFieldLength > 0)
                 {
                     zde._InputUsesZip64 = (zde._CompressedSize == 0xFFFFFFFF ||
                           zde._UncompressedSize == 0xFFFFFFFF ||
                           zde._RelativeOffsetOfLocalHeader == 0xFFFFFFFF);
-
                     // Console.WriteLine("  Input uses Z64?:      {0}", zde._InputUsesZip64);
-
                     bytesRead += zde.ProcessExtraField(s, zde._extraFieldLength);
                     zde._CompressedFileDataSize = zde._CompressedSize;
                 }
-
                 // we've processed the extra field, so we know the encryption method is set now.
                 if (zde._Encryption == EncryptionAlgorithm.PkzipWeak)
                 {
@@ -321,7 +275,6 @@ using System.Collections.Generic;
                         zde._LengthOfTrailer = 10;
                 }
 #endif
-
                 // tally the trailing descriptor
                 if ((zde._BitField & 0x0008) == 0x0008)
                 {
@@ -331,14 +284,11 @@ using System.Collections.Generic;
                     else
                         zde._LengthOfTrailer += 16;
                 }
-
                 // workitem 12744
                 zde.AlternateEncoding = ((zde._BitField & 0x0800) == 0x0800)
                     ? System.Text.Encoding.UTF8
                     :expectedEncoding;
-
                 zde.AlternateEncodingUsage = ZipOption.Always;
-
                 if (zde._commentLength > 0)
                 {
                     block = new byte[zde._commentLength];
@@ -362,24 +312,17 @@ using System.Collections.Generic;
                 return zde;
             }
         }
-
-
     /// <summary>
     /// Returns true if the passed-in value is a valid signature for a ZipDirEntry.
     /// </summary>
     /// <param name="signature">the candidate 4-byte signature value.</param>
     /// <returns>true, if the signature is valid according to the PKWare spec.</returns>
     internal static bool IsNotValidZipDirEntrySig(int signature) => (signature != ZipConstants.ZipDirEntrySignature);
-
-
     private Int16 _VersionMadeBy;
         private Int16 _InternalFileAttrs;
         private Int32 _ExternalFileAttrs;
-
         //private Int32 _LengthOfDirEntry;
         private Int16 _filenameLength;
         private Int16 _extraFieldLength;
         private Int16 _commentLength;
     }
-
-

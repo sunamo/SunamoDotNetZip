@@ -1,4 +1,5 @@
 namespace Ionic.Zlib;
+
 // ZlibCodec.cs
 // ------------------------------------------------------------------
 //
@@ -63,11 +64,7 @@ namespace Ionic.Zlib;
 // and contributors of zlib.
 //
 // -----------------------------------------------------------------------
-
-
-using System;
 using Interop=System.Runtime.InteropServices;
-
     /// <summary>
     /// Encoder and Decoder for ZLIB and DEFLATE (IETF RFC1950 and RFC1951).
     /// </summary>
@@ -89,12 +86,10 @@ using Interop=System.Runtime.InteropServices;
         /// The buffer from which data is taken.
         /// </summary>
         public byte[] InputBuffer;
-
         /// <summary>
         /// An index into the InputBuffer array, indicating where to start reading. 
         /// </summary>
         public int NextIn;
-
         /// <summary>
         /// The number of bytes available in the InputBuffer, starting at NextIn. 
         /// </summary>
@@ -103,22 +98,18 @@ using Interop=System.Runtime.InteropServices;
         /// The class will update this number as calls to Inflate/Deflate are made.
         /// </remarks>
         public int AvailableBytesIn;
-
         /// <summary>
         /// Total number of bytes read so far, through all calls to Inflate()/Deflate().
         /// </summary>
         public long TotalBytesIn;
-
         /// <summary>
         /// Buffer to store output data.
         /// </summary>
         public byte[] OutputBuffer;
-
         /// <summary>
         /// An index into the OutputBuffer array, indicating where to start writing. 
         /// </summary>
         public int NextOut;
-
         /// <summary>
         /// The number of bytes available in the OutputBuffer, starting at NextOut. 
         /// </summary>
@@ -127,27 +118,21 @@ using Interop=System.Runtime.InteropServices;
         /// The class will update this number as calls to Inflate/Deflate are made.
         /// </remarks>
         public int AvailableBytesOut;
-
         /// <summary>
         /// Total number of bytes written to the output so far, through all calls to Inflate()/Deflate().
         /// </summary>
         public long TotalBytesOut;
-
         /// <summary>
         /// used for diagnostics, when something goes wrong!
         /// </summary>
         public System.String Message;
-
         internal DeflateManager dstate;
         internal InflateManager istate;
-
         internal uint _Adler32;
-
         /// <summary>
         /// The compression level to use in this codec.  Useful only in compression mode.
         /// </summary>
         public CompressionLevel CompressLevel = CompressionLevel.Default;
-
         /// <summary>
         /// The number of Window Bits to use.  
         /// </summary>
@@ -158,7 +143,6 @@ using Interop=System.Runtime.InteropServices;
         /// a 32k window.  
         /// </remarks>
         public int WindowBits = ZlibConstants.WindowBitsDefault;
-
         /// <summary>
         /// The compression strategy to use.
         /// </summary>
@@ -173,14 +157,10 @@ using Interop=System.Runtime.InteropServices;
         /// let me know your results.
         /// </remarks>
         public CompressionStrategy Strategy = CompressionStrategy.Default;
-
-
         /// <summary>
         /// The Adler32 checksum on the data transferred through the codec so far. You probably don't need to look at this.
         /// </summary>
         public int Adler32 { get { return (int)_Adler32; } }
-
-
         /// <summary>
         /// Create a ZlibCodec.
         /// </summary>
@@ -190,7 +170,6 @@ using Interop=System.Runtime.InteropServices;
         /// or decompress. 
         /// </remarks>
         public ZlibCodec() { }
-
         /// <summary>
         /// Create a ZlibCodec that either compresses or decompresses.
         /// </summary>
@@ -211,7 +190,6 @@ using Interop=System.Runtime.InteropServices;
             }
             else throw new ZlibException("Invalid ZlibStreamFlavor.");
         }
-
     /// <summary>
     /// Initialize the inflation state. 
     /// </summary>
@@ -221,7 +199,6 @@ using Interop=System.Runtime.InteropServices;
     /// </remarks>
     /// <returns>Z_OK if everything goes well.</returns>
     public int InitializeInflate() => InitializeInflate(this.WindowBits);
-
     /// <summary>
     /// Initialize the inflation state with an explicit flag to
     /// govern the handling of RFC1950 header bytes.
@@ -241,7 +218,6 @@ using Interop=System.Runtime.InteropServices;
     ///
     /// <returns>Z_OK if everything goes well.</returns>
     public int InitializeInflate(bool expectRfc1950Header) => InitializeInflate(this.WindowBits, expectRfc1950Header);
-
     /// <summary>
     /// Initialize the ZlibCodec for inflation, with the specified number of window bits. 
     /// </summary>
@@ -253,7 +229,6 @@ using Interop=System.Runtime.InteropServices;
             this.WindowBits = windowBits;            
             return InitializeInflate(windowBits, true);
         }
-
         /// <summary>
         /// Initialize the inflation state with an explicit flag to govern the handling of
         /// RFC1950 header bytes. 
@@ -280,7 +255,6 @@ using Interop=System.Runtime.InteropServices;
             istate = new InflateManager(expectRfc1950Header);
             return istate.Initialize(this, windowBits);
         }
-
     /// <summary>
     /// Inflate the data in the InputBuffer, placing the result in the OutputBuffer.
     /// </summary>
@@ -345,8 +319,6 @@ using Interop=System.Runtime.InteropServices;
     /// <param name="flush">The flush to use when inflating.</param>
     /// <returns>Z_OK if everything goes well.</returns>
     public int Inflate(FlushType flush) => istate == null ? throw new ZlibException("No Inflate State!") : istate.Inflate(flush);
-
-
     /// <summary>
     /// Ends an inflation session. 
     /// </summary>
@@ -364,13 +336,11 @@ using Interop=System.Runtime.InteropServices;
             istate = null;
             return ret;
         }
-
     /// <summary>
     /// I don't know what this does!
     /// </summary>
     /// <returns>Z_OK if everything goes well.</returns>
     public int SyncInflate() => istate == null ? throw new ZlibException("No Inflate State!") : istate.Sync();
-
     /// <summary>
     /// Initialize the ZlibCodec for deflation operation.
     /// </summary>
@@ -412,7 +382,6 @@ using Interop=System.Runtime.InteropServices;
     /// </example>
     /// <returns>Z_OK if all goes well. You generally don't need to check the return code.</returns>
     public int InitializeDeflate() => _InternalInitializeDeflate(true);
-
     /// <summary>
     /// Initialize the ZlibCodec for deflation operation, using the specified CompressionLevel.
     /// </summary>
@@ -427,8 +396,6 @@ using Interop=System.Runtime.InteropServices;
             this.CompressLevel = level;
             return _InternalInitializeDeflate(true);
         }
-
-
         /// <summary>
         /// Initialize the ZlibCodec for deflation operation, using the specified CompressionLevel, 
         /// and the explicit flag governing whether to emit an RFC1950 header byte pair.
@@ -448,8 +415,6 @@ using Interop=System.Runtime.InteropServices;
             this.CompressLevel = level;
             return _InternalInitializeDeflate(wantRfc1950Header);
         }
-
-
         /// <summary>
         /// Initialize the ZlibCodec for deflation operation, using the specified CompressionLevel, 
         /// and the specified number of window bits. 
@@ -466,7 +431,6 @@ using Interop=System.Runtime.InteropServices;
             this.WindowBits = bits;
             return _InternalInitializeDeflate(true);
         }
-
         /// <summary>
         /// Initialize the ZlibCodec for deflation operation, using the specified
         /// CompressionLevel, the specified number of window bits, and the explicit flag
@@ -483,7 +447,6 @@ using Interop=System.Runtime.InteropServices;
             this.WindowBits = bits;
             return _InternalInitializeDeflate(wantRfc1950Header);
         }
-
         private int _InternalInitializeDeflate(bool wantRfc1950Header)
         {
             if (istate != null) throw new ZlibException("You may not call InitializeDeflate() after calling InitializeInflate().");
@@ -491,10 +454,8 @@ using Interop=System.Runtime.InteropServices;
         {
             WantRfc1950HeaderBytes = wantRfc1950Header
         };
-
         return dstate.Initialize(this, this.CompressLevel, this.WindowBits, this.Strategy);
         }
-
     /// <summary>
     /// Deflate one batch of data.
     /// </summary>
@@ -564,7 +525,6 @@ using Interop=System.Runtime.InteropServices;
     /// </param>
     /// <returns>Z_OK if all goes well.</returns>
     public int Deflate(FlushType flush) => dstate == null ? throw new ZlibException("No Deflate State!") : dstate.Deflate(flush);
-
     /// <summary>
     /// End a deflation session.
     /// </summary>
@@ -581,7 +541,6 @@ using Interop=System.Runtime.InteropServices;
             dstate = null;
             return ZlibConstants.Z_OK; //ret;
         }
-
         /// <summary>
         /// Reset a codec for another deflation session.
         /// </summary>
@@ -597,8 +556,6 @@ using Interop=System.Runtime.InteropServices;
                 throw new ZlibException("No Deflate State!");
             dstate.Reset();
         }
-
-
     /// <summary>
     /// Set the CompressionStrategy and CompressionLevel for a deflation session.
     /// </summary>
@@ -606,8 +563,6 @@ using Interop=System.Runtime.InteropServices;
     /// <param name="strategy">the strategy to use for compression.</param>
     /// <returns>Z_OK if all goes well.</returns>
     public int SetDeflateParams(CompressionLevel level, CompressionStrategy strategy) => dstate == null ? throw new ZlibException("No Deflate State!") : dstate.SetParams(level, strategy);
-
-
     /// <summary>
     /// Set the dictionary to be used for either Inflation or Deflation.
     /// </summary>
@@ -617,10 +572,8 @@ using Interop=System.Runtime.InteropServices;
         {
             if (istate != null)
                 return istate.SetDictionary(dictionary);
-
         return dstate != null ? dstate.SetDictionary(dictionary) : throw new ZlibException("No Inflate or Deflate state!");
     }
-
     /// <summary>
     /// Set the dictionary to be used for either Inflation or Deflation unconditionally.
     /// </summary>
@@ -632,10 +585,8 @@ using Interop=System.Runtime.InteropServices;
         {
             if (istate != null)
                 return istate.SetDictionary(dictionary, true);
-
         return dstate != null ? dstate.SetDictionary(dictionary) : throw new ZlibException("No Inflate or Deflate state!");
     }
-
     // Flush as much pending output as possible. All deflate() output goes
     // through this function so some applications may wish to modify it
     // to avoid allocating a large strm->next_out buffer and copying into it.
@@ -643,12 +594,10 @@ using Interop=System.Runtime.InteropServices;
     internal void flush_pending()
         {
             int len = dstate.pendingCount;
-
             if (len > AvailableBytesOut)
                 len = AvailableBytesOut;
             if (len == 0)
                 return;
-
             if (dstate.pending.Length <= dstate.nextPending ||
                 OutputBuffer.Length <= NextOut ||
                 dstate.pending.Length < (dstate.nextPending + len) ||
@@ -657,9 +606,7 @@ using Interop=System.Runtime.InteropServices;
                 throw new ZlibException(String.Format("Invalid State. (pending.Length={0}, pendingCount={1})",
                     dstate.pending.Length, dstate.pendingCount));
             }
-
             Array.Copy(dstate.pending, dstate.nextPending, OutputBuffer, NextOut, len);
-
             NextOut             += len;
             dstate.nextPending  += len;
             TotalBytesOut       += len;
@@ -670,7 +617,6 @@ using Interop=System.Runtime.InteropServices;
                 dstate.nextPending = 0;
             }
         }
-
         // Read a new buffer from the current input stream, update the adler32
         // and total number of bytes read.  All deflate() input goes through
         // this function so some applications may wish to modify it to avoid
@@ -679,14 +625,11 @@ using Interop=System.Runtime.InteropServices;
         internal int read_buf(byte[] buf, int start, int size)
         {
             int len = AvailableBytesIn;
-
             if (len > size)
                 len = size;
             if (len == 0)
                 return 0;
-
             AvailableBytesIn -= len;
-
             if (dstate.WantRfc1950HeaderBytes)
             {
                 _Adler32 = Adler.Adler32(_Adler32, InputBuffer, NextIn, len);
@@ -696,5 +639,4 @@ using Interop=System.Runtime.InteropServices;
             TotalBytesIn += len;
             return len;
         }
-
     }

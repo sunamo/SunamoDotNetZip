@@ -1,4 +1,5 @@
 namespace Ionic.Zip;
+
 // ZipFile.Save.cs
 // ------------------------------------------------------------------
 //
@@ -24,16 +25,8 @@ namespace Ionic.Zip;
 //
 // ------------------------------------------------------------------
 //
-
-
-using System;
-using System.IO;
-using System.Collections.Generic;
-
-
     public partial class ZipFile
     {
-
         /// <summary>
         ///   Delete file with retry on UnauthorizedAccessException.
         /// </summary>
@@ -66,8 +59,6 @@ using System.Collections.Generic;
                 }
             }
         }
-
-
         /// <summary>
         ///   Saves the Zip archive to a file, specified by the Name property of the
         ///   <c>ZipFile</c>.
@@ -133,13 +124,10 @@ using System.Collections.Generic;
                 _saveOperationCanceled = false;
                 _numberOfSegmentsForMostRecentSave = 0;
                 OnSaveStarted();
-
                 if (WriteStream == null)
                     throw new BadStateException("You haven't specified where to save the zip.");
-
                 if (_name != null && _name.EndsWith(".exe") && !_SavingSfx)
                     throw new BadStateException("You specified an EXE for a plain zip file.");
-
                 // check if modified, before saving.
                 if (!_contentsChanged)
                 {
@@ -147,16 +135,11 @@ using System.Collections.Generic;
                     if (Verbose) StatusMessageTextWriter.WriteLine("No save is necessary....");
                     return;
                 }
-
                 Reset(true);
-
                 if (Verbose) StatusMessageTextWriter.WriteLine("saving....");
-
                 // validate the number of entries
                 if (_entries.Count >= 0xFFFF && _zip64 == Zip64Option.Never)
                     throw new ZipException("The number of entries is 65535 or greater. Consider setting the UseZip64WhenSaving property on the ZipFile instance.");
-
-
                 // write an entry in the zip for each file
                 int n = 0;
                 // workitem 9831
@@ -167,28 +150,20 @@ using System.Collections.Generic;
                     e.Write(WriteStream);
                     if (_saveOperationCanceled)
                         break;
-
                     n++;
                     OnSaveEntry(n, e, false);
                     if (_saveOperationCanceled)
                         break;
-
                     // Some entries can be skipped during the save.
                     if (e.IncludedInMostRecentSave)
                         thisSaveUsedZip64 |= e.OutputUsedZip64.Value;
                 }
-
-
-
                 if (_saveOperationCanceled)
                     return;
-
                 var zss = WriteStream as ZipSegmentedStream;
-
                 _numberOfSegmentsForMostRecentSave = (zss!=null)
                     ? zss.CurrentSegment
                     : 1;
-
                 bool directoryNeededZip64 =
                     ZipOutput.WriteCentralDirectoryStructure
                     (WriteStream,
@@ -197,15 +172,11 @@ using System.Collections.Generic;
                      _zip64,
                      Comment,
                      new ZipContainer(this));
-
                 OnSaveEvent(ZipProgressEventType.Saving_AfterSaveTempArchive);
-
                 _hasBeenSaved = true;
                 _contentsChanged = false;
-
                 thisSaveUsedZip64 |= directoryNeededZip64;
                 _OutputUsesZip64 = new Nullable<bool>(thisSaveUsedZip64);
-
                 if (_fileAlreadyExists && this._readstream != null)
                 {
                     // This means we opened and read a zip file.
@@ -220,7 +191,6 @@ using System.Collections.Generic;
                     zss1?.Dispose();
                     e._archiveStream = null;
                 }
-
                 // do the rename as necessary
                 if (_name != null &&
                     (_temporaryFileName!=null || zss != null))
@@ -228,10 +198,8 @@ using System.Collections.Generic;
                     // _temporaryFileName may remain null if we are writing to a stream.
                     // only close the stream if there is a file behind it.
                     WriteStream.Dispose();
-
                     if (_saveOperationCanceled)
                         return;
-
                     string tmpName = null;
                     if (File.Exists(_name))
                     {
@@ -275,13 +243,10 @@ using System.Collections.Generic;
                             DeleteFileWithRetry(tmpName);
                         File.Move(_name, tmpName);
                     }
-
                     OnSaveEvent(ZipProgressEventType.Saving_BeforeRenameTempArchive);
                     File.Move((zss != null) ? zss.CurrentTempName : _temporaryFileName,
                               _name);
-
                     OnSaveEvent(ZipProgressEventType.Saving_AfterRenameTempArchive);
-
                     if (tmpName != null)
                     {
                         try
@@ -294,28 +259,21 @@ using System.Collections.Generic;
                         {
                             // don't care about exceptions here.
                         }
-
                     }
                     _fileAlreadyExists = true;
                 }
                 _readName = _name;
-
                 NotifyEntriesSaveComplete(c);
                 OnSaveCompleted();
                 _JustSaved = true;
             }
-
             // workitem 5043
             finally
             {
                 CleanupAfterSaveOperation();
             }
-
             return;
         }
-
-
-
         private static void NotifyEntriesSaveComplete(ICollection<ZipEntry> c)
         {
             foreach (ZipEntry e in  c)
@@ -323,8 +281,6 @@ using System.Collections.Generic;
                 e.NotifySaveComplete();
             }
         }
-
-
         private void RemoveTempFile()
         {
             try
@@ -340,8 +296,6 @@ using System.Collections.Generic;
                     StatusMessageTextWriter.WriteLine("ZipFile::Save: could not delete temp file: {0}.", ex1.Message);
             }
         }
-
-
         private void CleanupAfterSaveOperation()
         {
             if (_name != null)
@@ -357,7 +311,6 @@ using System.Collections.Generic;
                     catch (System.IO.IOException) { }
                 }
                 _writestream = null;
-
                 if (_temporaryFileName != null)
                 {
                     RemoveTempFile();
@@ -365,8 +318,6 @@ using System.Collections.Generic;
                 }
             }
         }
-
-
         /// <summary>
         /// Save the file to a new zipfile, with the given name.
         /// </summary>
@@ -448,9 +399,7 @@ using System.Collections.Generic;
             // file backing it) in the Save() method.
             if (_name == null)
                 _writestream = null;
-
             else _readName = _name; // workitem 13915
-
             _name = fileName;
             if (Directory.Exists(_name))
                 throw new ZipException("Bad Directory", new System.ArgumentException("That name specifies an existing directory. Please specify a filename.", nameof(fileName)));
@@ -458,8 +407,6 @@ using System.Collections.Generic;
             _fileAlreadyExists = File.Exists(_readName);
             Save();
         }
-
-
         /// <summary>
         ///   Save the zip archive to the specified stream.
         /// </summary>
@@ -554,28 +501,18 @@ using System.Collections.Generic;
         ArgumentNullException.ThrowIfNull(outputStream);
         if (!outputStream.CanWrite)
                 throw new ArgumentException("Must be a writable stream.", nameof(outputStream));
-
             // if we had a filename to save to, we are now obliterating it.
             _name = null;
-
             if(_writestream != null) // if we saved to a stream before read from there
                 _readstream = _writestream;
             _writestream = new CountingStream(outputStream);
-
             _contentsChanged = true;
             _fileAlreadyExists = File.Exists(_readName); // if we saved to or read from a file before
-
             Save();
-
             _fileAlreadyExists = false;
             _readName = null; // if we had a filename to save to, we are now obliterating it.
         }
-
-
     }
-
-
-
     internal static class ZipOutput
     {
         public static bool WriteCentralDirectoryStructure(Stream s,
@@ -588,7 +525,6 @@ using System.Collections.Generic;
             var zss = s as ZipSegmentedStream;
             if (zss != null)
                 zss.ContiguousWrite = true;
-
             // write to a memory stream in order to keep the
             // CDR contiguous
             Int64 aLength = 0;
@@ -606,15 +542,11 @@ using System.Collections.Generic;
                 s.Write(a, 0, a.Length);
                 aLength = a.Length;
             }
-
-
         // We need to keep track of the start and
         // Finish of the Central Directory Structure.
-
         // Cannot always use WriteStream.Length or Position; some streams do
         // not support these. (eg, ASP.NET Response.OutputStream) In those
         // cases we have a CountingStream.
-
         // Also, we cannot just set Start as s.Position bfore the write, and Finish
         // as s.Position after the write.  In a split zip, the write may actually
         // flip to the next segment.  In that case, Start will be zero.  But we
@@ -623,27 +555,20 @@ using System.Collections.Generic;
         // segment that directory would fall in, it it were written.  Then, include
         // that data into the directory, and finally, write the directory to the
         // output stream.
-
         long Finish = (s is CountingStream output) ? output.ComputedPosition : s.Position;  // BytesWritten
         long Start = Finish - aLength;
-
             // need to know which segment the EOCD record starts in
             UInt32 startSegment = (zss != null)
                 ? zss.CurrentSegment
                 : 0;
-
             Int64 SizeOfCentralDirectory = Finish - Start;
-
             int countOfEntries = CountEntries(entries);
-
             bool needZip64CentralDirectory =
                 zip64 == Zip64Option.Always ||
                 countOfEntries >= 0xFFFF ||
                 SizeOfCentralDirectory > 0xFFFFFFFF ||
                 Start > 0xFFFFFFFF;
-
         byte[] a2;
-
         // emit ZIP64 extensions as required
         if (needZip64CentralDirectory)
             {
@@ -655,7 +580,6 @@ using System.Collections.Generic;
                     else
                         throw new ZipException("The archive requires a ZIP64 Central Directory. Consider setting the ZipOutputStream.EnableZip64 property.");
                 }
-
                 var a = GenZip64EndOfCentralDirectory(Start, Finish, countOfEntries, numSegments);
                 a2 = GenCentralDirectoryFooter(Start, Finish, zip64, countOfEntries, comment, container);
                 if (startSegment != 0)
@@ -668,14 +592,12 @@ using System.Collections.Generic;
                     // number of the disk with the start of the central directory
                     //Array.Copy(BitConverter.GetBytes(startSegment), 0, a, i, 4);
                     Array.Copy(BitConverter.GetBytes(thisSegment), 0, a, i, 4);
-
                     i = 60;
                     // offset 60
                     // number of the disk with the start of the zip64 eocd
                     Array.Copy(BitConverter.GetBytes(thisSegment), 0, a, i, 4);
                     i += 4;
                     i += 8;
-
                     // offset 72
                     // total number of disks
                     Array.Copy(BitConverter.GetBytes(thisSegment), 0, a, i, 4);
@@ -684,14 +606,11 @@ using System.Collections.Generic;
             }
             else
                 a2 = GenCentralDirectoryFooter(Start, Finish, zip64, countOfEntries, comment, container);
-
-
             // now, the regular footer
             if (startSegment != 0)
             {
                 // The assumption is the central directory is never split across
                 // segment boundaries.
-
                 UInt16 thisSegment = (UInt16) zss.ComputeSegment(a2.Length);
                 int i = 4;
                 // number of this disk
@@ -701,17 +620,12 @@ using System.Collections.Generic;
                 //Array.Copy(BitConverter.GetBytes((UInt16)startSegment), 0, a2, i, 2);
                 Array.Copy(BitConverter.GetBytes(thisSegment), 0, a2, i, 2);
         }
-
         s.Write(a2, 0, a2.Length);
-
             // reset the contiguous write property if necessary
             if (zss != null)
                 zss.ContiguousWrite = false;
-
             return needZip64CentralDirectory;
         }
-
-
         private static System.Text.Encoding GetEncoding(ZipContainer container, string t)
         {
             switch (container.AlternateEncodingUsage)
@@ -721,18 +635,13 @@ using System.Collections.Generic;
                 case ZipOption.Never:
                     return container.DefaultEncoding;
             }
-
             // AsNecessary is in force
             var e = container.DefaultEncoding;
             if (t == null) return e;
-
             var bytes = e.GetBytes(t);
             var t2 = e.GetString(bytes,0,bytes.Length);
         return t2.Equals(t) ? e : container.AlternateEncoding;
     }
-
-
-
     private static byte[] GenCentralDirectoryFooter(long StartOfCentralDirectory,
                                                         long EndOfCentralDirectory,
                                                         Zip64Option zip64,
@@ -751,23 +660,19 @@ using System.Collections.Generic;
             }
             bufferLength += commentLength;
             byte[] bytes = new byte[bufferLength];
-
             int i = 0;
             // signature
             byte[] sig = BitConverter.GetBytes(ZipConstants.EndOfCentralDirectorySignature);
             Array.Copy(sig, 0, bytes, i, 4);
             i+=4;
-
             // number of this disk
             // (this number may change later)
             bytes[i++] = 0;
             bytes[i++] = 0;
-
             // number of the disk with the start of the central directory
             // (this number may change later)
             bytes[i++] = 0;
             bytes[i++] = 0;
-
         int j;
         // handle ZIP64 extensions for the end-of-central-directory
         if (entryCount >= 0xFFFF || zip64 == Zip64Option.Always)
@@ -782,15 +687,12 @@ using System.Collections.Generic;
             // total number of entries in the central dir on this disk
             bytes[i++] = (byte)(entryCount & 0x00FF);
             bytes[i++] = (byte)((entryCount & 0xFF00) >> 8);
-
             // total number of entries in the central directory
             bytes[i++] = (byte)(entryCount & 0x00FF);
             bytes[i++] = (byte)((entryCount & 0xFF00) >> 8);
         }
-
         // size of the central directory
         Int64 SizeOfCentralDirectory = EndOfCentralDirectory - StartOfCentralDirectory;
-
             if (SizeOfCentralDirectory >= 0xFFFFFFFF || StartOfCentralDirectory >= 0xFFFFFFFF)
             {
                 // The actual data is in the ZIP64 central directory structure
@@ -804,15 +706,12 @@ using System.Collections.Generic;
                 bytes[i++] = (byte)((SizeOfCentralDirectory & 0x0000FF00) >> 8);
                 bytes[i++] = (byte)((SizeOfCentralDirectory & 0x00FF0000) >> 16);
                 bytes[i++] = (byte)((SizeOfCentralDirectory & 0xFF000000) >> 24);
-
                 // offset of the start of the central directory (we just get the low 4 bytes)
                 bytes[i++] = (byte)(StartOfCentralDirectory & 0x000000FF);
                 bytes[i++] = (byte)((StartOfCentralDirectory & 0x0000FF00) >> 8);
                 bytes[i++] = (byte)((StartOfCentralDirectory & 0x00FF0000) >> 16);
                 bytes[i++] = (byte)((StartOfCentralDirectory & 0xFF000000) >> 24);
             }
-
-
             // zip archive comment
             if ((comment == null) || (comment.Length == 0))
             {
@@ -826,7 +725,6 @@ using System.Collections.Generic;
                 if (commentLength + i + 2 > bytes.Length) commentLength = (Int16)(bytes.Length - i - 2);
                 bytes[i++] = (byte)(commentLength & 0x00FF);
                 bytes[i++] = (byte)((commentLength & 0xFF00) >> 8);
-
                 if (commentLength != 0)
                 {
                     // now actually write the comment itself into the byte buffer
@@ -836,28 +734,21 @@ using System.Collections.Generic;
                     }
             }
         }
-
             //   s.Write(bytes, 0, i);
             return bytes;
         }
-
-
-
         private static byte[] GenZip64EndOfCentralDirectory(long StartOfCentralDirectory,
                                                             long EndOfCentralDirectory,
                                                             int entryCount,
                                                             uint numSegments)
         {
             const int bufferLength = 12 + 44 + 20;
-
             byte[] bytes = new byte[bufferLength];
-
             int i = 0;
             // signature
             byte[] sig = BitConverter.GetBytes(ZipConstants.Zip64EndOfCentralDirectoryRecordSignature);
             Array.Copy(sig, 0, bytes, i, 4);
             i+=4;
-
             // There is a possibility to include "Extensible" data in the zip64
             // end-of-central-dir record.  I cannot figure out what it might be used to
             // store, so the size of this record is always fixed.  Maybe it is used for
@@ -865,64 +756,52 @@ using System.Collections.Generic;
             long DataSize = 44;
             Array.Copy(BitConverter.GetBytes(DataSize), 0, bytes, i, 8);
             i += 8;
-
             // offset 12
             // VersionMadeBy = 45;
             bytes[i++] = 45;
             bytes[i++] = 0x00;
-
             // VersionNeededToExtract = 45;
             bytes[i++] = 45;
             bytes[i++] = 0x00;
-
             // offset 16
             // number of the disk, and the disk with the start of the central dir.
             // (this may change later)
             for (int j = 0; j < 8; j++)
                 bytes[i++] = 0x00;
-
             // offset 24
             long numberOfEntries = entryCount;
             Array.Copy(BitConverter.GetBytes(numberOfEntries), 0, bytes, i, 8);
             i += 8;
             Array.Copy(BitConverter.GetBytes(numberOfEntries), 0, bytes, i, 8);
             i += 8;
-
             // offset 40
             Int64 SizeofCentraldirectory = EndOfCentralDirectory - StartOfCentralDirectory;
             Array.Copy(BitConverter.GetBytes(SizeofCentraldirectory), 0, bytes, i, 8);
             i += 8;
             Array.Copy(BitConverter.GetBytes(StartOfCentralDirectory), 0, bytes, i, 8);
             i += 8;
-
             // offset 56
             // now, the locator
             // signature
             sig = BitConverter.GetBytes(ZipConstants.Zip64EndOfCentralDirectoryLocatorSignature);
             Array.Copy(sig, 0, bytes, i, 4);
             i+=4;
-
             // offset 60
             // number of the disk with the start of the zip64 eocd
             // (this will change later)  (it will?)
             uint x2 = (numSegments==0)?0:(uint)(numSegments-1);
             Array.Copy(BitConverter.GetBytes(x2), 0, bytes, i, 4);
             i+=4;
-
             // offset 64
             // relative offset of the zip64 eocd
             Array.Copy(BitConverter.GetBytes(EndOfCentralDirectory), 0, bytes, i, 8);
             i += 8;
-
             // offset 72
             // total number of disks
             // (this will change later)
             Array.Copy(BitConverter.GetBytes(numSegments), 0, bytes, i, 4);
         return bytes;
         }
-
-
-
         private static int CountEntries(ICollection<ZipEntry> _entries)
         {
             // Cannot just emit _entries.Count, because some of the entries
@@ -932,8 +811,4 @@ using System.Collections.Generic;
                 if (entry.IncludedInMostRecentSave) count++;
             return count;
         }
-
-
-
-
     }

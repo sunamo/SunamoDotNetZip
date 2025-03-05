@@ -1,4 +1,5 @@
 namespace Ionic.BZip2;
+
 // BZip2InputStream.cs
 // ------------------------------------------------------------------
 //
@@ -24,7 +25,6 @@ namespace Ionic.BZip2;
 // The license below applies to the original Apache code.
 //
 // ------------------------------------------------------------------
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -43,22 +43,13 @@ namespace Ionic.BZip2;
  * specific language governing permissions and limitations
  * under the License.
  */
-
 /*
  * This package is based on the work done by Keiron Liddle, Aftex Software
  * <keiron@aftexsw.com> to whom the Ant project is very grateful for his
  * great code.
  */
-
 // compile: msbuild
 // not: csc.exe /t:library /debug+ /out:dll BZip2InputStream.cs BCRC32.cs Rand.cs
-
-
-
-using System;
-using System.IO;
-
-
     /// <summary>
     ///   A read-only decorator stream that performs BZip2 decompression on Read.
     /// </summary>
@@ -68,10 +59,8 @@ using System.IO;
     readonly bool _leaveOpen;
         Int64 totalBytesRead;
         private int last;
-
         /* for undoing the Burrows-Wheeler transform */
         private int origPtr;
-
         // blockSize100k: 0 .. 9.
         //
         // This var name is a misnomer. The actual block size is 100000
@@ -84,7 +73,6 @@ using System.IO;
         private int nInUse;
         private Stream input;
         private int currentChar = -1;
-
         /// <summary>
         ///   Compressor State
         /// </summary>
@@ -99,12 +87,9 @@ using System.IO;
             NO_RAND_PART_B = 6,
             NO_RAND_PART_C = 7,
         }
-
         private CState currentState = CState.START_BLOCK;
-
         private uint storedBlockCRC, storedCombinedCRC;
         private uint computedBlockCRC, computedCombinedCRC;
-
         // Variables used by setup* methods exclusively
         private int su_count;
         private int su_ch2;
@@ -116,8 +101,6 @@ using System.IO;
         private int su_tPos;
         private char su_z;
         private BZip2InputStream.DecompressionState data;
-
-
         /// <summary>
         ///   Create a BZip2InputStream, wrapping it around the given input Stream.
         /// </summary>
@@ -130,8 +113,6 @@ using System.IO;
         public BZip2InputStream(Stream input)
             : this(input, false)
         {}
-
-
         /// <summary>
         ///   Create a BZip2InputStream with the given stream, and
         ///   specifying whether to leave the wrapped stream open when
@@ -170,12 +151,10 @@ using System.IO;
         public BZip2InputStream(Stream input, bool leaveOpen)
             : base()
         {
-
             this.input = input;
             this._leaveOpen = leaveOpen;
             init();
         }
-
         /// <summary>
         ///   Read data from the stream.
         /// </summary>
@@ -201,44 +180,33 @@ using System.IO;
         {
             if (offset < 0)
                 throw new IndexOutOfRangeException(String.Format("offset ({0}) must be > 0", offset));
-
             if (count < 0)
                 throw new IndexOutOfRangeException(String.Format("count ({0}) must be > 0", count));
-
             if (offset + count > buffer.Length)
                 throw new IndexOutOfRangeException(String.Format("offset({0}) count({1}) bLength({2})",
                                                                  offset, count, buffer.Length));
-
             if (this.input == null)
                 throw new IOException("the stream is not open");
-
-
             int hi = offset + count;
             int destOffset = offset;
             for (int b; (destOffset < hi) && ((b = ReadByte()) >= 0);)
             {
                 buffer[destOffset++] = (byte) b;
             }
-
             return destOffset - offset;
         }
-
         private void MakeMaps()
         {
             bool[] inUse = this.data.inUse;
             byte[] seqToUnseq = this.data.seqToUnseq;
-
             int n = 0;
-
             for (int i = 0; i < 256; i++)
             {
                 if (inUse[i])
                     seqToUnseq[n++] = (byte) i;
             }
-
             this.nInUse = n;
         }
-
         /// <summary>
         ///   Read a single byte from the stream.
         /// </summary>
@@ -251,42 +219,29 @@ using System.IO;
             {
                 case CState.EOF:
                     return -1;
-
                 case CState.START_BLOCK:
                     throw new IOException("bad state");
-
                 case CState.RAND_PART_A:
                     throw new IOException("bad state");
-
                 case CState.RAND_PART_B:
                     SetupRandPartB();
                     break;
-
                 case CState.RAND_PART_C:
                     SetupRandPartC();
                     break;
-
                 case CState.NO_RAND_PART_A:
                     throw new IOException("bad state");
-
                 case CState.NO_RAND_PART_B:
                     SetupNoRandPartB();
                     break;
-
                 case CState.NO_RAND_PART_C:
                     SetupNoRandPartC();
                     break;
-
                 default:
                     throw new IOException("bad state");
             }
-
             return retChar;
         }
-
-
-
-
         /// <summary>
         /// Indicates whether the stream can be read.
         /// </summary>
@@ -300,8 +255,6 @@ using System.IO;
             return _disposed ? throw new ObjectDisposedException("BZip2Stream") : input.CanRead;
         }
     }
-
-
         /// <summary>
         /// Indicates whether the stream supports Seek operations.
         /// </summary>
@@ -312,8 +265,6 @@ using System.IO;
         {
             get { return false; }
         }
-
-
         /// <summary>
         /// Indicates whether the stream can be written.
         /// </summary>
@@ -327,7 +278,6 @@ using System.IO;
             return _disposed ? throw new ObjectDisposedException("BZip2Stream") : input.CanWrite;
         }
     }
-
         /// <summary>
         /// Flush the stream.
         /// </summary>
@@ -336,7 +286,6 @@ using System.IO;
             if (_disposed) throw new ObjectDisposedException("BZip2Stream");
             input.Flush();
         }
-
         /// <summary>
         /// Reading this property always throws a <see cref="NotImplementedException"/>.
         /// </summary>
@@ -344,7 +293,6 @@ using System.IO;
         {
             get { throw new NotImplementedException(); }
         }
-
         /// <summary>
         /// The position of the stream pointer.
         /// </summary>
@@ -362,7 +310,6 @@ using System.IO;
             }
             set { throw new NotImplementedException(); }
         }
-
     /// <summary>
     /// Calling this method always throws a <see cref="NotImplementedException"/>.
     /// </summary>
@@ -370,13 +317,11 @@ using System.IO;
     /// <param name="origin">this is irrelevant, since it will always throw!</param>
     /// <returns>irrelevant!</returns>
     public override long Seek(long offset, System.IO.SeekOrigin origin) => throw new NotImplementedException();
-
     /// <summary>
     /// Calling this method always throws a <see cref="NotImplementedException"/>.
     /// </summary>
     /// <param name="value">this is irrelevant, since it will always throw!</param>
     public override void SetLength(long value) => throw new NotImplementedException();
-
     /// <summary>
     ///   Calling this method always throws a <see cref="NotImplementedException"/>.
     /// </summary>
@@ -384,8 +329,6 @@ using System.IO;
     /// <param name='offset'>this parameter is never used</param>
     /// <param name='count'>this parameter is never used</param>
     public override void Write(byte[] buffer, int offset, int count) => throw new NotImplementedException();
-
-
     /// <summary>
     ///   Dispose the stream.
     /// </summary>
@@ -408,33 +351,23 @@ using System.IO;
                 base.Dispose(disposing);
             }
         }
-
-
         void init()
         {
             if (null == this.input)
                 throw new IOException("No input Stream");
-
             if (!this.input.CanRead)
                 throw new IOException("Unreadable input Stream");
-
             CheckMagicChar('B', 0);
             CheckMagicChar('Z', 1);
             CheckMagicChar('h', 2);
-
             int blockSize = this.input.ReadByte();
-
             if ((blockSize < '1') || (blockSize > '9'))
                 throw new IOException("Stream is not BZip2 formatted: illegal "
                                       + "blocksize " + (char) blockSize);
-
             this.blockSize100k = blockSize - '0';
-
             InitBlock();
             SetupBlock();
         }
-
-
         void CheckMagicChar(char expected, int position)
         {
             int magic = this.input.ReadByte();
@@ -445,8 +378,6 @@ using System.IO;
                 throw new IOException(msg);
             }
         }
-
-
         void InitBlock()
         {
             char magic0 = bsGetUByte();
@@ -455,7 +386,6 @@ using System.IO;
             char magic3 = bsGetUByte();
             char magic4 = bsGetUByte();
             char magic5 = bsGetUByte();
-
             if (magic0 == 0x17 && magic1 == 0x72 && magic2 == 0x45
                 && magic3 == 0x38 && magic4 == 0x50 && magic5 == 0x90)
             {
@@ -477,26 +407,19 @@ using System.IO;
             {
                 this.storedBlockCRC = bsGetInt();
                 // Console.WriteLine(" stored block CRC     : {0:X8}", this.storedBlockCRC);
-
                 this.blockRandomised = (GetBits(1) == 1);
-
                 // Lazily allocate data
                 if (this.data == null)
                     this.data = new DecompressionState(this.blockSize100k);
-
                 // currBlockNo++;
                 getAndMoveToFrontDecode();
-
                 this.crc.Reset();
                 this.currentState = CState.START_BLOCK;
             }
         }
-
-
         private void EndBlock()
         {
             this.computedBlockCRC = (uint)this.crc.Crc32Result;
-
             // A bad CRC is considered a fatal error.
             if (this.storedBlockCRC != this.computedBlockCRC)
             {
@@ -505,12 +428,10 @@ using System.IO;
                 // this.computedCombinedCRC = (this.storedCombinedCRC << 1)
                 //     | (this.storedCombinedCRC >> 31);
                 // this.computedCombinedCRC ^= this.storedBlockCRC;
-
                 var msg = String.Format("BZip2 CRC error (expected {0:X8}, computed {1:X8})",
                                         this.storedBlockCRC, this.computedBlockCRC);
                 throw new IOException(msg);
             }
-
             // Console.WriteLine(" combined CRC (before): {0:X8}", this.computedCombinedCRC);
             this.computedCombinedCRC = (this.computedCombinedCRC << 1)
                 | (this.computedCombinedCRC >> 31);
@@ -519,23 +440,18 @@ using System.IO;
             // Console.WriteLine(" combined CRC (after) : {0:X8}", this.computedCombinedCRC);
             // Console.WriteLine();
         }
-
-
         private void complete()
         {
             this.storedCombinedCRC = bsGetInt();
             this.currentState = CState.EOF;
             this.data = null;
-
             if (this.storedCombinedCRC != this.computedCombinedCRC)
             {
                 var msg = String.Format("BZip2 CRC error (expected {0:X8}, computed {1:X8})",
                                       this.storedCombinedCRC, this.computedCombinedCRC);
-
                 throw new IOException(msg);
             }
         }
-
         /// <summary>
         ///   Close the stream.
         /// </summary>
@@ -556,8 +472,6 @@ using System.IO;
                 }
             }
         }
-
-
         /// <summary>
         ///   Read n bits from input, right justifying the result.
         /// </summary>
@@ -574,30 +488,22 @@ using System.IO;
         {
             int bsLiveShadow = this.bsLive;
             int bsBuffShadow = this.bsBuff;
-
             if (bsLiveShadow < n)
             {
                 do
                 {
                     int thech = this.input.ReadByte();
-
                     if (thech < 0)
                         throw new IOException("unexpected end of stream");
-
                     // Console.WriteLine("R {0:X2}", thech);
-
                     bsBuffShadow = (bsBuffShadow << 8) | thech;
                     bsLiveShadow += 8;
                 } while (bsLiveShadow < n);
-
                 this.bsBuff = bsBuffShadow;
             }
-
             this.bsLive = bsLiveShadow - n;
             return (bsBuffShadow >> (bsLiveShadow - n)) & ((1 << n) - 1);
         }
-
-
         // private bool bsGetBit()
         // {
         //     int bsLiveShadow = this.bsLive;
@@ -620,18 +526,13 @@ using System.IO;
         //     this.bsLive = bsLiveShadow - 1;
         //     return ((bsBuffShadow >> (bsLiveShadow - 1)) & 1) != 0;
         // }
-
         private bool bsGetBit()
         {
             int bit = GetBits(1);
             return bit != 0;
         }
-
     private char bsGetUByte() => (char)GetBits(8);
-
     private uint bsGetInt() => (uint)((((((GetBits(8) << 8) | GetBits(8)) << 8) | GetBits(8)) << 8) | GetBits(8));
-
-
     /**
      * Called by createHuffmanDecodingTables() exclusively.
      */
@@ -649,24 +550,20 @@ using System.IO;
                     }
                 }
             }
-
             for (int i = BZip2.MaxCodeLength; --i > 0;)
             {
                 bbase[i] = 0;
                 limit[i] = 0;
             }
-
             for (int i = 0; i < alphaSize; i++)
             {
                 bbase[length[i] + 1]++;
             }
-
             for (int i = 1, b = bbase[0]; i < BZip2.MaxCodeLength; i++)
             {
                 b += bbase[i];
                 bbase[i] = b;
             }
-
             for (int i = minLen, vec = 0, b =  bbase[i]; i <= maxLen; i++)
             {
                 int nb = bbase[i + 1];
@@ -675,24 +572,18 @@ using System.IO;
                 limit[i] = vec - 1;
                 vec <<= 1;
             }
-
             for (int i = minLen + 1; i <= maxLen; i++)
             {
                 bbase[i] = ((limit[i - 1] + 1) << 1) - bbase[i];
             }
         }
-
-
-
         private void recvDecodingTables()
         {
             var s = this.data;
             bool[] inUse = s.inUse;
             byte[] pos = s.recvDecodingTables_pos;
             //byte[] selector = s.selector;
-
             int inUse16 = 0;
-
             /* Receive the mapping table */
             for (int i = 0; i < 16; i++)
             {
@@ -701,12 +592,10 @@ using System.IO;
                     inUse16 |= 1 << i;
                 }
             }
-
             for (int i = 256; --i >= 0;)
             {
                 inUse[i] = false;
             }
-
             for (int i = 0; i < 16; i++)
             {
                 if ((inUse16 & (1 << i)) != 0)
@@ -721,14 +610,11 @@ using System.IO;
                     }
                 }
             }
-
             MakeMaps();
             int alphaSize = this.nInUse + 2;
-
             /* Now the selectors */
             int nGroups = GetBits(3);
             int nSelectors = GetBits(15);
-
             for (int i = 0; i < nSelectors; i++)
             {
                 int j = 0;
@@ -738,13 +624,11 @@ using System.IO;
                 }
                 s.selectorMtf[i] = (byte) j;
             }
-
             /* Undo the MTF values for the selectors. */
             for (int v = nGroups; --v >= 0;)
             {
                 pos[v] = (byte) v;
             }
-
             for (int i = 0; i < nSelectors; i++)
             {
                 int v = s.selectorMtf[i];
@@ -758,9 +642,7 @@ using System.IO;
                 pos[0] = tmp;
                 s.selector[i] = tmp;
             }
-
             char[][] len = s.temp_charArray2d;
-
             /* Now the coding tables */
             for (int t = 0; t < nGroups; t++)
             {
@@ -775,12 +657,9 @@ using System.IO;
                     len_t[i] = (char) curr;
                 }
             }
-
             // finally create the Huffman tables
             createHuffmanDecodingTables(alphaSize, nGroups);
         }
-
-
         /**
          * Called by recvDecodingTables() exclusively.
          */
@@ -789,7 +668,6 @@ using System.IO;
         {
             var s = this.data;
             char[][] len = s.temp_charArray2d;
-
             for (int t = 0; t < nGroups; t++)
             {
                 int minLen = 32;
@@ -800,7 +678,6 @@ using System.IO;
                     char lent = len_t[i];
                     if (lent > maxLen)
                         maxLen = lent;
-
                     if (lent < minLen)
                         minLen = lent;
                 }
@@ -809,24 +686,17 @@ using System.IO;
                 s.gMinlen[t] = minLen;
             }
         }
-
-
-
         private void getAndMoveToFrontDecode()
         {
             var s = this.data;
             this.origPtr = GetBits(24);
-
             if (this.origPtr < 0)
                 throw new IOException("BZ_DATA_ERROR");
             if (this.origPtr > 10 + BZip2.BlockSizeMultiple * this.blockSize100k)
                 throw new IOException("BZ_DATA_ERROR");
-
             recvDecodingTables();
-
             byte[] yy = s.getAndMoveToFrontDecode_yy;
             int limitLast = this.blockSize100k * BZip2.BlockSizeMultiple;
-
             /*
              * Setting up the unzftab entries here is not strictly necessary, but it
              * does save having to do it later in a separate pass, and so saves a
@@ -837,7 +707,6 @@ using System.IO;
                 yy[i] = (byte) i;
                 s.unzftab[i] = 0;
             }
-
             int groupNo = 0;
             int groupPos = BZip2.G_SIZE - 1;
             int eob = this.nInUse + 1;
@@ -850,13 +719,11 @@ using System.IO;
             int[] limit_zt = s.gLimit[zt];
             int[] perm_zt = s.gPerm[zt];
             int minLens_zt = s.gMinlen[zt];
-
             while (nextSym != eob)
             {
                 if ((nextSym == BZip2.RUNA) || (nextSym == BZip2.RUNB))
                 {
                     int es = -1;
-
                     for (int n = 1; true; n <<= 1)
                     {
                         if (nextSym == BZip2.RUNA)
@@ -871,7 +738,6 @@ using System.IO;
                         {
                             break;
                         }
-
                         if (groupPos == 0)
                         {
                             groupPos = BZip2.G_SIZE - 1;
@@ -885,9 +751,7 @@ using System.IO;
                         {
                             groupPos--;
                         }
-
                         int zn = minLens_zt;
-
                         // Inlined:
                         // int zvec = GetBits(zn);
                         while (bsLiveShadow < zn)
@@ -907,7 +771,6 @@ using System.IO;
                         int zvec = (bsBuffShadow >> (bsLiveShadow - zn))
                             & ((1 << zn) - 1);
                         bsLiveShadow -= zn;
-
                         while (zvec > limit_zt[zn])
                         {
                             zn++;
@@ -931,15 +794,12 @@ using System.IO;
                         }
                         nextSym = perm_zt[zvec - base_zt[zn]];
                     }
-
                     byte ch = s.seqToUnseq[yy[0]];
                     s.unzftab[ch & 0xff] += es + 1;
-
                     while (es-- >= 0)
                     {
                         s.ll8[++lastShadow] = ch;
                     }
-
                     if (lastShadow >= limitLast)
                         throw new IOException("block overrun");
                 }
@@ -947,11 +807,9 @@ using System.IO;
                 {
                     if (++lastShadow >= limitLast)
                         throw new IOException("block overrun");
-
                     byte tmp = yy[nextSym - 1];
                     s.unzftab[s.seqToUnseq[tmp] & 0xff]++;
                     s.ll8[lastShadow] = s.seqToUnseq[tmp];
-
                     /*
                      * This loop is hammered during decompression, hence avoid
                      * native method call overhead of System.Buffer.BlockCopy for very
@@ -968,9 +826,7 @@ using System.IO;
                     {
                         System.Buffer.BlockCopy(yy, 0, yy, 1, nextSym - 1);
                     }
-
                     yy[0] = tmp;
-
                     if (groupPos == 0)
                     {
                         groupPos = BZip2.G_SIZE - 1;
@@ -984,9 +840,7 @@ using System.IO;
                     {
                         groupPos--;
                     }
-
                     int zn = minLens_zt;
-
                     // Inlined:
                     // int zvec = GetBits(zn);
                     while (bsLiveShadow < zn)
@@ -1006,7 +860,6 @@ using System.IO;
                     int zvec = (bsBuffShadow >> (bsLiveShadow - zn))
                         & ((1 << zn) - 1);
                     bsLiveShadow -= zn;
-
                     while (zvec > limit_zt[zn])
                     {
                         zn++;
@@ -1030,13 +883,10 @@ using System.IO;
                     nextSym = perm_zt[zvec - base_zt[zn]];
                 }
             }
-
             this.last = lastShadow;
             this.bsLive = bsLiveShadow;
             this.bsBuff = bsBuffShadow;
         }
-
-
         private int getAndMoveToFrontDecode0(int groupNo)
         {
             var s = this.data;
@@ -1046,14 +896,12 @@ using System.IO;
             int zvec = GetBits(zn);
             int bsLiveShadow = this.bsLive;
             int bsBuffShadow = this.bsBuff;
-
             while (zvec > limit_zt[zn])
             {
                 zn++;
                 while (bsLiveShadow < 1)
                 {
                     int thech = this.input.ReadByte();
-
                     if (thech >= 0)
                     {
                         bsBuffShadow = (bsBuffShadow << 8) | thech;
@@ -1068,32 +916,24 @@ using System.IO;
                 bsLiveShadow--;
                 zvec = (zvec << 1) | ((bsBuffShadow >> bsLiveShadow) & 1);
             }
-
             this.bsLive = bsLiveShadow;
             this.bsBuff = bsBuffShadow;
-
             return s.gPerm[zt][zvec - s.gBase[zt][zn]];
         }
-
-
         private void SetupBlock()
         {
             if (this.data == null)
                 return;
-
             int i;
             var s = this.data;
             int[] tt = s.initTT(this.last + 1);
-
             //       xxxx
-
             /* Check: unzftab entries in range. */
             for (i = 0; i <= 255; i++)
             {
                 if (s.unzftab[i] < 0 || s.unzftab[i] > this.last)
                     throw new Exception("BZ_DATA_ERROR");
             }
-
             /* Actually generate cftab. */
             s.cftab[0] = 0;
             for (i = 1; i <= 256; i++) s.cftab[i] = s.unzftab[i-1];
@@ -1114,21 +954,17 @@ using System.IO;
                 if (s.cftab[i-1] > s.cftab[i])
                     throw new Exception("BZ_DATA_ERROR");
             }
-
             int lastShadow;
             for (i = 0, lastShadow = this.last; i <= lastShadow; i++)
             {
                 tt[s.cftab[s.ll8[i] & 0xff]++] = i;
             }
-
             if ((this.origPtr < 0) || (this.origPtr >= tt.Length))
                 throw new IOException("stream corrupted");
-
             this.su_tPos = tt[this.origPtr];
             this.su_count = 0;
             this.su_i2 = 0;
             this.su_ch2 = 256; /* not a valid 8-bit byte value?, and not EOF */
-
             if (this.blockRandomised)
             {
                 this.su_rNToGo = 0;
@@ -1140,9 +976,6 @@ using System.IO;
                 SetupNoRandPartA();
             }
         }
-
-
-
         private void SetupRandPartA()
         {
             if (this.su_i2 <= this.last)
@@ -1175,7 +1008,6 @@ using System.IO;
                 SetupBlock();
             }
         }
-
         private void SetupNoRandPartA()
         {
             if (this.su_i2 <= this.last)
@@ -1197,7 +1029,6 @@ using System.IO;
                 SetupBlock();
             }
         }
-
         private void SetupRandPartB()
         {
             if (this.su_ch2 != this.su_chPrev)
@@ -1236,7 +1067,6 @@ using System.IO;
                 SetupRandPartA();
             }
         }
-
         private void SetupRandPartC()
         {
             if (this.su_j2 < this.su_z)
@@ -1253,7 +1083,6 @@ using System.IO;
                 SetupRandPartA();
             }
         }
-
         private void SetupNoRandPartB()
         {
             if (this.su_ch2 != this.su_chPrev)
@@ -1273,7 +1102,6 @@ using System.IO;
                 SetupNoRandPartA();
             }
         }
-
         private void SetupNoRandPartC()
         {
             if (this.su_j2 < this.su_z)
@@ -1291,7 +1119,6 @@ using System.IO;
                 SetupNoRandPartA();
             }
         }
-
         private sealed class DecompressionState
         {
             // (with blockSize 900k)
@@ -1299,7 +1126,6 @@ using System.IO;
             readonly public byte[] seqToUnseq = new byte[256]; // 256 byte
             readonly public byte[] selector = new byte[BZip2.MaxSelectors]; // 18002 byte
             readonly public byte[] selectorMtf = new byte[BZip2.MaxSelectors]; // 18002 byte
-
             /**
              * Freq table collected to save a pass over the data during
              * decompression.
@@ -1309,38 +1135,30 @@ using System.IO;
             public readonly int[][] gBase;
             public readonly int[][] gPerm;
             public readonly int[] gMinlen;
-
             public readonly int[] cftab;
             public readonly byte[] getAndMoveToFrontDecode_yy;
             public readonly char[][] temp_charArray2d;
             public readonly byte[] recvDecodingTables_pos;
             // ---------------
             // 60798 byte
-
             public int[] tt; // 3600000 byte
             public byte[] ll8; // 900000 byte
-
             // ---------------
             // 4560782 byte
             // ===============
-
             public DecompressionState(int blockSize100k)
             {
                 this.unzftab = new int[256]; // 1024 byte
-
                 this.gLimit = BZip2.InitRectangularArray<int>(BZip2.NGroups,BZip2.MaxAlphaSize);
                 this.gBase = BZip2.InitRectangularArray<int>(BZip2.NGroups,BZip2.MaxAlphaSize);
                 this.gPerm = BZip2.InitRectangularArray<int>(BZip2.NGroups,BZip2.MaxAlphaSize);
                 this.gMinlen = new int[BZip2.NGroups]; // 24 byte
-
                 this.cftab = new int[257]; // 1028 byte
                 this.getAndMoveToFrontDecode_yy = new byte[256]; // 512 byte
                 this.temp_charArray2d = BZip2.InitRectangularArray<char>(BZip2.NGroups,BZip2.MaxAlphaSize);
                 this.recvDecodingTables_pos = new byte[BZip2.NGroups]; // 6 byte
-
                 this.ll8 = new byte[blockSize100k * BZip2.BlockSizeMultiple];
             }
-
             /**
              * Initializes the tt array.
              *
@@ -1351,7 +1169,6 @@ using System.IO;
             public int[] initTT(int length)
             {
                 int[] ttShadow = this.tt;
-
                 // tt.length should always be >= length, but theoretically
                 // it can happen, if the compressor mixed small and large
                 // blocks. Normally only the last block will be smaller
@@ -1360,14 +1177,10 @@ using System.IO;
                 {
                     this.tt = ttShadow = new int[length];
                 }
-
                 return ttShadow;
             }
         }
-
-
     }
-
     // /**
     //  * Checks if the signature matches what is expected for a bzip2 file.
     //  *
@@ -1389,8 +1202,6 @@ using System.IO;
     //
     //     return true;
     // }
-
-
     internal static class BZip2
     {
             internal static T[][] InitRectangularArray<T>(int d1, int d2)
@@ -1402,7 +1213,6 @@ using System.IO;
                 }
                 return x;
             }
-
         public static readonly int BlockSizeMultiple       = 100000;
         public static readonly int MinBlockSize       = 1;
         public static readonly int MaxBlockSize       = 9;
@@ -1422,7 +1232,4 @@ using System.IO;
      * elems, so the following limit seems very generous.  </p>
      */
         internal static readonly int QSORT_STACK_SIZE = 1000;
-
-
     }
-

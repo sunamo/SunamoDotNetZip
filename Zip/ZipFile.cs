@@ -1,4 +1,5 @@
 namespace Ionic.Zip;
+
 // ZipFile.cs
 //
 // Copyright (c) 2006-2010 Dino Chiesa
@@ -37,15 +38,7 @@ namespace Ionic.Zip;
 //
 // Thu, 08 Oct 2009  17:04
 //
-
-
-using System;
-using System.IO;
-using System.Collections.Generic;
 using Interop = System.Runtime.InteropServices;
-using System.Threading;
-
-
 /// <summary>
 ///   The ZipFile type represents a zip archive file.
 /// </summary>
@@ -130,9 +123,7 @@ System.Collections.IEnumerable,
 System.Collections.Generic.IEnumerable<ZipEntry>,
 IDisposable
 {
-
     #region public properties
-
     /// <summary>
     /// Indicates whether to perform a full scan of the zip file when reading it.
     /// </summary>
@@ -193,8 +184,6 @@ IDisposable
         get;
         set;
     }
-
-
     /// <summary>
     ///   Whether to sort the ZipEntries before saving the file.
     /// </summary>
@@ -228,9 +217,6 @@ IDisposable
         get;
         set;
     }
-
-
-
     /// <summary>
     ///   Indicates whether NTFS Reparse Points, like junctions, should be
     ///   traversed during calls to <c>AddDirectory()</c>.
@@ -255,8 +241,6 @@ IDisposable
     /// </code>
     /// </example>
     public bool AddDirectoryWillTraverseReparsePoints { get; set; }
-
-
     /// <summary>
     ///   Size of the IO buffer used while saving.
     /// </summary>
@@ -313,13 +297,11 @@ IDisposable
     /// }
     /// </code>
     /// </example>
-
     public int BufferSize
     {
         get { return _BufferSize; }
         set { _BufferSize = value; }
     }
-
     /// <summary>
     ///   Size of the work buffer to use for the ZLIB codec during compression.
     /// </summary>
@@ -350,7 +332,6 @@ IDisposable
         get;
         set;
     }
-
     /// <summary>
     ///   Indicates whether extracted files should keep their paths as
     ///   stored in the zip archive.
@@ -383,8 +364,6 @@ IDisposable
         get;
         set;
     }
-
-
     /// <summary>
     ///   The compression strategy to use for all entries.
     /// </summary>
@@ -403,8 +382,6 @@ IDisposable
         get { return _Strategy; }
         set { _Strategy = value; }
     }
-
-
     /// <summary>
     ///   The name of the <c>ZipFile</c>, on disk.
     /// </summary>
@@ -434,8 +411,6 @@ IDisposable
         get { return _name; }
         set { _name = value; }
     }
-
-
     /// <summary>
     ///   Sets the compression level to be used for entries subsequently added to
     ///   the zip archive.
@@ -474,7 +449,6 @@ IDisposable
         get;
         set;
     }
-
     /// <summary>
     ///   The compression method for the zipfile.
     /// </summary>
@@ -495,9 +469,6 @@ IDisposable
             _compressionMethod = value;
         }
     }
-
-
-
     /// <summary>
     ///   A comment attached to the zip archive.
     /// </summary>
@@ -557,10 +528,6 @@ IDisposable
             _contentsChanged = true;
         }
     }
-
-
-
-
     /// <summary>
     ///   Specifies whether the Creation, Access, and Modified times for entries
     ///   added to the zip file will be emitted in &#147;Windows format&#148;
@@ -680,8 +647,6 @@ IDisposable
             _emitNtfsTimes = value;
         }
     }
-
-
     /// <summary>
     /// Specifies whether the Creation, Access, and Modified times
     /// for entries added to the zip file will be emitted in "Unix(tm)
@@ -771,9 +736,6 @@ IDisposable
             _emitUnixTimes = value;
         }
     }
-
-
-
     /// <summary>
     ///   Indicates whether verbose output is sent to the <see
     ///   cref="StatusMessageTextWriter"/> during <c>AddXxx()</c> and
@@ -788,8 +750,6 @@ IDisposable
     {
         get { return (_StatusMessageTextWriter != null); }
     }
-
-
     /// <summary>
     ///   Returns true if an entry by the given name exists in the ZipFile.
     /// </summary>
@@ -800,9 +760,6 @@ IDisposable
     public bool ContainsEntry(string name) =>
         // workitem 12534
         RetrievalEntries.ContainsKey(SharedUtilities.NormalizePathForUseInZipFile(name));
-
-
-
     /// <summary>
     ///   Indicates whether to perform case-sensitive matching on the filename when
     ///   retrieving entries in the zipfile via the string-based indexer.
@@ -827,14 +784,10 @@ IDisposable
             _CaseSensitiveRetrieval = value;
         }
     }
-
-
     private Dictionary<string, ZipEntry> RetrievalEntries
     {
         get { return CaseSensitiveRetrieval ? _entries : _entriesInsensitive; }
     }
-
-
     /// <summary>
     ///   Indicates whether to ignore duplicate files (report only the first entry)
     ///   when loading a zipfile.
@@ -851,8 +804,6 @@ IDisposable
         get { return _IgnoreDuplicateFiles; }
         set { _IgnoreDuplicateFiles = value; }
     }
-
-
     /// <summary>
     ///   Indicates whether to encode entry filenames and entry comments using Unicode
     ///   (UTF-8).
@@ -982,7 +933,6 @@ IDisposable
             {
                 _alternateEncoding = System.Text.Encoding.GetEncoding("UTF-8");
                 _alternateEncodingUsage = ZipOption.AsNecessary;
-
             }
             else
             {
@@ -991,8 +941,6 @@ IDisposable
             }
         }
     }
-
-
     /// <summary>
     ///   Specify whether to use ZIP64 extensions when saving a zip archive.
     /// </summary>
@@ -1044,9 +992,6 @@ IDisposable
             _zip64 = value;
         }
     }
-
-
-
     /// <summary>
     ///   Indicates whether the archive requires ZIP64 extensions.
     /// </summary>
@@ -1097,22 +1042,17 @@ IDisposable
         {
             if (_entries.Count > 65534)
                 return new Nullable<bool>(true);
-
             // If the <c>ZipFile</c> has not been saved or if the contents have changed, then
             // it is not known if ZIP64 is required.
             if (!_hasBeenSaved || _contentsChanged) return null;
-
             // Whether ZIP64 is required is knowable.
             foreach (ZipEntry e in _entries.Values)
             {
                 if (e.RequiresZip64.Value) return new Nullable<bool>(true);
             }
-
             return new Nullable<bool>(false);
         }
     }
-
-
     /// <summary>
     ///   Indicates whether the most recent <c>Save()</c> operation used ZIP64 extensions.
     /// </summary>
@@ -1157,8 +1097,6 @@ IDisposable
             return _OutputUsesZip64;
         }
     }
-
-
     /// <summary>
     ///   Indicates whether the most recent <c>Read()</c> operation read a zip file that uses
     ///   ZIP64 extensions.
@@ -1174,20 +1112,16 @@ IDisposable
         {
             if (_entries.Count > 65534)
                 return true;
-
             foreach (ZipEntry e in this)
             {
                 // if any entry was added after reading the zip file, then the result is null
                 if (e.Source != ZipEntrySource.ZipFile) return null;
-
                 // if any entry read from the zip used zip64, then the result is true
                 if (e._InputUsesZip64) return true;
             }
             return false;
         }
     }
-
-
     /// <summary>
     ///   The text encoding to use when writing new entries to the <c>ZipFile</c>,
     ///   for those entries that cannot be encoded with the default (IBM437)
@@ -1344,8 +1278,6 @@ IDisposable
             _alternateEncodingUsage = ZipOption.AsNecessary;
         }
     }
-
-
     /// <summary>
     ///   A Text Encoding to use when encoding the filenames and comments for
     ///   all the ZipEntry items, during a ZipFile.Save() operation.
@@ -1367,8 +1299,6 @@ IDisposable
             _alternateEncoding = value;
         }
     }
-
-
     /// <summary>
     ///   A flag that tells if and when this instance should apply
     ///   AlternateEncoding to encode the filenames and comments associated to
@@ -1385,11 +1315,6 @@ IDisposable
             _alternateEncodingUsage = value;
         }
     }
-
-
-
-
-
     /// <summary>
     /// Gets or sets the <c>TextWriter</c> to which status messages are delivered
     /// for the instance.
@@ -1461,10 +1386,6 @@ IDisposable
         get { return _StatusMessageTextWriter; }
         set { _StatusMessageTextWriter = value; }
     }
-
-
-
-
     /// <summary>
     ///   Gets or sets the name for the folder to store the temporary file
     ///   this library writes when saving a zip archive.
@@ -1518,18 +1439,14 @@ IDisposable
     public String TempFileFolder
     {
         get { return _TempFileFolder; }
-
         set
         {
             _TempFileFolder = value;
             if (value == null) return;
-
             if (!Directory.Exists(value))
                 throw new FileNotFoundException(String.Format("That directory ({0}) does not exist.", value));
-
         }
     }
-
     /// <summary>
     /// Sets the password to be used on the <c>ZipFile</c> instance.
     /// </summary>
@@ -1689,11 +1606,6 @@ IDisposable
             return _Password;
         }
     }
-
-
-
-
-
     /// <summary>
     ///   The action the library should take when extracting a file that already
     ///   exists.
@@ -1719,8 +1631,6 @@ IDisposable
         get;
         set;
     }
-
-
     /// <summary>
     ///   The action the library should take when an error is encountered while
     ///   opening or reading files as they are saved into a zip archive.
@@ -1812,7 +1722,6 @@ IDisposable
     ///
     /// <seealso cref="Ionic.Zip.ZipEntry.ZipErrorAction"/>
     /// <seealso cref="Ionic.Zip.ZipFile.ZipError"/>
-
     public ZipErrorAction ZipErrorAction
     {
         get
@@ -1828,8 +1737,6 @@ IDisposable
                 ZipError = null;
         }
     }
-
-
     /// <summary>
     ///   The Encryption to use for entries added to the <c>ZipFile</c>.
     /// </summary>
@@ -1960,9 +1867,6 @@ IDisposable
             _Encryption = value;
         }
     }
-
-
-
     /// <summary>
     ///   A callback that allows the application to specify the compression level
     ///   to use for entries subsequently added to the zip archive.
@@ -2013,8 +1917,6 @@ IDisposable
         get;
         set;
     }
-
-
     /// <summary>
     /// The maximum size of an output segment, when saving a split Zip file.
     /// </summary>
@@ -2110,8 +2012,6 @@ IDisposable
             _maxOutputSegmentSize = value;
         }
     }
-
-
     /// <summary>
     /// The maximum size of an output segment, when saving a split Zip file.
     /// </summary>
@@ -2205,8 +2105,6 @@ IDisposable
             _maxOutputSegmentSize = value;
         }
     }
-
-
     /// <summary>
     ///   Returns the number of segments used in the most recent Save() operation.
     /// </summary>
@@ -2232,8 +2130,6 @@ IDisposable
             return unchecked((Int32)_numberOfSegmentsForMostRecentSave + 1);
         }
     }
-
-
     /// <summary>
     ///   The size threshold for an entry, above which a parallel deflate is used.
     /// </summary>
@@ -2304,7 +2200,6 @@ IDisposable
             return _ParallelDeflateThreshold;
         }
     }
-
     /// <summary>
     ///   The maximum number of buffer pairs to use when performing
     ///   parallel compression.
@@ -2395,13 +2290,9 @@ IDisposable
             _maxBufferPairs = value;
         }
     }
-
-
     /// <summary>Provides a string representation of the instance.</summary>
     /// <returns>a string representation of the instance.</returns>
     public override String ToString() => String.Format("ZipFile::{0}", Name);
-
-
     /// <summary>
     /// Returns the version number on the DotNetZip assembly.
     /// </summary>
@@ -2425,10 +2316,7 @@ IDisposable
             return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
         }
     }
-
     internal void NotifyEntryChanged() => _contentsChanged = true;
-
-
     internal Stream StreamForDiskNumber(uint diskNumber)
     {
         if (diskNumber + 1 == this._diskNumberWithCd ||
@@ -2440,9 +2328,6 @@ IDisposable
         return ZipSegmentedStream.ForReading(this._readName ?? this._name,
                                              diskNumber, _diskNumberWithCd);
     }
-
-
-
     // called by ZipEntry in ZipEntry.Extract(), when there is no stream set for the
     // ZipEntry.
     internal void Reset(bool whileSaving)
@@ -2482,14 +2367,8 @@ IDisposable
             _JustSaved = false;
         }
     }
-
-
     #endregion
-
     #region Constructors
-
-
-
     /// <summary>
     ///   Creates a new <c>ZipFile</c> instance, using the specified filename.
     /// </summary>
@@ -2600,8 +2479,6 @@ IDisposable
             throw new ZipException(String.Format("Could not read {0} as a zip file", fileName), e1);
         }
     }
-
-
     /// <summary>
     ///   Creates a new <c>ZipFile</c> instance, using the specified name for the
     ///   filename, and the specified Encoding.
@@ -2652,9 +2529,6 @@ IDisposable
             throw new ZipException(String.Format("{0} is not a valid zip file", fileName), e1);
         }
     }
-
-
-
     /// <summary>
     ///   Create a zip file, without specifying a target filename or stream to save to.
     /// </summary>
@@ -2722,8 +2596,6 @@ IDisposable
         }
         _InitInstance(null, null);
     }
-
-
     /// <summary>
     ///   Create a zip file, specifying a text Encoding, but without specifying a
     ///   target filename or stream to save to.
@@ -2748,8 +2620,6 @@ IDisposable
         AlternateEncodingUsage = ZipOption.Always;
         _InitInstance(null, null);
     }
-
-
     /// <summary>
     ///   Creates a new <c>ZipFile</c> instance, using the specified name for the
     ///   filename, and the specified status message writer.
@@ -2829,7 +2699,6 @@ IDisposable
         {
             _alternateEncoding = DefaultEncoding;
         }
-
         try
         {
             _InitInstance(fileName, statusMessageWriter);
@@ -2839,8 +2708,6 @@ IDisposable
             throw new ZipException(String.Format("{0} is not a valid zip file", fileName), e1);
         }
     }
-
-
     /// <summary>
     ///   Creates a new <c>ZipFile</c> instance, using the specified name for the
     ///   filename, the specified status message writer, and the specified Encoding.
@@ -2913,10 +2780,6 @@ IDisposable
             throw new ZipException(String.Format("{0} is not a valid zip file", fileName), e1);
         }
     }
-
-
-
-
     /// <summary>
     ///   Initialize a <c>ZipFile</c> instance by reading in a zip file.
     /// </summary>
@@ -2950,10 +2813,6 @@ IDisposable
             throw new ZipException(String.Format("{0} is not a valid zip file", fileName), e1);
         }
     }
-
-
-
-
     private void _InitInstance(string zipFileName, TextWriter statusMessageWriter)
     {
         // create a new zipfile
@@ -2966,7 +2825,6 @@ IDisposable
         // workitem 7685, 9868
         _entries = new Dictionary<string, ZipEntry>(StringComparer.Ordinal);
         _entriesInsensitive = new Dictionary<string, ZipEntry>(StringComparer.OrdinalIgnoreCase);
-
         if (File.Exists(_name))
         {
             if (FullScan)
@@ -2975,15 +2833,10 @@ IDisposable
                 ReadIntoInstance(this);
             this._fileAlreadyExists = true;
         }
-
         return;
     }
     #endregion
-
-
-
     #region Indexers and Collections
-
     private List<ZipEntry> ZipEntriesAsList
     {
         get
@@ -2992,7 +2845,6 @@ IDisposable
             return _zipEntriesAsList;
         }
     }
-
     /// <summary>
     ///   This is an integer indexer into the Zip archive.
     /// </summary>
@@ -3037,8 +2889,6 @@ IDisposable
             return ZipEntriesAsList[ix];
         }
     }
-
-
     /// <summary>
     ///   This is a name-based indexer into the Zip archive.
     /// </summary>
@@ -3131,7 +2981,6 @@ IDisposable
             // workitem 11056
             key = key.Replace("/", "\\");
             return entries.TryGetValue(key, out ZipEntry value3) ? value3 : null;
-
 #if MESSY
                 foreach (ZipEntry e in _entries.Values)
                 {
@@ -3142,7 +2991,6 @@ IDisposable
                         // also check for equivalence
                         if (fileName.Replace("\\", "/") == e.FileName) return e;
                         if (e.FileName.Replace("\\", "/") == fileName) return e;
-
                         // check for a difference only in trailing slash
                         if (e.FileName.EndsWith("/"))
                         {
@@ -3152,7 +3000,6 @@ IDisposable
                             if (fileName.Replace("\\", "/") == fileNameNoSlash) return e;
                             if (fileNameNoSlash.Replace("\\", "/") == fileName) return e;
                         }
-
                     }
                     else
                     {
@@ -3161,29 +3008,21 @@ IDisposable
                         // also check for equivalence
                         if (String.Compare(fileName.Replace("\\", "/"), e.FileName, StringComparison.CurrentCultureIgnoreCase) == 0) return e;
                         if (String.Compare(e.FileName.Replace("\\", "/"), fileName, StringComparison.CurrentCultureIgnoreCase) == 0) return e;
-
                         // check for a difference only in trailing slash
                         if (e.FileName.EndsWith("/"))
                         {
                             var fileNameNoSlash = e.FileName.Trim("/".ToCharArray());
-
                             if (String.Compare(fileNameNoSlash, fileName, StringComparison.CurrentCultureIgnoreCase) == 0) return e;
                             // also check for equivalence
                             if (String.Compare(fileName.Replace("\\", "/"), fileNameNoSlash, StringComparison.CurrentCultureIgnoreCase) == 0) return e;
                             if (String.Compare(fileNameNoSlash.Replace("\\", "/"), fileName, StringComparison.CurrentCultureIgnoreCase) == 0) return e;
-
                         }
-
                     }
-
                 }
                 return null;
-
 #endif
         }
     }
-
-
     /// <summary>
     ///   The list of filenames for the entries contained within the zip archive.
     /// </summary>
@@ -3244,8 +3083,6 @@ IDisposable
             return _entries.Keys;
         }
     }
-
-
     /// <summary>
     ///   Returns the readonly collection of entries in the Zip archive.
     /// </summary>
@@ -3271,8 +3108,6 @@ IDisposable
             return _entries.Values;
         }
     }
-
-
     /// <summary>
     ///   Returns a readonly collection of entries in the Zip archive, sorted by FileName.
     /// </summary>
@@ -3327,13 +3162,10 @@ IDisposable
                 coll.Add(e);
             }
             StringComparison sc = (CaseSensitiveRetrieval) ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
-
             coll.Sort((x, y) => { return String.Compare(x.FileName, y.FileName, sc); });
             return coll.AsReadOnly();
         }
     }
-
-
     /// <summary>
     /// Returns the number of entries in the Zip archive.
     /// </summary>
@@ -3344,9 +3176,6 @@ IDisposable
             return _entries.Count;
         }
     }
-
-
-
     /// <summary>
     ///   Removes the given <c>ZipEntry</c> from the zip archive.
     /// </summary>
@@ -3434,13 +3263,11 @@ IDisposable
         //if (!_entries.Values.Contains(entry))
         //    throw new ArgumentException("The entry you specified does not exist in the zip archive.");
         ArgumentNullException.ThrowIfNull(entry);
-
         var path = SharedUtilities.NormalizePathForUseInZipFile(entry.FileName);
         _entries.Remove(path);
         if (!AnyCaseInsensitiveMatches(path))
             _entriesInsensitive.Remove(path);
         _zipEntriesAsList = null;
-
 #if NOTNEEDED
             if (_direntries != null)
             {
@@ -3454,15 +3281,12 @@ IDisposable
                         break;
                     }
                 }
-
                 if (!FoundAndRemovedDirEntry)
                     throw new BadStateException("The entry to be removed was not found in the directory.");
             }
 #endif
         _contentsChanged = true;
     }
-
-
     private bool AnyCaseInsensitiveMatches(string path)
     {
         // this has to search _entries rather than _caseInsensitiveEntries because it's used to determine whether to update the latter
@@ -3473,8 +3297,6 @@ IDisposable
         }
         return false;
     }
-
-
     /// <summary>
     /// Removes the <c>ZipEntry</c> with the given filename from the zip archive.
     /// </summary>
@@ -3541,12 +3363,8 @@ IDisposable
         ZipEntry e = this[modifiedName] ?? throw new ArgumentException("The entry you specified was not found in the zip archive.");
         RemoveEntry(e);
     }
-
-
     #endregion
-
     #region Destructors and Disposers
-
     //         /// <summary>
     //         /// This is the class Destructor, which gets called implicitly when the instance
     //         /// is destroyed.  Because the <c>ZipFile</c> type implements IDisposable, this
@@ -3559,7 +3377,6 @@ IDisposable
     //             // disposed of anyways.
     //             Dispose(false);
     //         }
-
     /// <summary>
     ///   Closes the read and write streams associated
     ///   to the <c>ZipFile</c>, if necessary.
@@ -3602,12 +3419,10 @@ IDisposable
     {
         // dispose of the managed and unmanaged resources
         Dispose(true);
-
         // tell the GC that the Finalize process no longer needs
         // to be run for this object.
         GC.SuppressFinalize(this);
     }
-
     /// <summary>
     ///   Disposes any managed resources, if the flag is set, then marks the
     ///   instance disposed.  This method is typically not called explicitly from
@@ -3645,7 +3460,6 @@ IDisposable
                         _writestream.Dispose();
                         _writestream = null;
                     }
-
                 // workitem 10030
                 if (this.ParallelDeflater != null)
                 {
@@ -3657,10 +3471,7 @@ IDisposable
         }
     }
     #endregion
-
-
     #region private properties
-
     internal Stream ReadStream
     {
         get
@@ -3679,9 +3490,6 @@ IDisposable
             return _readstream;
         }
     }
-
-
-
     private Stream WriteStream
     {
         // workitem 9763
@@ -3689,13 +3497,11 @@ IDisposable
         {
             if (_writestream != null) return _writestream;
             if (_name == null) return _writestream;
-
             if (_maxOutputSegmentSize != 0)
             {
                 _writestream = ZipSegmentedStream.ForWriting(this._name, _maxOutputSegmentSize);
                 return _writestream;
             }
-
             SharedUtilities.CreateAndOpenUniqueTempFile(TempFileFolder ?? Path.GetDirectoryName(_name),
                                                         out _writestream,
                                                         out _temporaryFileName);
@@ -3709,7 +3515,6 @@ IDisposable
         }
     }
     #endregion
-
     #region private fields
     private TextWriter _StatusMessageTextWriter;
     private bool _CaseSensitiveRetrieval;
@@ -3754,27 +3559,20 @@ IDisposable
     internal bool _inExtractAll;
     private System.Text.Encoding _alternateEncoding = null;
     private ZipOption _alternateEncodingUsage = ZipOption.Never;
-
-
     private int _BufferSize = BufferSizeDefault;
-
     internal ParallelDeflateOutputStream ParallelDeflater;
     private long _ParallelDeflateThreshold;
     private int _maxBufferPairs = 16;
-
     internal Zip64Option _zip64 = Zip64Option.Never;
 #pragma warning disable 649
     private readonly bool _SavingSfx;
 #pragma warning restore 649
-
     /// <summary>
     ///   Default size of the buffer used for IO.
     /// </summary>
     public static readonly int BufferSizeDefault = 32768;
-
     #endregion
 }
-
 /// <summary>
 ///   Options for using ZIP64 extensions when saving zip archives.
 /// </summary>
@@ -3860,8 +3658,6 @@ public enum Zip64Option
     /// </summary>
     Always
 }
-
-
 /// <summary>
 ///  An enum representing the values on a three-way toggle switch
 ///  for various options in the library. This might be used to
@@ -3870,7 +3666,6 @@ public enum Zip64Option
 /// </summary>
 public enum ZipOption
 {
-
     /// <summary>
     /// Never use the associated option.
     /// (For COM clients, this is a 0 (zero).)
@@ -3887,18 +3682,11 @@ public enum ZipOption
     /// </summary>
     Always
 }
-
-
 enum AddOrUpdateAction
 {
     AddOnly = 0,
     AddOrUpdate
 }
-
-
-
-
-
 // ==================================================================
 //
 // Information on the ZIP format:

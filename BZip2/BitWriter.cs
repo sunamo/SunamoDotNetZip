@@ -1,4 +1,5 @@
 namespace Ionic.BZip2;
+
 // BitWriter.cs
 // ------------------------------------------------------------------
 //
@@ -25,7 +26,6 @@ namespace Ionic.BZip2;
 // ParallelBZip2OutputStream.
 //
 // ------------------------------------------------------------------
-
 //
 // Design notes:
 //
@@ -79,24 +79,16 @@ namespace Ionic.BZip2;
 // this class is used by BZip2Compressor, instances of which get re-used
 // by multiple distinct threads, for different blocks of data.
 //
-
-
-using System;
-using System.IO;
-
-
     internal class BitWriter
     {
         uint accumulator;
         int nAccumulatedBits;
     readonly Stream output;
         int totalBytesWrittenOut;
-
         public BitWriter(Stream s)
         {
             this.output = s;
         }
-
         /// <summary>
         ///   Delivers the remaining bits, left-aligned, in a byte.
         /// </summary>
@@ -113,7 +105,6 @@ using System.IO;
                 return (byte) (this.accumulator >> (32 - this.nAccumulatedBits) & 0xff);
             }
         }
-
         public int NumRemainingBits
         {
             get
@@ -121,7 +112,6 @@ using System.IO;
                 return this.nAccumulatedBits;
             }
         }
-
         public int TotalBytesWrittenOut
         {
             get
@@ -129,7 +119,6 @@ using System.IO;
                 return this.totalBytesWrittenOut;
             }
         }
-
         /// <summary>
         ///   Reset the BitWriter.
         /// </summary>
@@ -148,7 +137,6 @@ using System.IO;
             this.output.Seek(0, SeekOrigin.Begin);
             this.output.SetLength(0);
         }
-
         /// <summary>
         ///   Write some number of bits from the given value, into the output.
         /// </summary>
@@ -162,7 +150,6 @@ using System.IO;
         {
             int nAccumulated = this.nAccumulatedBits;
             uint u = this.accumulator;
-
             while (nAccumulated >= 8)
             {
                 this.output.WriteByte ((byte)(u >> 24 & 0xff));
@@ -170,24 +157,18 @@ using System.IO;
                 u <<= 8;
                 nAccumulated -= 8;
             }
-
             this.accumulator = u | (value << (32 - nAccumulated - nbits));
             this.nAccumulatedBits = nAccumulated + nbits;
-
             // Console.WriteLine("WriteBits({0}, 0x{1:X2}) => {2:X8} n({3})",
             //                   nbits, value, accumulator, nAccumulatedBits);
             // Console.ReadLine();
-
             // At this point the accumulator may contain up to 31 bits waiting for
             // output.
         }
-
-
     /// <summary>
     ///   Write a full 8-bit byte into the output.
     /// </summary>
     public void WriteByte(byte b) => WriteBits(8, b);
-
     /// <summary>
     ///   Write four 8-bit bytes into the output.
     /// </summary>
@@ -198,7 +179,6 @@ using System.IO;
             WriteBits(8, (u >> 8) & 0xff);
             WriteBits(8, u & 0xff);
         }
-
     /// <summary>
     ///   Write all available byte-aligned bytes.
     /// </summary>
@@ -217,8 +197,6 @@ using System.IO;
     ///   </para>
     /// </remarks>
     public void Flush() => WriteBits(0, 0);
-
-
     /// <summary>
     ///   Writes all available bytes, and emits padding for the final byte as
     ///   necessary. This must be the last method invoked on an instance of
@@ -227,7 +205,6 @@ using System.IO;
     public void FinishAndPad()
         {
             Flush();
-
             if (this.NumRemainingBits > 0)
             {
                 byte b = (byte)((this.accumulator >> 24) & 0xff);
@@ -235,6 +212,4 @@ using System.IO;
                 this.totalBytesWrittenOut++;
             }
         }
-
     }
-

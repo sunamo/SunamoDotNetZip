@@ -1,4 +1,5 @@
 namespace Ionic.Zip;
+
 // Shared.cs
 // ------------------------------------------------------------------
 //
@@ -23,10 +24,6 @@ namespace Ionic.Zip;
 //
 // Created: Tue, 27 Mar 2007  15:30
 //
-
-using System;
-using System.IO;
-
 /// <summary>
 /// Collects general purpose utility methods.
 /// </summary>
@@ -34,13 +31,11 @@ internal static class SharedUtilities
 {
     /// private null constructor
     //private SharedUtilities() { }
-
     // workitem 8423
     public static Int64 GetFileLength(string fileName)
     {
         if (!File.Exists(fileName))
             throw new FileNotFoundException(String.Format("Could not find file '{0}'.", fileName), fileName);
-
         long fileLength;
         FileShare fs = FileShare.ReadWrite | FileShare.Delete;
         using (var s = File.Open(fileName, FileMode.Open, FileAccess.Read, fs))
@@ -49,8 +44,6 @@ internal static class SharedUtilities
         }
         return fileLength;
     }
-
-
 #if LEGACY
         /// <summary>
         /// Round the given DateTime value to an even second value.
@@ -80,43 +73,34 @@ internal static class SharedUtilities
             // round to nearest second:
             if ((source.Second % 2) == 1)
                 source += new TimeSpan(0, 0, 1);
-
             DateTime dtRounded = new DateTime(source.Year, source.Month, source.Day, source.Hour, source.Minute, source.Second);
             //if (source.Millisecond >= 500) dtRounded = dtRounded.AddSeconds(1);
             return dtRounded;
         }
 #endif
-
 #if YOU_LIKE_REDUNDANT_CODE
         internal static string NormalizePath(string path)
         {
             // remove leading single dot slash
             if (path.StartsWith(".\\")) path = path.Substring(2);
-
             // remove intervening dot-slash
             path = path.Replace("\\.\\", "\\");
-
             // remove double dot when preceded by a directory name
             var re = new System.Text.RegularExpressions.Regex(@"^(.*\\)?([^\\\.]+\\\.\.\\)(.+)$");
             path = re.Replace(path, "$1$3");
             return path;
         }
 #endif
-
     private static readonly System.Text.RegularExpressions.Regex doubleDotRegex1 =
         new(@"^(.*/)?([^/\\.]+/\\.\\./)(.+)$");
-
     private static string SimplifyFwdSlashPath(string path)
     {
         if (path.StartsWith("./")) path = path[2..];
         path = path.Replace("/./", "/");
-
         // Replace foo/anything/../bar with foo/bar
         path = doubleDotRegex1.Replace(path, "$1$3");
         return path;
     }
-
-
     /// <summary>
     /// Utility routine for transforming path names from filesystem format (on Windows that means backslashes) to
     /// a format suitable for use within zipfiles. This means trimming the volume letter and colon (if any) And
@@ -128,20 +112,15 @@ internal static class SharedUtilities
     {
         // boundary case
         if (String.IsNullOrEmpty(pathName)) return pathName;
-
         // trim volume if necessary
         if ((pathName.Length >= 2) && ((pathName[1] == ':') && (pathName[2] == '\\')))
             pathName = pathName[3..];
-
         // swap slashes
         pathName = pathName.Replace('\\', '/');
-
         // trim all leading slashes
         while (pathName.StartsWith("/")) pathName = pathName[1..];
-
         return SimplifyFwdSlashPath(pathName);
     }
-
     /// <summary>
     /// Sanitize paths in zip files. This means making sure that relative paths in a zip file don't go outside
     /// the top directory. Entries like something/../../../../Temp/evil.txt get sanitized to Temp/evil.txt
@@ -170,7 +149,6 @@ internal static class SharedUtilities
                 level++;
             }
         }
-
         path = "";
         for (int i = 0; i < level; i++)
         {
@@ -178,14 +156,10 @@ internal static class SharedUtilities
                 path += "/";
             path += dirs[i];
         }
-
         return path;
     }
-
-
     //static System.Text.Encoding ibm437 = System.Text.Encoding.GetEncoding("IBM437");
     static readonly System.Text.Encoding utf8 = System.Text.Encoding.GetEncoding("UTF-8");
-
     internal static byte[] StringToByteArray(string value, System.Text.Encoding encoding)
     {
         byte[] a = encoding.GetBytes(value);
@@ -200,7 +174,6 @@ internal static class SharedUtilities
         }
         catch (Exception /*e*/)
         {
-
         }
 #if NETCOREAPP2_0 || NETSTANDARD2_0
             if (ibm437 == null)
@@ -211,7 +184,6 @@ internal static class SharedUtilities
                 }
                 catch (Exception /*e*/)
                 {
-
                 }
             }
 #else
@@ -223,33 +195,25 @@ internal static class SharedUtilities
             }
             catch (Exception /*e*/)
             {
-
             }
         }
 #endif
-
         return StringToByteArray(value, ibm437);
     }
-
     //internal static byte[] Utf8StringToByteArray(string value)
     //{
     //    return StringToByteArray(value, utf8);
     //}
-
     //internal static string StringFromBuffer(byte[] buf, int maxlength)
     //{
     //    return StringFromBuffer(buf, maxlength, ibm437);
     //}
-
     internal static string Utf8StringFromBuffer(byte[] buf) => StringFromBuffer(buf, utf8);
-
     internal static string StringFromBuffer(byte[] buf, System.Text.Encoding encoding)
     {
         string s = encoding.GetString(buf);
         return s;
     }
-
-
     internal static int ReadSignature(System.IO.Stream s)
     {
         int x = 0;
@@ -257,8 +221,6 @@ internal static class SharedUtilities
         catch (BadReadException) { }
         return x;
     }
-
-
     internal static int ReadEntrySignature(System.IO.Stream s)
     {
         // handle the case of ill-formatted zip archives - includes a data descriptor
@@ -290,10 +252,7 @@ internal static class SharedUtilities
         catch (BadReadException) { }
         return x;
     }
-
-
     internal static int ReadInt(System.IO.Stream s) => _ReadFourBytes(s, "Could not read block - no data!  (position 0x{0:X8})");
-
     private static int _ReadFourBytes(System.IO.Stream s, string message)
     {
         byte[] block = new byte[4];
@@ -302,9 +261,6 @@ internal static class SharedUtilities
         int data = unchecked((((block[3] * 256 + block[2]) * 256) + block[1]) * 256 + block[0]);
         return data;
     }
-
-
-
     /// <summary>
     ///   Finds a signature in the zip stream. This is useful for finding
     ///   the end of a zip entry, for example, or the beginning of the next ZipEntry.
@@ -329,7 +285,6 @@ internal static class SharedUtilities
     internal static long FindSignature(System.IO.Stream stream, int SignatureToFind)
     {
         long startingPosition = stream.Position;
-
         int BATCH_SIZE = 65536; //  8192;
         byte[] targetBytes =
         [
@@ -360,24 +315,18 @@ internal static class SharedUtilities
             }
             else break;
             if (success) break;
-
             //Move back 3 bytes, to make sure incomplete signatures will be read as a whole
             stream.Seek(-3, System.IO.SeekOrigin.Current);
         } while (true);
-
         if (!success)
         {
             stream.Seek(startingPosition, System.IO.SeekOrigin.Begin);
             return -1;  // or throw?
         }
-
         // subtract 4 for the signature.
         long bytesRead = (stream.Position - startingPosition) - 4;
-
         return bytesRead;
     }
-
-
     // If I have a time in the .NET environment, and I want to use it for
     // SetWastWriteTime() etc, then I need to adjust it for Win32.
     internal static DateTime AdjustTime_Reverse(DateTime time)
@@ -386,13 +335,10 @@ internal static class SharedUtilities
         DateTime adjusted = time;
         if (DateTime.Now.IsDaylightSavingTime() && !time.IsDaylightSavingTime())
             adjusted = time - new System.TimeSpan(1, 0, 0);
-
         else if (!DateTime.Now.IsDaylightSavingTime() && time.IsDaylightSavingTime())
             adjusted = time + new System.TimeSpan(1, 0, 0);
-
         return adjusted;
     }
-
 #if NECESSARY
         // If I read a time from a file with GetLastWriteTime() (etc), I need
         // to adjust it for display in the .NET environment.
@@ -402,39 +348,30 @@ internal static class SharedUtilities
             DateTime adjusted = time;
             if (DateTime.Now.IsDaylightSavingTime() && !time.IsDaylightSavingTime())
                 adjusted = time + new System.TimeSpan(1, 0, 0);
-
             else if (!DateTime.Now.IsDaylightSavingTime() && time.IsDaylightSavingTime())
                 adjusted = time - new System.TimeSpan(1, 0, 0);
-
             return adjusted;
         }
 #endif
-
-
     internal static DateTime PackedToDateTime(Int32 packedDateTime)
     {
         // workitem 7074 & workitem 7170
         if (packedDateTime == 0xFFFF || packedDateTime == 0)
             return new System.DateTime(1995, 1, 1, 0, 0, 0, 0);  // return a fixed date when none is supplied.
-
         Int16 packedTime = unchecked((Int16)(packedDateTime & 0x0000ffff));
         Int16 packedDate = unchecked((Int16)((packedDateTime & 0xffff0000) >> 16));
-
         int year = 1980 + ((packedDate & 0xFE00) >> 9);
         int month = (packedDate & 0x01E0) >> 5;
         int day = packedDate & 0x001F;
-
         int hour = (packedTime & 0xF800) >> 11;
         int minute = (packedTime & 0x07E0) >> 5;
         //int second = packedTime & 0x001F;
         int second = (packedTime & 0x001F) * 2;
-
         // validation and error checking.
         // this is not foolproof but will catch most errors.
         if (second >= 60) { minute++; second = 0; }
         if (minute >= 60) { hour++; minute = 0; }
         if (hour >= 24) { day++; hour = 0; }
-
         DateTime d = System.DateTime.Now;
         bool success = false;
         try
@@ -459,7 +396,6 @@ internal static class SharedUtilities
                         success = true;
                     }
                     catch (System.ArgumentOutOfRangeException) { }
-
                 }
             }
             // workitem 8814
@@ -489,35 +425,27 @@ internal static class SharedUtilities
         {
             string msg = String.Format("y({0}) m({1}) d({2}) h({3}) m({4}) s({5})", year, month, day, hour, minute, second);
             throw new ZipException(String.Format("Bad date/time format in the zip file. ({0})", msg));
-
         }
         // workitem 6191
         //d = AdjustTime_Reverse(d);
         d = DateTime.SpecifyKind(d, DateTimeKind.Local);
         return d;
     }
-
-
     internal
      static Int32 DateTimeToPacked(DateTime time)
     {
         // The time is passed in here only for purposes of writing LastModified to the
         // zip archive. It should always be LocalTime, but we convert anyway.  And,
         // since the time is being written out, it needs to be adjusted.
-
         time = time.ToLocalTime();
         // workitem 7966
         //time = AdjustTime_Forward(time);
-
         // see http://www.vsft.com/hal/dostime.htm for the format
         UInt16 packedDate = (UInt16)((time.Day & 0x0000001F) | ((time.Month << 5) & 0x000001E0) | (((time.Year - 1980) << 9) & 0x0000FE00));
         UInt16 packedTime = (UInt16)((time.Second / 2 & 0x0000001F) | ((time.Minute << 5) & 0x000007E0) | ((time.Hour << 11) & 0x0000F800));
-
         Int32 result = (Int32)(((UInt32)(packedDate << 16)) | packedTime);
         return result;
     }
-
-
     /// <summary>
     ///   Create a pseudo-random filename, suitable for use as a temporary
     ///   file, and open it.
@@ -551,11 +479,7 @@ internal static class SharedUtilities
         }
         throw new IOException();
     }
-
     public static string InternalGetTempFileName() => "DotNetZip-" + Path.GetRandomFileName()[..8] + ".tmp";
-
-
-
     /// <summary>
     /// Workitem 7889: handle ERROR_LOCK_VIOLATION during read
     /// </summary>
@@ -569,7 +493,6 @@ internal static class SharedUtilities
         int n = 0;
         bool done = false;
         int retries = 0;
-
         do
         {
             try
@@ -591,7 +514,6 @@ internal static class SharedUtilities
                     retries++;
                     if (retries > 10)
                         throw new System.IO.IOException(String.Format("Cannot read file {0}, at offset 0x{1:X8} after 10 retries", FileName, offset), ioexc1);
-
                     // max time waited on last retry = 250 + 10*550 = 5.75s
                     // aggregate time waited after 10 retries: 250 + 55*550 = 30.5s
                     System.Threading.Thread.Sleep(250 + retries * 550);
@@ -606,11 +528,8 @@ internal static class SharedUtilities
             }
         }
         while (!done);
-
         return n;
     }
-
-
     // workitem 8009
     //
     // This method must remain separate.
@@ -635,12 +554,7 @@ internal static class SharedUtilities
 #else
         unchecked((uint)System.Runtime.InteropServices.Marshal.GetHRForException(ex1));
 #endif
-
-
 }
-
-
-
 /// <summary>
 ///   A decorator stream. It wraps another stream, and performs bookkeeping
 ///   to keep track of the stream Position.
@@ -686,7 +600,6 @@ public class CountingStream : System.IO.Stream
     private Int64 _bytesWritten;
     private Int64 _bytesRead;
     private readonly Int64 _initialOffset;
-
     /// <summary>
     /// The constructor.
     /// </summary>
@@ -704,7 +617,6 @@ public class CountingStream : System.IO.Stream
             _initialOffset = 0L;
         }
     }
-
     /// <summary>
     ///   Gets the wrapped stream.
     /// </summary>
@@ -715,7 +627,6 @@ public class CountingStream : System.IO.Stream
             return _s;
         }
     }
-
     /// <summary>
     ///   The count of bytes written out to the stream.
     /// </summary>
@@ -723,7 +634,6 @@ public class CountingStream : System.IO.Stream
     {
         get { return _bytesWritten; }
     }
-
     /// <summary>
     ///   the count of bytes that have been read from the stream.
     /// </summary>
@@ -731,7 +641,6 @@ public class CountingStream : System.IO.Stream
     {
         get { return _bytesRead; }
     }
-
     /// <summary>
     ///    Adjust the byte count on the stream.
     /// </summary>
@@ -755,7 +664,6 @@ public class CountingStream : System.IO.Stream
         if (_s as CountingStream != null)
             ((CountingStream)_s).Adjust(delta);
     }
-
     /// <summary>
     ///   The read method.
     /// </summary>
@@ -769,7 +677,6 @@ public class CountingStream : System.IO.Stream
         _bytesRead += n;
         return n;
     }
-
     /// <summary>
     ///   Write data into the stream.
     /// </summary>
@@ -782,7 +689,6 @@ public class CountingStream : System.IO.Stream
         _s.Write(buffer, offset, count);
         _bytesWritten += count;
     }
-
     /// <summary>
     ///   Whether the stream can be read.
     /// </summary>
@@ -790,7 +696,6 @@ public class CountingStream : System.IO.Stream
     {
         get { return _s.CanRead; }
     }
-
     /// <summary>
     ///   Whether it is possible to call Seek() on the stream.
     /// </summary>
@@ -798,7 +703,6 @@ public class CountingStream : System.IO.Stream
     {
         get { return _s.CanSeek; }
     }
-
     /// <summary>
     ///   Whether it is possible to call Write() on the stream.
     /// </summary>
@@ -806,12 +710,10 @@ public class CountingStream : System.IO.Stream
     {
         get { return _s.CanWrite; }
     }
-
     /// <summary>
     ///   Flushes the underlying stream.
     /// </summary>
     public override void Flush() => _s.Flush();
-
     /// <summary>
     ///   The length of the underlying stream.
     /// </summary>
@@ -819,7 +721,6 @@ public class CountingStream : System.IO.Stream
     {
         get { return _s.Length; }   // bytesWritten??
     }
-
     /// <summary>
     ///   Returns the sum of number of bytes written, plus the initial
     ///   offset before writing.
@@ -828,8 +729,6 @@ public class CountingStream : System.IO.Stream
     {
         get { return _initialOffset + _bytesWritten; }
     }
-
-
     /// <summary>
     ///   The Position of the stream.
     /// </summary>
@@ -841,7 +740,6 @@ public class CountingStream : System.IO.Stream
             _s.Seek(value, System.IO.SeekOrigin.Begin);
         }
     }
-
     /// <summary>
     ///   Seek in the stream.
     /// </summary>
@@ -849,7 +747,6 @@ public class CountingStream : System.IO.Stream
     /// <param name="origin">the reference point from which to seek</param>
     /// <returns>The new position</returns>
     public override long Seek(long offset, System.IO.SeekOrigin origin) => _s.Seek(offset, origin);
-
     /// <summary>
     ///   Set the length of the underlying stream.  Be careful with this!
     /// </summary>
@@ -857,5 +754,3 @@ public class CountingStream : System.IO.Stream
     /// <param name='value'>the length to set on the underlying stream.</param>
     public override void SetLength(long value) => _s.SetLength(value);
 }
-
-

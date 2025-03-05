@@ -1,4 +1,5 @@
 namespace Ionic.Zip;
+
 // ZipEntry.cs
 // ------------------------------------------------------------------
 //
@@ -25,17 +26,11 @@ namespace Ionic.Zip;
 // Created: Tue, 27 Mar 2007  15:30
 //
 // ------------------------------------------------------------------
-
-
-using System;
-using System.IO;
 using Interop = System.Runtime.InteropServices;
-
     /// <summary>
     /// Represents a single entry in a ZipFile. Typically, applications get a ZipEntry
     /// by enumerating the entries within a ZipFile, or by adding an entry to a ZipFile.
     /// </summary>
-
     [Interop.GuidAttribute("ebc25cf6-9120-4283-b972-0e5520d00004")]
     [Interop.ComVisible(true)]
     [Interop.ClassInterface(Interop.ClassInterfaceType.AutoDispatch)]  // AutoDual
@@ -59,10 +54,8 @@ using Interop = System.Runtime.InteropServices;
 #else
             AlternateEncoding = System.Text.Encoding.GetEncoding("IBM437");
 #endif
-
             AlternateEncodingUsage = ZipOption.Never;
         }
-
         /// <summary>
         ///   The time and date at which the file indicated by the <c>ZipEntry</c> was
         ///   last modified.
@@ -217,7 +210,6 @@ using Interop = System.Runtime.InteropServices;
                 _metadataChanged = true;
             }
         }
-
         /// <summary>
         /// Ability to set Last Modified DOS time to zero
         /// (for using with EmitTimesInWindowsFormatWhenSaving+EmitTimesInUnixFormatWhenSaving setted to false)
@@ -228,7 +220,6 @@ using Interop = System.Runtime.InteropServices;
             get { return _dontEmitLastModified; }
             set { _dontEmitLastModified = value; }
         }
-
         int BufferSize
         {
             get
@@ -236,7 +227,6 @@ using Interop = System.Runtime.InteropServices;
                 return _container.BufferSize;
             }
         }
-
         /// <summary>
         /// Last Modified time for the file represented by the entry.
         /// </summary>
@@ -394,7 +384,6 @@ using Interop = System.Runtime.InteropServices;
                 SetEntryTimes(_Ctime, _Atime, value);
             }
         }
-
         /// <summary>
         /// Last Access time for the file represented by the entry.
         /// </summary>
@@ -414,7 +403,6 @@ using Interop = System.Runtime.InteropServices;
                 SetEntryTimes(_Ctime, value, _Mtime);
             }
         }
-
         /// <summary>
         /// The file creation time for the file represented by the entry.
         /// </summary>
@@ -436,7 +424,6 @@ using Interop = System.Runtime.InteropServices;
                 SetEntryTimes(value, _Atime, _Mtime);
             }
         }
-
         /// <summary>
         ///   Sets the NTFS Creation, Access, and Modified times for the given entry.
         /// </summary>
@@ -493,9 +480,6 @@ using Interop = System.Runtime.InteropServices;
                 _emitNtfsTimes = true;
             _metadataChanged = true;
         }
-
-
-
         /// <summary>
         ///   Specifies whether the Creation, Access, and Modified times for the given
         ///   entry will be emitted in "Windows format" when the zip archive is saved.
@@ -582,7 +566,6 @@ using Interop = System.Runtime.InteropServices;
                 _metadataChanged = true;
             }
         }
-
         /// <summary>
         ///   Specifies whether the Creation, Access, and Modified times for the given
         ///   entry will be emitted in &quot;Unix(tm) format&quot; when the zip archive is saved.
@@ -670,8 +653,6 @@ using Interop = System.Runtime.InteropServices;
                 _metadataChanged = true;
             }
         }
-
-
         /// <summary>
         /// The type of timestamp attached to the ZipEntry.
         /// </summary>
@@ -690,7 +671,6 @@ using Interop = System.Runtime.InteropServices;
                 return _timestamp;
             }
         }
-
         /// <summary>
         ///   The file attributes for the entry.
         /// </summary>
@@ -753,8 +733,6 @@ using Interop = System.Runtime.InteropServices;
                 _metadataChanged = true;
             }
         }
-
-
         /// <summary>
         ///   The name of the filesystem file, referred to by the ZipEntry.
         /// </summary>
@@ -785,7 +763,6 @@ using Interop = System.Runtime.InteropServices;
         {
             get { return _LocalFileName; }
         }
-
         /// <summary>
         ///   The name of the file contained in the ZipEntry.
         /// </summary>
@@ -870,29 +847,22 @@ using Interop = System.Runtime.InteropServices;
             {
                 if (_container != null && _container.ZipFile == null)
                     throw new ZipException("Cannot rename; this is not supported in ZipOutputStream/ZipInputStream.");
-
                 // rename the entry!
                 if (String.IsNullOrEmpty(value)) throw new ZipException("The FileName must be non empty and non-null.");
-
                 var filename = ZipEntry.NameInArchive(value, null);
                 // workitem 8180
                 if (_FileNameInArchive == filename) return; // nothing to do
-
                 if (_container != null)
                 {
                     // workitem 8047 - when renaming, must remove old and then add a new entry
                     this._container.ZipFile.RemoveEntry(this);
                     this._container.ZipFile.InternalAddEntry(filename, this);
                 }
-
                 _FileNameInArchive = filename;
                 _container?.ZipFile.NotifyEntryChanged();
-
                 _metadataChanged = true;
             }
         }
-
-
         /// <summary>
         /// The stream that provides content for the ZipEntry.
         /// </summary>
@@ -938,18 +908,14 @@ using Interop = System.Runtime.InteropServices;
         public Stream InputStream
         {
             get { return _sourceStream; }
-
             set
             {
                 if (this._Source != ZipEntrySource.Stream)
                     throw new ZipException("You must not set the input stream for this entry.");
-
                 _sourceWasJitProvided = true;
                 _sourceStream = value;
             }
         }
-
-
         /// <summary>
         ///   A flag indicating whether the InputStream was provided Just-in-time.
         /// </summary>
@@ -988,9 +954,6 @@ using Interop = System.Runtime.InteropServices;
         {
             get { return _sourceWasJitProvided; }
         }
-
-
-
         /// <summary>
         /// An enum indicating the source of the ZipEntry.
         /// </summary>
@@ -998,8 +961,6 @@ using Interop = System.Runtime.InteropServices;
         {
             get { return _Source; }
         }
-
-
         /// <summary>
         /// The version of the zip engine needed to read the ZipEntry.
         /// </summary>
@@ -1079,7 +1040,6 @@ using Interop = System.Runtime.InteropServices;
         {
             get { return _VersionNeeded; }
         }
-
         /// <summary>
         /// The comment attached to the ZipEntry.
         /// </summary>
@@ -1108,8 +1068,6 @@ using Interop = System.Runtime.InteropServices;
                 _metadataChanged = true;
             }
         }
-
-
         /// <summary>
         /// Indicates whether the entry requires ZIP64 extensions.
         /// </summary>
@@ -1157,7 +1115,6 @@ using Interop = System.Runtime.InteropServices;
                 return _entryRequiresZip64;
             }
         }
-
         /// <summary>
         ///   Indicates whether the entry actually used ZIP64 extensions, as it was most
         ///   recently written to the output file or stream.
@@ -1185,8 +1142,6 @@ using Interop = System.Runtime.InteropServices;
         {
             get { return _OutputUsesZip64; }
         }
-
-
         /// <summary>
         ///   The bitfield for the entry as defined in the zip spec. You probably
         ///   never need to look at this.
@@ -1308,7 +1263,6 @@ using Interop = System.Runtime.InteropServices;
         {
             get { return _BitField; }
         }
-
         /// <summary>
         ///   The compression method employed for this ZipEntry.
         /// </summary>
@@ -1382,32 +1336,25 @@ using Interop = System.Runtime.InteropServices;
             set
             {
                 if (value == (CompressionMethod)_CompressionMethod) return; // nothing to do.
-
                 if (value != CompressionMethod.None && value != CompressionMethod.Deflate
 #if BZIP
                     && value != CompressionMethod.BZip2
 #endif
                     )
                     throw new InvalidOperationException("Unsupported compression method.");
-
                 // If the source is a zip archive and there was encryption on the
                 // entry, changing the compression method is not supported.
                 //                 if (this._Source == ZipEntrySource.ZipFile && _sourceIsEncrypted)
                 //                     throw new InvalidOperationException("Cannot change compression method on encrypted entries read from archives.");
-
                 _CompressionMethod = (Int16)value;
-
                 if (_CompressionMethod == (Int16)Ionic.Zip.CompressionMethod.None)
                     _CompressionLevel = CompressionLevel.None;
                 else if (CompressionLevel == CompressionLevel.None)
                     _CompressionLevel = CompressionLevel.Default;
-
                 _container.ZipFile?.NotifyEntryChanged();
                 _restreamRequiredOnSave = true;
             }
         }
-
-
         /// <summary>
         ///   Sets the compression level to be used for the entry when saving the zip
         ///   archive. This applies only for CompressionMethod = DEFLATE.
@@ -1461,27 +1408,20 @@ using Interop = System.Runtime.InteropServices;
                 if (_CompressionMethod != (short)CompressionMethod.Deflate &&
                     _CompressionMethod != (short)CompressionMethod.None)
                     return; // no effect
-
                 if (value == CompressionLevel.Default &&
                     _CompressionMethod == (short)CompressionMethod.Deflate) return; // nothing to do
                 _CompressionLevel = value;
-
                 if (value == CompressionLevel.None &&
                     _CompressionMethod == (short)CompressionMethod.None)
                     return; // nothing more to do
-
                 if (_CompressionLevel == CompressionLevel.None)
                     _CompressionMethod = (short)Ionic.Zip.CompressionMethod.None;
                 else
                     _CompressionMethod = (short)Ionic.Zip.CompressionMethod.Deflate;
-
                 _container.ZipFile?.NotifyEntryChanged();
                 _restreamRequiredOnSave = true;
             }
         }
-
-
-
         /// <summary>
         ///   The compressed size of the file, in bytes, within the zip archive.
         /// </summary>
@@ -1499,7 +1439,6 @@ using Interop = System.Runtime.InteropServices;
         {
             get { return _CompressedSize; }
         }
-
         /// <summary>
         ///   The size of the file, in bytes, before compression, or after extraction.
         /// </summary>
@@ -1517,7 +1456,6 @@ using Interop = System.Runtime.InteropServices;
         {
             get { return _UncompressedSize; }
         }
-
         /// <summary>
         /// The ratio of compressed size to uncompressed size of the ZipEntry.
         /// </summary>
@@ -1555,7 +1493,6 @@ using Interop = System.Runtime.InteropServices;
             return UncompressedSize == 0 ? 0 : 100 * (1.0 - (1.0 * CompressedSize) / (1.0 * UncompressedSize));
         }
     }
-
         /// <summary>
         /// The 32-bit CRC (Cyclic Redundancy Check) on the contents of the ZipEntry.
         /// </summary>
@@ -1577,7 +1514,6 @@ using Interop = System.Runtime.InteropServices;
         {
             get { return _Crc32; }
         }
-
         /// <summary>
         /// True if the entry is a directory (not a file).
         /// This is a readonly property on the entry.
@@ -1586,7 +1522,6 @@ using Interop = System.Runtime.InteropServices;
         {
             get { return _IsDirectory; }
         }
-
         /// <summary>
         /// A derived property that is <c>true</c> if the entry uses encryption.
         /// </summary>
@@ -1606,8 +1541,6 @@ using Interop = System.Runtime.InteropServices;
         {
             get { return (_Encryption_FromZipFile != EncryptionAlgorithm.None); }
         }
-
-
         /// <summary>
         ///   Set this to specify which encryption algorithm to use for the entry when
         ///   saving it to a zip archive.
@@ -1767,22 +1700,17 @@ using Interop = System.Runtime.InteropServices;
             set
             {
                 if (value == _Encryption) return; // no change
-
                 if (value == EncryptionAlgorithm.Unsupported)
                     throw new InvalidOperationException("You may not set Encryption to that value.");
-
                 // If the source is a zip archive and there was encryption
                 // on the entry, this will not work. <XXX>
                 //if (this._Source == ZipEntrySource.ZipFile && _sourceIsEncrypted)
                 //    throw new InvalidOperationException("You cannot change the encryption method on encrypted entries read from archives.");
-
                 _Encryption = value;
                 _restreamRequiredOnSave = true;
                 _container.ZipFile?.NotifyEntryChanged();
             }
         }
-
-
         /// <summary>
         /// The Password to be used when encrypting a <c>ZipEntry</c> upon
         /// <c>ZipFile.Save()</c>, or when decrypting an entry upon Extract().
@@ -1931,21 +1859,17 @@ using Interop = System.Runtime.InteropServices;
                 else
                 {
                     // We're setting a non-null password.
-
                     // For entries obtained from a zip file that are encrypted, we cannot
                     // simply restream (recompress, re-encrypt) the file data, because we
                     // need the old password in order to decrypt the data, and then we
                     // need the new password to encrypt.  So, setting the password is
                     // never going to work on an entry that is stored encrypted in a zipfile.
-
                     // But it is not en error to set the password, obviously: callers will
                     // set the password in order to Extract encrypted archives.
-
                     // If the source is a zip archive and there was previously no encryption
                     // on the entry, then we must re-stream the entry in order to encrypt it.
                     if (this._Source == ZipEntrySource.ZipFile && !_sourceIsEncrypted)
                         _restreamRequiredOnSave = true;
-
                     if (Encryption == EncryptionAlgorithm.None)
                     {
                         _Encryption = EncryptionAlgorithm.PkzipWeak;
@@ -1954,9 +1878,6 @@ using Interop = System.Runtime.InteropServices;
             }
             private get { return _Password; }
         }
-
-
-
         internal bool IsChanged
         {
             get
@@ -1964,8 +1885,6 @@ using Interop = System.Runtime.InteropServices;
                 return _restreamRequiredOnSave | _metadataChanged;
             }
         }
-
-
         /// <summary>
         /// The action the library should take when extracting a file that already exists.
         /// </summary>
@@ -2028,8 +1947,6 @@ using Interop = System.Runtime.InteropServices;
             get;
             set;
         }
-
-
         /// <summary>
         ///   The action to take when an error is encountered while
         ///   opening or reading files as they are saved into a zip archive.
@@ -2071,8 +1988,6 @@ using Interop = System.Runtime.InteropServices;
             get;
             set;
         }
-
-
         /// <summary>
         /// Indicates whether the entry was included in the most recent save.
         /// </summary>
@@ -2088,8 +2003,6 @@ using Interop = System.Runtime.InteropServices;
                 return !_skippedDuringSave;
             }
         }
-
-
         /// <summary>
         ///   A callback that allows the application to specify the compression to use
         ///   for a given entry that is about to be added to the zip archive.
@@ -2105,9 +2018,6 @@ using Interop = System.Runtime.InteropServices;
             get;
             set;
         }
-
-
-
         /// <summary>
         ///   Set to indicate whether to use UTF-8 encoding for filenames and comments.
         /// </summary>
@@ -2148,7 +2058,6 @@ using Interop = System.Runtime.InteropServices;
                 {
                     AlternateEncoding = System.Text.Encoding.GetEncoding("UTF-8");
                     AlternateEncodingUsage = ZipOption.AsNecessary;
-
                 }
                 else
                 {
@@ -2157,7 +2066,6 @@ using Interop = System.Runtime.InteropServices;
                 }
             }
         }
-
         /// <summary>
         ///   The text encoding to use for the FileName and Comment on this ZipEntry,
         ///   when the default encoding is insufficient.
@@ -2175,7 +2083,6 @@ using Interop = System.Runtime.InteropServices;
         {
             get; set;
         }
-
         /// <summary>
         ///   Specifies the alternate text encoding used by this ZipEntry
         /// </summary>
@@ -2230,8 +2137,6 @@ using Interop = System.Runtime.InteropServices;
         {
             get; set;
         }
-
-
         /// <summary>
         ///   Describes if and when this instance should apply
         ///   AlternateEncoding to encode the FileName and Comment, when
@@ -2242,8 +2147,6 @@ using Interop = System.Runtime.InteropServices;
         {
             get; set;
         }
-
-
         // /// <summary>
         // /// The text encoding actually used for this ZipEntry.
         // /// </summary>
@@ -2280,16 +2183,11 @@ using Interop = System.Runtime.InteropServices;
         //         return _actualEncoding;
         //     }
         // }
-
-
-
-
         internal static string NameInArchive(String filename, string directoryPathInArchive)
         {
         string result;
         if (directoryPathInArchive == null)
                 result = filename;
-
             else
             {
                 if (String.IsNullOrEmpty(directoryPathInArchive))
@@ -2302,32 +2200,21 @@ using Interop = System.Runtime.InteropServices;
                     result = Path.Combine(directoryPathInArchive, Path.GetFileName(filename));
                 }
             }
-
             //result = Path.GetFullPath(result);
             result = SharedUtilities.NormalizePathForUseInZipFile(result);
-
             return result;
         }
-
     // workitem 9073
     internal static ZipEntry CreateFromNothing(String nameInArchive) => Create(nameInArchive, ZipEntrySource.None, null, null);
-
     internal static ZipEntry CreateFromFile(String filename, string nameInArchive) => Create(nameInArchive, ZipEntrySource.FileSystem, filename, null);
-
     internal static ZipEntry CreateForStream(String entryName, Stream s) => Create(entryName, ZipEntrySource.Stream, s, null);
-
     internal static ZipEntry CreateForWriter(String entryName, WriteDelegate d) => Create(entryName, ZipEntrySource.WriteDelegate, d, null);
-
     internal static ZipEntry CreateForJitStreamProvider(string nameInArchive, OpenDelegate opener, CloseDelegate closer) => Create(nameInArchive, ZipEntrySource.JitStream, opener, closer);
-
     internal static ZipEntry CreateForZipOutputStream(string nameInArchive) => Create(nameInArchive, ZipEntrySource.ZipOutputStream, null, null);
-
-
     private static ZipEntry Create(string nameInArchive, ZipEntrySource source, Object arg1, Object arg2)
         {
             if (String.IsNullOrEmpty(nameInArchive))
                 throw new Ionic.Zip.ZipException("The entry name must be non-null and non-empty.");
-
         ZipEntry entry = new()
         {
             // workitem 7071
@@ -2336,7 +2223,6 @@ using Interop = System.Runtime.InteropServices;
             _Source = source
         };
         entry._Mtime = entry._Atime = entry._Ctime = DateTime.UtcNow;
-
             if (source == ZipEntrySource.Stream)
             {
                 entry._sourceStream = (arg1 as Stream);         // may  or may not be null
@@ -2362,31 +2248,24 @@ using Interop = System.Runtime.InteropServices;
             else
             {
                 String filename = (arg1 as String);   // must not be null
-
                 if (String.IsNullOrEmpty(filename))
                     throw new Ionic.Zip.ZipException("The filename must be non-null and non-empty.");
-
                 try
                 {
                     // The named file may or may not exist at this time.  For
                     // example, when adding a directory by name.  We test existence
                     // when necessary: when saving the ZipFile, or when getting the
                     // attributes, and so on.
-
                     // workitem 6878??
                     entry._Mtime = File.GetLastWriteTime(filename).ToUniversalTime();
                     entry._Ctime = File.GetCreationTime(filename).ToUniversalTime();
                     entry._Atime = File.GetLastAccessTime(filename).ToUniversalTime();
-
                     // workitem 7071
                     // can only get attributes on files that exist.
                     if (File.Exists(filename) || Directory.Exists(filename))
                         entry._ExternalFileAttrs = (int)File.GetAttributes(filename);
-
                     entry._ntfsTimesAreSet = true;
-
                     entry._LocalFileName = Path.GetFullPath(filename); // workitem 8813
-
                 }
                 catch (System.IO.PathTooLongException ptle)
                 {
@@ -2395,16 +2274,12 @@ using Interop = System.Runtime.InteropServices;
                                             filename);
                     throw new ZipException(msg, ptle);
                 }
-
             }
-
             entry._LastModified = entry._Mtime;
             entry._FileNameInArchive = SharedUtilities.NormalizePathForUseInZipFile(nameInArchive);
             // We don't actually slurp in the file data until the caller invokes Write on this entry.
-
             return entry;
         }
-
         /// <summary>
         /// Creates a new <see cref="ZipEntry"/> that is a clone of the current entry,
         /// suitable for adding to a different zip file.
@@ -2422,27 +2297,22 @@ using Interop = System.Runtime.InteropServices;
             {
                 throw new InvalidOperationException("The entry you are trying to add wasn't loaded from a zip file.");
             }
-
             if (this.IsChanged)
             {
                 throw new InvalidOperationException("The entry you are trying to add was modified.");
             }
-
             if (this.IsDirectory)
             {
                 throw new InvalidOperationException("The entry you are trying to add is a directory.");
             }
-
             if (!this.CompressionMethod.Equals(newZipFile.CompressionMethod))
             {
                 throw new InvalidOperationException("The entry you are trying to add uses another compression method.");
             }
-
             if (this.ArchiveStream is ZipSegmentedStream)
             {
                 throw new InvalidOperationException("The entry you are trying to add is from a multi-part zip.");
             }
-
             // Create a clone of the current entry.
             var clone = new ZipEntry
             {
@@ -2484,10 +2354,8 @@ using Interop = System.Runtime.InteropServices;
                 ZipErrorAction = this.ZipErrorAction,
                 _Source = this._Source
             };
-
             return clone;
         }
-
         internal void MarkAsDirectory()
         {
             _IsDirectory = true;
@@ -2495,9 +2363,6 @@ using Interop = System.Runtime.InteropServices;
             if (!_FileNameInArchive.EndsWith("/"))
                 _FileNameInArchive += "/";
         }
-
-
-
         /// <summary>
         ///   Indicates whether an entry is marked as a text file. Be careful when
         ///   using on this property. Unless you have a good reason, you should
@@ -2589,14 +2454,9 @@ using Interop = System.Runtime.InteropServices;
             get { return _IsText; }
             set { _IsText = value; }
         }
-
-
-
     /// <summary>Provides a string representation of the instance.</summary>
     /// <returns>a string representation of the instance.</returns>
     public override String ToString() => String.Format("ZipEntry::{0}", FileName);
-
-
     internal Stream ArchiveStream
         {
             get
@@ -2617,8 +2477,6 @@ using Interop = System.Runtime.InteropServices;
                 return _archiveStream;
             }
         }
-
-
         private void SetFdpLoh()
         {
             // The value for FileDataPosition has not yet been set.
@@ -2636,38 +2494,27 @@ using Interop = System.Runtime.InteropServices;
                                                    this.ArchiveStream.Length);
                 throw new BadStateException(description, exc1);
             }
-
             byte[] block = new byte[30];
             this.ArchiveStream.Read(block, 0, block.Length);
-
             // At this point we could verify the contents read from the local header
             // with the contents read from the central header.  We could, but don't need to.
             // So we won't.
-
             Int16 filenameLength = (short)(block[26] + block[27] * 256);
             Int16 extraFieldLength = (short)(block[28] + block[29] * 256);
-
             // Console.WriteLine("  pos  0x{0:X8} ({0})", this.ArchiveStream.Position);
             // Console.WriteLine("  seek 0x{0:X8} ({0})", filenameLength + extraFieldLength);
-
             this.ArchiveStream.Seek(filenameLength + extraFieldLength, SeekOrigin.Current);
-
             this._LengthOfHeader = 30 + extraFieldLength + filenameLength +
                 GetLengthOfCryptoHeaderBytes(_Encryption_FromZipFile);
-
             // Console.WriteLine("  ROLH  0x{0:X8} ({0})", _RelativeOffsetOfLocalHeader);
             // Console.WriteLine("  LOH   0x{0:X8} ({0})", _LengthOfHeader);
             // workitem 8098: ok (arithmetic)
             this.__FileDataPosition = _RelativeOffsetOfLocalHeader + _LengthOfHeader;
             // Console.WriteLine("  FDP   0x{0:X8} ({0})", __FileDataPosition);
-
             // restore file position:
             // workitem 8098: ok (restore)
             this.ArchiveStream.Seek(origPosition, SeekOrigin.Begin);
         }
-
-
-
 #if AESCRYPTO
         private static int GetKeyStrengthInBits(EncryptionAlgorithm a)
         {
@@ -2676,12 +2523,10 @@ using Interop = System.Runtime.InteropServices;
             return -1;
         }
 #endif
-
         internal static int GetLengthOfCryptoHeaderBytes(EncryptionAlgorithm a)
         {
             //if ((_BitField & 0x01) != 0x01) return 0;
             if (a == EncryptionAlgorithm.None) return 0;
-
 #if AESCRYPTO
             if (a == EncryptionAlgorithm.WinZipAes128 ||
                 a == EncryptionAlgorithm.WinZipAes256)
@@ -2693,32 +2538,24 @@ using Interop = System.Runtime.InteropServices;
 #endif
         return a == EncryptionAlgorithm.PkzipWeak ? 12 : throw new ZipException("internal error");
     }
-
-
     internal long FileDataPosition
         {
             get
             {
                 if (__FileDataPosition == -1)
                     SetFdpLoh();
-
                 return __FileDataPosition;
             }
         }
-
         private int LengthOfHeader
         {
             get
             {
                 if (_LengthOfHeader == 0)
                     SetFdpLoh();
-
                 return _LengthOfHeader;
             }
         }
-
-
-
         private ZipCrypto _zipCrypto_forExtract;
         private ZipCrypto _zipCrypto_forWrite;
 #if AESCRYPTO
@@ -2726,7 +2563,6 @@ using Interop = System.Runtime.InteropServices;
         private WinZipAesCrypto _aesCrypto_forWrite;
         private Int16 _WinZipAesMethod;
 #endif
-
         internal DateTime _LastModified;
         private bool _dontEmitLastModified;
         private DateTime _Mtime, _Atime, _Ctime;  // workitem 6878: NTFS quantities
@@ -2756,7 +2592,6 @@ using Interop = System.Runtime.InteropServices;
         private bool _sourceIsEncrypted;
         private bool _skippedDuringSave;
         private UInt32 _diskNumber;
-
 #if NETSTANDARD2_0 || NETCOREAPP2_0
         private static System.Text.Encoding ibm437 = System.Text.CodePagesEncodingProvider.Instance.GetEncoding(1252);
 #else
@@ -2764,9 +2599,7 @@ using Interop = System.Runtime.InteropServices;
 #endif
         //private System.Text.Encoding _provisionalAlternateEncoding = System.Text.Encoding.GetEncoding("IBM437");
         private System.Text.Encoding _actualEncoding;
-
         internal ZipContainer _container;
-
         private long __FileDataPosition = -1;
         private byte[] _EntryHeader;
         internal Int64 _RelativeOffsetOfLocalHeader;
@@ -2776,7 +2609,6 @@ using Interop = System.Runtime.InteropServices;
         private int _LengthOfTrailer;
         internal bool _InputUsesZip64;
         private UInt32 _UnsupportedAlgorithmId;
-
         internal string _Password;
         internal ZipEntrySource _Source;
         internal EncryptionAlgorithm _Encryption;
@@ -2792,25 +2624,17 @@ using Interop = System.Runtime.InteropServices;
         private Nullable<bool> _OutputUsesZip64;
         private bool _IsText; // workitem 7801
         private ZipEntryTimestamp _timestamp;
-
         private static readonly System.DateTime _unixEpoch = new(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         private static readonly System.DateTime _win32Epoch = System.DateTime.FromFileTimeUtc(0L);
         private static readonly System.DateTime _zeroHour = new(1, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-
         private WriteDelegate _WriteDelegate;
         private OpenDelegate _OpenDelegate;
         private CloseDelegate _CloseDelegate;
-
-
         // summary
         // The default size of the IO buffer for ZipEntry instances. Currently it is 8192 bytes.
         // summary
         //public const int IO_BUFFER_SIZE_DEFAULT = 8192; // 0x8000; // 0x4400
-
     }
-
-
-
     /// <summary>
     ///   An enum that specifies the type of timestamp available on the ZipEntry.
     /// </summary>
@@ -2865,31 +2689,24 @@ using Interop = System.Runtime.InteropServices;
         /// Default value.
         /// </summary>
         None = 0,
-
         /// <summary>
         /// A DOS timestamp with 2-second precision.
         /// </summary>
         DOS = 1,
-
         /// <summary>
         /// A Windows timestamp with 100-ns precision.
         /// </summary>
         Windows = 2,
-
         /// <summary>
         /// A Unix timestamp with 1-second precision.
         /// </summary>
         Unix = 4,
-
         /// <summary>
         /// A Unix timestamp with 1-second precision, stored in InfoZip v1 format.  This
         /// format is outdated and is supported for reading archives only.
         /// </summary>
         InfoZip1 = 8,
     }
-
-
-
     /// <summary>
     ///   The method of compression to use for a particular ZipEntry.
     /// </summary>
@@ -2907,7 +2724,6 @@ using Interop = System.Runtime.InteropServices;
         /// No compression at all. For COM environments, the value is 0 (zero).
         /// </summary>
         None = 0,
-
         /// <summary>
         ///   DEFLATE compression, as described in <see
         ///   href="http://www.ietf.org/rfc/rfc1951.txt">IETF RFC
@@ -2915,13 +2731,11 @@ using Interop = System.Runtime.InteropServices;
         ///   files. For COM environments, the value is 8.
         /// </summary>
         Deflate = 8,
-
         /// <summary>
         /// DEFLATE64 compression. (Decompress only).
         /// For COM environments, the value is 9.
         /// </summary>
         Deflate64 = 9,
-
 #if BZIP
         /// <summary>
         ///   BZip2 compression, a compression algorithm developed by Julian Seward.
@@ -2930,8 +2744,3 @@ using Interop = System.Runtime.InteropServices;
         BZip2 = 12,
 #endif
     }
-
-
-
-
-
