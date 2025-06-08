@@ -4,8 +4,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disabled</Nullable>
     <Description>.NET 9 fork for DotNetZip because have high security vulnerability</Description>
-    <Version>25.3.29.1</Version>
-    <PackageReleaseNotes>Updated nuget to latest versions</PackageReleaseNotes>
+    <Version>25.6.8.1</Version>
+    <PackageReleaseNotes>
+    </PackageReleaseNotes>
     <Authors>www.sunamo.cz</Authors>
     <Copyright>www.sunamo.cz</Copyright>
     <PackageProjectUrl>https://sunamo.cz/</PackageProjectUrl>
