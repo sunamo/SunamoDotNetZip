@@ -1162,7 +1162,7 @@ internal class BZip2Compressor
         /* Now the coding tables. */
         sendMTFValues6(nGroups, alphaSize);
         /* And finally, the block data proper */
-        sendMTFValues7(nSelectors);
+        sendMTFValues7();
     }
     private void sendMTFValues0(int nGroups, int alphaSize)
     {
@@ -1579,7 +1579,7 @@ internal class BZip2Compressor
             }
         }
     }
-    private void sendMTFValues7(int nSelectors)
+    private void sendMTFValues7()
     {
         byte[][] len = this.cstate.sendMTFValues_len;
         int[][] code = this.cstate.sendMTFValues_code;

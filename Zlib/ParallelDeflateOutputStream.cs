@@ -234,23 +234,23 @@ public class ParallelDeflateOutputStream : System.IO.Stream
         : this(stream, CompressionLevel.Default, CompressionStrategy.Default, leaveOpen)
     {
     }
-    /// <summary>
-    /// Create a ParallelDeflateOutputStream and specify whether to leave the captive stream open
-    /// when the ParallelDeflateOutputStream is closed.
-    /// </summary>
-    /// <remarks>
-    ///   See the <see cref="ParallelDeflateOutputStream(System.IO.Stream)"/>
-    ///   constructor for example code.
-    /// </remarks>
-    /// <param name="stream">The stream to which compressed data will be written.</param>
-    /// <param name="level">A tuning knob to trade speed for effectiveness.</param>
-    /// <param name="leaveOpen">
-    ///    true if the application would like the stream to remain open after inflation/deflation.
-    /// </param>
-    public ParallelDeflateOutputStream(System.IO.Stream stream, CompressionLevel level, bool leaveOpen)
-        : this(stream, CompressionLevel.Default, CompressionStrategy.Default, leaveOpen)
-    {
-    }
+    ///// <summary>
+    ///// Create a ParallelDeflateOutputStream and specify whether to leave the captive stream open
+    ///// when the ParallelDeflateOutputStream is closed.
+    ///// </summary>
+    ///// <remarks>
+    /////   See the <see cref="ParallelDeflateOutputStream(System.IO.Stream)"/>
+    /////   constructor for example code.
+    ///// </remarks>
+    ///// <param name="stream">The stream to which compressed data will be written.</param>
+    ///// <param name="level">A tuning knob to trade speed for effectiveness.</param>
+    ///// <param name="leaveOpen">
+    /////    true if the application would like the stream to remain open after inflation/deflation.
+    ///// </param>
+    //public ParallelDeflateOutputStream(System.IO.Stream stream, bool leaveOpen)
+    //    : this(stream, CompressionLevel.Default, CompressionStrategy.Default, leaveOpen)
+    //{
+    //}
     /// <summary>
     /// Create a ParallelDeflateOutputStream using the specified
     /// CompressionLevel and CompressionStrategy, and specifying whether to

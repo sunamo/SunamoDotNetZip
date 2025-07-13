@@ -25,10 +25,7 @@
 //
 // 
 // ------------------------------------------------------------------
-
-
 namespace Ionic.Zip;
-
 /// <summary>
 /// An enum that provides the various encryption algorithms supported by this
 /// library.
@@ -102,29 +99,23 @@ public enum EncryptionAlgorithm
     /// No encryption at all.
     /// </summary>
     None = 0,
-
     /// <summary>
     /// Traditional or Classic pkzip encryption.
     /// </summary>
     PkzipWeak,
-
 #if AESCRYPTO
     /// <summary>
     /// WinZip AES encryption (128 key bits).
     /// </summary>
     WinZipAes128,
-
     /// <summary>
     /// WinZip AES encryption (256 key bits).
     /// </summary>
     WinZipAes256,
 #endif
-
     /// <summary>
     /// An encryption algorithm that is not supported by DotNetZip.
     /// </summary>
     Unsupported = 4,
-
-
     // others... not implemented (yet?)
 }

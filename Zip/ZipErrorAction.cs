@@ -26,10 +26,7 @@
 // files to be added to a zip file. 
 // 
 // ------------------------------------------------------------------
-
-
 namespace Ionic.Zip;
-
 /// <summary>
 /// An enum providing the options when an error occurs during opening or reading
 /// of a file or directory that is being saved to a zip file. 
@@ -63,14 +60,12 @@ public enum ZipErrorAction
     /// behavior.  (For COM clients, this is a 0 (zero).)
     /// </summary>
     Throw,
-
     /// <summary>
     /// When an error occurs during zipping, for example a file cannot be opened,
     /// skip the file causing the error, and continue zipping.  (For COM clients,
     /// this is a 1.)
     /// </summary>
     Skip,
-    
     /// <summary>
     /// When an error occurs during zipping, for example a file cannot be opened,
     /// retry the operation that caused the error. Be careful with this option. If
@@ -78,7 +73,6 @@ public enum ZipErrorAction
     /// clients, this is a 2.)
     /// </summary>
     Retry,
-
     /// <summary>
     /// When an error occurs, invoke the zipError event.  The event type used is
     /// <see cref="ZipProgressEventType.Error_Saving"/>.  A typical use of this option:

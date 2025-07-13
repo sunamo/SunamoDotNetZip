@@ -2,11 +2,10 @@
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>disabled</Nullable>
+    <Nullable>disable</Nullable>
     <Description>.NET 9 fork for DotNetZip because have high security vulnerability</Description>
-    <Version>25.6.8.1</Version>
-    <PackageReleaseNotes>
-    </PackageReleaseNotes>
+    <Version>25.6.16.1</Version>
+    <PackageReleaseNotes>Removed unused methods args</PackageReleaseNotes>
     <Authors>www.sunamo.cz</Authors>
     <Copyright>www.sunamo.cz</Copyright>
     <PackageProjectUrl>https://sunamo.cz/</PackageProjectUrl>
