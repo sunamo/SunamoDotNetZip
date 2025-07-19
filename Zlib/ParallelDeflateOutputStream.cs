@@ -234,7 +234,7 @@ public class ParallelDeflateOutputStream : System.IO.Stream
         : this(stream, CompressionLevel.Default, CompressionStrategy.Default, leaveOpen)
     {
     }
-    ///// <summary>
+   
     ///// Create a ParallelDeflateOutputStream and specify whether to leave the captive stream open
     ///// when the ParallelDeflateOutputStream is closed.
     ///// </summary>
