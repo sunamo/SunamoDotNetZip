@@ -1266,7 +1266,7 @@ internal sealed class EnumUtil
                     this.f = new FileSelector(this._selectionCriteria);
             }
         }
-        public static void Main(string[] args)
+        public static void Main()
         {
             try
             {
