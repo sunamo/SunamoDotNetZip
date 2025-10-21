@@ -1,3 +1,6 @@
+// EN: Variable names have been checked and replaced with self-descriptive names
+// CZ: Názvy proměnných byly zkontrolovány a nahrazeny samopopisnými názvy
+
 namespace Ionic.Zip;
 
 // ZipFile.Events.cs
@@ -147,8 +150,8 @@ namespace Ionic.Zip;
         ///    zip.AddFiles(listbox1.Items);
         ///
         ///    // do the progress bar:
-        ///    zip.SaveProgress += (sender, e) => {
-        ///       if (e.EventType == ZipProgressEventType.Saving_BeforeWriteEntry) {
+        ///    zip.SaveProgress += (sender, element) => {
+        ///       if (element.EventType == ZipProgressEventType.Saving_BeforeWriteEntry) {
         ///          progressBar1.PerformStep();
         ///       }
         ///    };
@@ -165,33 +168,33 @@ namespace Ionic.Zip;
         ///
         /// <code lang="C#">
         /// static bool justHadByteUpdate= false;
-        /// public static void SaveProgress(object sender, SaveProgressEventArgs e)
+        /// public static void SaveProgress(object sender, SaveProgressEventArgs element)
         /// {
-        ///     if (e.EventType == ZipProgressEventType.Saving_Started)
-        ///         Console.WriteLine("Saving: {0}", e.ArchiveName);
+        ///     if (element.EventType == ZipProgressEventType.Saving_Started)
+        ///         Console.WriteLine("Saving: {0}", element.ArchiveName);
         ///
-        ///     else if (e.EventType == ZipProgressEventType.Saving_Completed)
+        ///     else if (element.EventType == ZipProgressEventType.Saving_Completed)
         ///     {
         ///         justHadByteUpdate= false;
         ///         Console.WriteLine();
-        ///         Console.WriteLine("Done: {0}", e.ArchiveName);
+        ///         Console.WriteLine("Done: {0}", element.ArchiveName);
         ///     }
         ///
-        ///     else if (e.EventType == ZipProgressEventType.Saving_BeforeWriteEntry)
+        ///     else if (element.EventType == ZipProgressEventType.Saving_BeforeWriteEntry)
         ///     {
         ///         if (justHadByteUpdate)
         ///             Console.WriteLine();
         ///         Console.WriteLine("  Writing: {0} ({1}/{2})",
-        ///                           e.CurrentEntry.FileName, e.EntriesSaved, e.EntriesTotal);
+        ///                           element.CurrentEntry.FileName, element.EntriesSaved, element.EntriesTotal);
         ///         justHadByteUpdate= false;
         ///     }
         ///
-        ///     else if (e.EventType == ZipProgressEventType.Saving_EntryBytesRead)
+        ///     else if (element.EventType == ZipProgressEventType.Saving_EntryBytesRead)
         ///     {
         ///         if (justHadByteUpdate)
         ///             Console.SetCursorPosition(0, Console.CursorTop);
-        ///          Console.Write("     {0}/{1} ({2:N0}%)", e.BytesTransferred, e.TotalBytesToTransfer,
-        ///                       e.BytesTransferred / (0.01 * e.TotalBytesToTransfer ));
+        ///          Console.Write("     {0}/{1} ({2:N0}%)", element.BytesTransferred, element.TotalBytesToTransfer,
+        ///                       element.BytesTransferred / (0.01 * element.TotalBytesToTransfer ));
         ///         justHadByteUpdate= true;
         ///     }
         /// }
@@ -218,29 +221,29 @@ namespace Ionic.Zip;
         ///
         /// Private Shared justHadByteUpdate As Boolean = False
         ///
-        /// Public Shared Sub MySaveProgress(ByVal sender As Object, ByVal e As SaveProgressEventArgs)
-        ///     If (e.EventType Is ZipProgressEventType.Saving_Started) Then
-        ///         Console.WriteLine("Saving: {0}", e.ArchiveName)
+        /// Public Shared Sub MySaveProgress(ByVal sender As Object, ByVal element As SaveProgressEventArgs)
+        ///     If (element.EventType Is ZipProgressEventType.Saving_Started) Then
+        ///         Console.WriteLine("Saving: {0}", element.ArchiveName)
         ///
-        ///     ElseIf (e.EventType Is ZipProgressEventType.Saving_Completed) Then
+        ///     ElseIf (element.EventType Is ZipProgressEventType.Saving_Completed) Then
         ///         justHadByteUpdate = False
         ///         Console.WriteLine
-        ///         Console.WriteLine("Done: {0}", e.ArchiveName)
+        ///         Console.WriteLine("Done: {0}", element.ArchiveName)
         ///
-        ///     ElseIf (e.EventType Is ZipProgressEventType.Saving_BeforeWriteEntry) Then
+        ///     ElseIf (element.EventType Is ZipProgressEventType.Saving_BeforeWriteEntry) Then
         ///         If justHadByteUpdate Then
         ///             Console.WriteLine
         ///         End If
-        ///         Console.WriteLine("  Writing: {0} ({1}/{2})", e.CurrentEntry.FileName, e.EntriesSaved, e.EntriesTotal)
+        ///         Console.WriteLine("  Writing: {0} ({1}/{2})", element.CurrentEntry.FileName, element.EntriesSaved, element.EntriesTotal)
         ///         justHadByteUpdate = False
         ///
-        ///     ElseIf (e.EventType Is ZipProgressEventType.Saving_EntryBytesRead) Then
+        ///     ElseIf (element.EventType Is ZipProgressEventType.Saving_EntryBytesRead) Then
         ///         If justHadByteUpdate Then
         ///             Console.SetCursorPosition(0, Console.CursorTop)
         ///         End If
-        ///         Console.Write("     {0}/{1} ({2:N0}%)", e.BytesTransferred, _
-        ///                       e.TotalBytesToTransfer, _
-        ///                       (CDbl(e.BytesTransferred) / (0.01 * e.TotalBytesToTransfer)))
+        ///         Console.Write("     {0}/{1} ({2:N0}%)", element.BytesTransferred, _
+        ///                       element.TotalBytesToTransfer, _
+        ///                       (CDbl(element.BytesTransferred) / (0.01 * element.TotalBytesToTransfer)))
         ///         justHadByteUpdate = True
         ///     End If
         /// End Sub
@@ -254,8 +257,8 @@ namespace Ionic.Zip;
         /// Thread object.
         ///
         /// <code lang="C#">
-        /// delegate void SaveEntryProgress(SaveProgressEventArgs e);
-        /// delegate void ButtonClick(object sender, EventArgs e);
+        /// delegate void SaveEntryProgress(SaveProgressEventArgs element);
+        /// delegate void ButtonClick(object sender, EventArgs element);
         ///
         /// public class WorkerOptions
         /// {
@@ -274,16 +277,16 @@ namespace Ionic.Zip;
         /// private Thread _workerThread;
         ///
         ///
-        /// private void btnZipup_Click(object sender, EventArgs e)
+        /// private void btnZipup_Click(object sender, EventArgs element)
         /// {
         ///     KickoffZipup();
         /// }
         ///
-        /// private void btnCancel_Click(object sender, EventArgs e)
+        /// private void btnCancel_Click(object sender, EventArgs element)
         /// {
         ///     if (this.lblStatus.InvokeRequired)
         ///     {
-        ///         this.lblStatus.Invoke(new ButtonClick(this.btnCancel_Click), new object[] { sender, e });
+        ///         this.lblStatus.Invoke(new ButtonClick(this.btnCancel_Click), new object[] { sender, element });
         ///     }
         ///     else
         ///     {
@@ -393,15 +396,15 @@ namespace Ionic.Zip;
         ///
         ///
         ///
-        /// void zip1_SaveProgress(object sender, SaveProgressEventArgs e)
+        /// void zip1_SaveProgress(object sender, SaveProgressEventArgs element)
         /// {
-        ///     switch (e.EventType)
+        ///     switch (element.EventType)
         ///     {
         ///         case ZipProgressEventType.Saving_AfterWriteEntry:
-        ///             StepArchiveProgress(e);
+        ///             StepArchiveProgress(element);
         ///             break;
         ///         case ZipProgressEventType.Saving_EntryBytesRead:
-        ///             StepEntryProgress(e);
+        ///             StepEntryProgress(element);
         ///             break;
         ///         case ZipProgressEventType.Saving_Completed:
         ///             SaveCompleted();
@@ -412,16 +415,16 @@ namespace Ionic.Zip;
         ///             break;
         ///     }
         ///     if (_saveCanceled)
-        ///         e.Cancel = true;
+        ///         element.Cancel = true;
         /// }
         ///
         ///
         ///
-        /// private void StepArchiveProgress(SaveProgressEventArgs e)
+        /// private void StepArchiveProgress(SaveProgressEventArgs element)
         /// {
         ///     if (this.progressBar1.InvokeRequired)
         ///     {
-        ///         this.progressBar1.Invoke(new SaveEntryProgress(this.StepArchiveProgress), new object[] { e });
+        ///         this.progressBar1.Invoke(new SaveEntryProgress(this.StepArchiveProgress), new object[] { element });
         ///     }
         ///     else
         ///     {
@@ -429,8 +432,8 @@ namespace Ionic.Zip;
         ///         {
         ///             _nFilesCompleted++;
         ///             this.progressBar1.PerformStep();
-        ///             _totalBytesAfterCompress += e.CurrentEntry.CompressedSize;
-        ///             _totalBytesBeforeCompress += e.CurrentEntry.UncompressedSize;
+        ///             _totalBytesAfterCompress += element.CurrentEntry.CompressedSize;
+        ///             _totalBytesBeforeCompress += element.CurrentEntry.UncompressedSize;
         ///
         ///             // reset the progress bar for the entry:
         ///             this.progressBar2.Value = this.progressBar2.Maximum = 1;
@@ -441,11 +444,11 @@ namespace Ionic.Zip;
         /// }
         ///
         ///
-        /// private void StepEntryProgress(SaveProgressEventArgs e)
+        /// private void StepEntryProgress(SaveProgressEventArgs element)
         /// {
         ///     if (this.progressBar2.InvokeRequired)
         ///     {
-        ///         this.progressBar2.Invoke(new SaveEntryProgress(this.StepEntryProgress), new object[] { e });
+        ///         this.progressBar2.Invoke(new SaveEntryProgress(this.StepEntryProgress), new object[] { element });
         ///     }
         ///     else
         ///     {
@@ -454,7 +457,7 @@ namespace Ionic.Zip;
         ///             if (this.progressBar2.Maximum == 1)
         ///             {
         ///                 // reset
-        ///                 Int64 max = e.TotalBytesToTransfer;
+        ///                 Int64 max = element.TotalBytesToTransfer;
         ///                 _progress2MaxFactor = 0;
         ///                 while (max > System.Int32.MaxValue)
         ///                 {
@@ -463,10 +466,10 @@ namespace Ionic.Zip;
         ///                 }
         ///                 this.progressBar2.Maximum = (int)max;
         ///                 lblStatus.Text = String.Format("{0} of {1} files...({2})",
-        ///                     _nFilesCompleted + 1, _entriesToZip, e.CurrentEntry.FileName);
+        ///                     _nFilesCompleted + 1, _entriesToZip, element.CurrentEntry.FileName);
         ///             }
         ///
-        ///              int xferred = e.BytesTransferred >> _progress2MaxFactor;
+        ///              int xferred = element.BytesTransferred >> _progress2MaxFactor;
         ///
         ///              this.progressBar2.Value = (xferred >= this.progressBar2.Maximum)
         ///                 ? this.progressBar2.Maximum
@@ -515,10 +518,10 @@ namespace Ionic.Zip;
             EventHandler<SaveProgressEventArgs> sp = SaveProgress;
             if (sp != null)
             {
-                var e = SaveProgressEventArgs.ByteUpdate(ArchiveNameForEvent, entry,
+                var element = SaveProgressEventArgs.ByteUpdate(ArchiveNameForEvent, entry,
                                                          bytesXferred, totalBytesToXfer);
-                sp(this, e);
-                if (e.Cancel)
+                sp(this, element);
+                if (element.Cancel)
                     _saveOperationCanceled = true;
             }
             return _saveOperationCanceled;
@@ -528,9 +531,9 @@ namespace Ionic.Zip;
             EventHandler<SaveProgressEventArgs> sp = SaveProgress;
             if (sp != null)
             {
-                var e = new SaveProgressEventArgs(ArchiveNameForEvent, before, _entries.Count, current, entry);
-                sp(this, e);
-                if (e.Cancel)
+                var element = new SaveProgressEventArgs(ArchiveNameForEvent, before, _entries.Count, current, entry);
+                sp(this, element);
+                if (element.Cancel)
                     _saveOperationCanceled = true;
             }
         }
@@ -539,9 +542,9 @@ namespace Ionic.Zip;
             EventHandler<SaveProgressEventArgs> sp = SaveProgress;
             if (sp != null)
             {
-                var e = new SaveProgressEventArgs(ArchiveNameForEvent, eventFlavor);
-                sp(this, e);
-                if (e.Cancel)
+                var element = new SaveProgressEventArgs(ArchiveNameForEvent, eventFlavor);
+                sp(this, element);
+                if (element.Cancel)
                     _saveOperationCanceled = true;
             }
         }
@@ -550,9 +553,9 @@ namespace Ionic.Zip;
             EventHandler<SaveProgressEventArgs> sp = SaveProgress;
             if (sp != null)
             {
-                var e = SaveProgressEventArgs.Started(ArchiveNameForEvent);
-                sp(this, e);
-                if (e.Cancel)
+                var element = SaveProgressEventArgs.Started(ArchiveNameForEvent);
+                sp(this, element);
+                if (element.Cancel)
                     _saveOperationCanceled = true;
             }
         }
@@ -561,8 +564,8 @@ namespace Ionic.Zip;
             EventHandler<SaveProgressEventArgs> sp = SaveProgress;
             if (sp != null)
             {
-                var e = SaveProgressEventArgs.Completed(ArchiveNameForEvent);
-                sp(this, e);
+                var element = SaveProgressEventArgs.Completed(ArchiveNameForEvent);
+                sp(this, element);
             }
         }
         #endregion
@@ -630,8 +633,8 @@ namespace Ionic.Zip;
             EventHandler<ReadProgressEventArgs> rp = ReadProgress;
             if (rp != null)
             {
-                    var e = ReadProgressEventArgs.Started(ArchiveNameForEvent);
-                    rp(this, e);
+                    var element = ReadProgressEventArgs.Started(ArchiveNameForEvent);
+                    rp(this, element);
             }
         }
         private void OnReadCompleted()
@@ -639,8 +642,8 @@ namespace Ionic.Zip;
             EventHandler<ReadProgressEventArgs> rp = ReadProgress;
             if (rp != null)
             {
-                    var e = ReadProgressEventArgs.Completed(ArchiveNameForEvent);
-                    rp(this, e);
+                    var element = ReadProgressEventArgs.Completed(ArchiveNameForEvent);
+                    rp(this, element);
             }
         }
         internal void OnReadBytes(ZipEntry entry)
@@ -648,11 +651,11 @@ namespace Ionic.Zip;
             EventHandler<ReadProgressEventArgs> rp = ReadProgress;
             if (rp != null)
             {
-                    var e = ReadProgressEventArgs.ByteUpdate(ArchiveNameForEvent,
+                    var element = ReadProgressEventArgs.ByteUpdate(ArchiveNameForEvent,
                                         entry,
                                         ReadStream.Position,
                                         LengthOfReadStream);
-                    rp(this, e);
+                    rp(this, element);
             }
         }
         internal void OnReadEntry(bool before, ZipEntry entry)
@@ -660,10 +663,10 @@ namespace Ionic.Zip;
             EventHandler<ReadProgressEventArgs> rp = ReadProgress;
             if (rp != null)
             {
-                ReadProgressEventArgs e = (before)
+                ReadProgressEventArgs element = (before)
                     ? ReadProgressEventArgs.Before(ArchiveNameForEvent, _entries.Count)
                     : ReadProgressEventArgs.After(ArchiveNameForEvent, entry, _entries.Count);
-                rp(this, e);
+                rp(this, element);
             }
         }
         private Int64 _lengthOfReadStream = -99;
@@ -761,22 +764,22 @@ namespace Ionic.Zip;
         /// <example>
         /// <code>
         /// private static bool justHadByteUpdate = false;
-        /// public static void ExtractProgress(object sender, ExtractProgressEventArgs e)
+        /// public static void ExtractProgress(object sender, ExtractProgressEventArgs element)
         /// {
-        ///   if(e.EventType == ZipProgressEventType.Extracting_EntryBytesWritten)
+        ///   if(element.EventType == ZipProgressEventType.Extracting_EntryBytesWritten)
         ///   {
         ///     if (justHadByteUpdate)
         ///       Console.SetCursorPosition(0, Console.CursorTop);
         ///
-        ///     Console.Write("   {0}/{1} ({2:N0}%)", e.BytesTransferred, e.TotalBytesToTransfer,
-        ///                   e.BytesTransferred / (0.01 * e.TotalBytesToTransfer ));
+        ///     Console.Write("   {0}/{1} ({2:N0}%)", element.BytesTransferred, element.TotalBytesToTransfer,
+        ///                   element.BytesTransferred / (0.01 * element.TotalBytesToTransfer ));
         ///     justHadByteUpdate = true;
         ///   }
-        ///   else if(e.EventType == ZipProgressEventType.Extracting_BeforeExtractEntry)
+        ///   else if(element.EventType == ZipProgressEventType.Extracting_BeforeExtractEntry)
         ///   {
         ///     if (justHadByteUpdate)
         ///       Console.WriteLine();
-        ///     Console.WriteLine("Extracting: {0}", e.CurrentEntry.FileName);
+        ///     Console.WriteLine("Extracting: {0}", element.CurrentEntry.FileName);
         ///     justHadByteUpdate= false;
         ///   }
         /// }
@@ -786,9 +789,9 @@ namespace Ionic.Zip;
         ///   string TargetDirectory= "extract";
         ///   using (var zip = ZipFile.Read(zipToExtract)) {
         ///     zip.ExtractProgress += ExtractProgress;
-        ///     foreach (var e in zip1)
+        ///     foreach (var element in zip1)
         ///     {
-        ///       e.Extract(TargetDirectory, true);
+        ///       element.Extract(TargetDirectory, true);
         ///     }
         ///   }
         /// }
@@ -801,27 +804,27 @@ namespace Ionic.Zip;
         ///     Console.WriteLine("Extracting file {0} to {1}", ZipToUnpack, TargetDir)
         ///     Using zip1 As ZipFile = ZipFile.Read(ZipToUnpack)
         ///         AddHandler zip1.ExtractProgress, AddressOf MyExtractProgress
-        ///         Dim e As ZipEntry
-        ///         For Each e In zip1
-        ///             e.Extract(TargetDir, True)
+        ///         Dim element As ZipEntry
+        ///         For Each element In zip1
+        ///             element.Extract(TargetDir, True)
         ///         Next
         ///     End Using
         /// End Sub
         ///
         /// Private Shared justHadByteUpdate As Boolean = False
         ///
-        /// Public Shared Sub MyExtractProgress(ByVal sender As Object, ByVal e As ExtractProgressEventArgs)
-        ///     If (e.EventType = ZipProgressEventType.Extracting_EntryBytesWritten) Then
+        /// Public Shared Sub MyExtractProgress(ByVal sender As Object, ByVal element As ExtractProgressEventArgs)
+        ///     If (element.EventType = ZipProgressEventType.Extracting_EntryBytesWritten) Then
         ///         If ExtractTest.justHadByteUpdate Then
         ///             Console.SetCursorPosition(0, Console.CursorTop)
         ///         End If
-        ///         Console.Write("   {0}/{1} ({2:N0}%)", e.BytesTransferred, e.TotalBytesToTransfer, (CDbl(e.BytesTransferred) / (0.01 * e.TotalBytesToTransfer)))
+        ///         Console.Write("   {0}/{1} ({2:N0}%)", element.BytesTransferred, element.TotalBytesToTransfer, (CDbl(element.BytesTransferred) / (0.01 * element.TotalBytesToTransfer)))
         ///         ExtractTest.justHadByteUpdate = True
-        ///     ElseIf (e.EventType = ZipProgressEventType.Extracting_BeforeExtractEntry) Then
+        ///     ElseIf (element.EventType = ZipProgressEventType.Extracting_BeforeExtractEntry) Then
         ///         If ExtractTest.justHadByteUpdate Then
         ///             Console.WriteLine
         ///         End If
-        ///         Console.WriteLine("Extracting: {0}", e.CurrentEntry.FileName)
+        ///         Console.WriteLine("Extracting: {0}", element.CurrentEntry.FileName)
         ///         ExtractTest.justHadByteUpdate = False
         ///     End If
         /// End Sub
@@ -837,9 +840,9 @@ namespace Ionic.Zip;
             EventHandler<ExtractProgressEventArgs> ep = ExtractProgress;
             if (ep != null)
             {
-                var e = new ExtractProgressEventArgs(ArchiveNameForEvent, before, _entries.Count, current, currentEntry, path);
-                ep(this, e);
-                if (e.Cancel)
+                var element = new ExtractProgressEventArgs(ArchiveNameForEvent, before, _entries.Count, current, currentEntry, path);
+                ep(this, element);
+                if (element.Cancel)
                     _extractOperationCanceled = true;
             }
         }
@@ -849,10 +852,10 @@ namespace Ionic.Zip;
             EventHandler<ExtractProgressEventArgs> ep = ExtractProgress;
             if (ep != null)
             {
-                var e = ExtractProgressEventArgs.ByteUpdate(ArchiveNameForEvent, entry,
+                var element = ExtractProgressEventArgs.ByteUpdate(ArchiveNameForEvent, entry,
                                                             bytesWritten, totalBytesToWrite);
-                ep(this, e);
-                if (e.Cancel)
+                ep(this, element);
+                if (element.Cancel)
                     _extractOperationCanceled = true;
             }
             return _extractOperationCanceled;
@@ -863,11 +866,11 @@ namespace Ionic.Zip;
             EventHandler<ExtractProgressEventArgs> ep = ExtractProgress;
             if (ep != null)
             {
-                var e = (before)
+                var element = (before)
                     ? ExtractProgressEventArgs.BeforeExtractEntry(ArchiveNameForEvent, entry, path)
                     : ExtractProgressEventArgs.AfterExtractEntry(ArchiveNameForEvent, entry, path);
-                ep(this, e);
-                if (e.Cancel)
+                ep(this, element);
+                if (element.Cancel)
                     _extractOperationCanceled = true;
             }
             return _extractOperationCanceled;
@@ -877,9 +880,9 @@ namespace Ionic.Zip;
             EventHandler<ExtractProgressEventArgs> ep = ExtractProgress;
             if (ep != null)
             {
-                var e = ExtractProgressEventArgs.ExtractExisting(ArchiveNameForEvent, entry, path);
-                ep(this, e);
-                if (e.Cancel)
+                var element = ExtractProgressEventArgs.ExtractExisting(ArchiveNameForEvent, entry, path);
+                ep(this, element);
+                if (element.Cancel)
                     _extractOperationCanceled = true;
             }
             return _extractOperationCanceled;
@@ -889,9 +892,9 @@ namespace Ionic.Zip;
             EventHandler<ExtractProgressEventArgs> ep = ExtractProgress;
             if (ep != null)
             {
-                var e = ExtractProgressEventArgs.ExtractAllCompleted(ArchiveNameForEvent,
+                var element = ExtractProgressEventArgs.ExtractAllCompleted(ArchiveNameForEvent,
                                                                      path );
-                ep(this, e);
+                ep(this, element);
             }
         }
         private void OnExtractAllStarted(string path)
@@ -899,9 +902,9 @@ namespace Ionic.Zip;
             EventHandler<ExtractProgressEventArgs> ep = ExtractProgress;
             if (ep != null)
             {
-                var e = ExtractProgressEventArgs.ExtractAllStarted(ArchiveNameForEvent,
+                var element = ExtractProgressEventArgs.ExtractAllStarted(ArchiveNameForEvent,
                                                                    path );
-                ep(this, e);
+                ep(this, element);
             }
         }
         #endregion
@@ -923,9 +926,9 @@ namespace Ionic.Zip;
         ///
         /// int _numEntriesToAdd= 0;
         /// int _numEntriesAdded= 0;
-        /// void AddProgressHandler(object sender, AddProgressEventArgs e)
+        /// void AddProgressHandler(object sender, AddProgressEventArgs element)
         /// {
-        ///     switch (e.EventType)
+        ///     switch (element.EventType)
         ///     {
         ///         case ZipProgressEventType.Adding_Started:
         ///             Console.WriteLine("Adding files to the zip...");
@@ -933,7 +936,7 @@ namespace Ionic.Zip;
         ///         case ZipProgressEventType.Adding_AfterAddEntry:
         ///             _numEntriesAdded++;
         ///             Console.WriteLine(String.Format("Adding file {0}/{1} :: {2}",
-        ///                                      _numEntriesAdded, _numEntriesToAdd, e.CurrentEntry.FileName));
+        ///                                      _numEntriesAdded, _numEntriesToAdd, element.CurrentEntry.FileName));
         ///             break;
         ///         case ZipProgressEventType.Adding_Completed:
         ///             Console.WriteLine("Added all files");
@@ -955,13 +958,13 @@ namespace Ionic.Zip;
         ///
         /// <code lang="VB">
         ///
-        /// Private Sub AddProgressHandler(ByVal sender As Object, ByVal e As AddProgressEventArgs)
-        ///     Select Case e.EventType
+        /// Private Sub AddProgressHandler(ByVal sender As Object, ByVal element As AddProgressEventArgs)
+        ///     Select Case element.EventType
         ///         Case ZipProgressEventType.Adding_Started
         ///             Console.WriteLine("Adding files to the zip...")
         ///             Exit Select
         ///         Case ZipProgressEventType.Adding_AfterAddEntry
-        ///             Console.WriteLine(String.Format("Adding file {0}", e.CurrentEntry.FileName))
+        ///             Console.WriteLine(String.Format("Adding file {0}", element.CurrentEntry.FileName))
         ///             Exit Select
         ///         Case ZipProgressEventType.Adding_Completed
         ///             Console.WriteLine("Added all files")
@@ -990,9 +993,9 @@ namespace Ionic.Zip;
             EventHandler<AddProgressEventArgs> ap = AddProgress;
             if (ap != null)
             {
-                var e = AddProgressEventArgs.Started(ArchiveNameForEvent);
-                ap(this, e);
-                if (e.Cancel) // workitem 13371
+                var element = AddProgressEventArgs.Started(ArchiveNameForEvent);
+                ap(this, element);
+                if (element.Cancel) // workitem 13371
                     _addOperationCanceled = true;
             }
         }
@@ -1001,8 +1004,8 @@ namespace Ionic.Zip;
             EventHandler<AddProgressEventArgs> ap = AddProgress;
             if (ap != null)
             {
-                var e = AddProgressEventArgs.Completed(ArchiveNameForEvent);
-                ap(this, e);
+                var element = AddProgressEventArgs.Completed(ArchiveNameForEvent);
+                ap(this, element);
             }
         }
         internal void AfterAddEntry(ZipEntry entry)
@@ -1010,9 +1013,9 @@ namespace Ionic.Zip;
             EventHandler<AddProgressEventArgs> ap = AddProgress;
             if (ap != null)
             {
-                var e = AddProgressEventArgs.AfterEntry(ArchiveNameForEvent, entry, _entries.Count);
-                ap(this, e);
-                if (e.Cancel) // workitem 13371
+                var element = AddProgressEventArgs.AfterEntry(ArchiveNameForEvent, entry, _entries.Count);
+                ap(this, element);
+                if (element.Cancel) // workitem 13371
                     _addOperationCanceled = true;
             }
         }
@@ -1083,11 +1086,11 @@ namespace Ionic.Zip;
         /// errors during save of the zip file.
         /// <code lang="C#">
         ///
-        /// public static void MyZipError(object sender, ZipErrorEventArgs e)
+        /// public static void MyZipError(object sender, ZipErrorEventArgs element)
         /// {
-        ///     Console.WriteLine("Error saving {0}...", e.FileName);
-        ///     Console.WriteLine("   Exception: {0}", e.exception);
-        ///     ZipEntry entry = e.CurrentEntry;
+        ///     Console.WriteLine("Error saving {0}...", element.FileName);
+        ///     Console.WriteLine("   Exception: {0}", element.exception);
+        ///     ZipEntry entry = element.CurrentEntry;
         ///     string response = null;
         ///     // Ask the user whether he wants to skip this error or not
         ///     do
@@ -1102,7 +1105,7 @@ namespace Ionic.Zip;
         ///              response[0]!='T' &amp;&amp; response[0]!='t' &amp;&amp;
         ///              response[0]!='C' &amp;&amp; response[0]!='c');
         ///
-        ///     e.Cancel = (response[0]=='C' || response[0]=='c');
+        ///     element.Cancel = (response[0]=='C' || response[0]=='c');
         ///
         ///     if (response[0]=='S' || response[0]=='s')
         ///         entry.ZipErrorAction = ZipErrorAction.Skip;
@@ -1128,13 +1131,13 @@ namespace Ionic.Zip;
         /// </code>
         ///
         /// <code lang="VB">
-        /// Private Sub MyZipError(ByVal sender As Object, ByVal e As Ionic.Zip.ZipErrorEventArgs)
+        /// Private Sub MyZipError(ByVal sender As Object, ByVal element As Ionic.Zip.ZipErrorEventArgs)
         ///     ' At this point, the application could prompt the user for an action to take.
         ///     ' But in this case, this application will simply automatically skip the file, in case of error.
-        ///     Console.WriteLine("Zip Error,  entry {0}", e.CurrentEntry.FileName)
-        ///     Console.WriteLine("   Exception: {0}", e.exception)
+        ///     Console.WriteLine("Zip Error,  entry {0}", element.CurrentEntry.FileName)
+        ///     Console.WriteLine("   Exception: {0}", element.exception)
         ///     ' set the desired ZipErrorAction on the CurrentEntry to communicate that to DotNetZip
-        ///     e.CurrentEntry.ZipErrorAction = Zip.ZipErrorAction.Skip
+        ///     element.CurrentEntry.ZipErrorAction = Zip.ZipErrorAction.Skip
         /// End Sub
         ///
         /// Public Sub SaveTheFile()
@@ -1160,9 +1163,9 @@ namespace Ionic.Zip;
             {
                 lock (LOCK)
                 {
-                    var e = ZipErrorEventArgs.Saving(this.Name, entry, exc);
-                    ZipError(this, e);
-                    if (e.Cancel)
+                    var element = ZipErrorEventArgs.Saving(this.Name, entry, exc);
+                    ZipError(this, element);
+                    if (element.Cancel)
                         _saveOperationCanceled = true;
                 }
             }

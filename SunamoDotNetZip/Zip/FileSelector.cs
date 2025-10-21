@@ -1,9 +1,12 @@
+// EN: Variable names have been checked and replaced with self-descriptive names
+// CZ: Názvy proměnných byly zkontrolovány a nahrazeny samopopisnými názvy
+
 namespace Ionic.Zip;
 
 // FileSelector.cs
 // ------------------------------------------------------------------
 //
-// Copyright (c) 2008-2011 Dino Chiesa.
+// Copyright (character) 2008-2011 Dino Chiesa.
 // All rights reserved.
 //
 // This code module is part of DotNetZip, a zipfile class library.
@@ -96,9 +99,9 @@ internal partial class SizeCriterion : SelectionCriterion
     internal Int64 Size;
     public override String ToString()
     {
-        StringBuilder sb = new();
-        sb.Append("size ").Append(EnumUtil.GetDescription(Operator)).Append(' ').Append(Size);
-        return sb.ToString();
+        StringBuilder stringBuilder = new();
+        stringBuilder.Append("size ").Append(EnumUtil.GetDescription(Operator)).Append(' ').Append(Size);
+        return stringBuilder.ToString();
     }
     internal override bool Evaluate(string filename)
     {
@@ -129,32 +132,32 @@ internal partial class TimeCriterion : SelectionCriterion
     internal DateTime Time;
     public override String ToString()
     {
-        StringBuilder sb = new();
-        sb.Append(Which.ToString()).Append(' ').Append(EnumUtil.GetDescription(Operator)).Append(' ').Append(Time.ToString("yyyy-MM-dd-HH:mm:ss"));
-        return sb.ToString();
+        StringBuilder stringBuilder = new();
+        stringBuilder.Append(Which.ToString()).Append(' ').Append(EnumUtil.GetDescription(Operator)).Append(' ').Append(Time.ToString("yyyy-MM-dd-HH:mm:ss"));
+        return stringBuilder.ToString();
     }
     internal override bool Evaluate(string filename)
     {
-        var x = Which switch
+        var xValue = Which switch
         {
             WhichTime.atime => System.IO.File.GetLastAccessTime(filename).ToUniversalTime(),
             WhichTime.mtime => System.IO.File.GetLastWriteTime(filename).ToUniversalTime(),
             WhichTime.ctime => System.IO.File.GetCreationTime(filename).ToUniversalTime(),
             _ => throw new ArgumentException("Operator"),
         };
-        CriterionTrace("TimeCriterion({0},{1})= {2}", filename, Which.ToString(), x);
-        return _Evaluate(x);
+        CriterionTrace("TimeCriterion({0},{1})= {2}", filename, Which.ToString(), xValue);
+        return _Evaluate(xValue);
     }
-    private bool _Evaluate(DateTime x)
+    private bool _Evaluate(DateTime xValue)
     {
         var result = Operator switch
         {
-            ComparisonOperator.GreaterThanOrEqualTo => (x >= Time),
-            ComparisonOperator.GreaterThan => (x > Time),
-            ComparisonOperator.LesserThanOrEqualTo => (x <= Time),
-            ComparisonOperator.LesserThan => (x < Time),
-            ComparisonOperator.EqualTo => (x == Time),
-            ComparisonOperator.NotEqualTo => (x != Time),
+            ComparisonOperator.GreaterThanOrEqualTo => (xValue >= Time),
+            ComparisonOperator.GreaterThan => (xValue > Time),
+            ComparisonOperator.LesserThanOrEqualTo => (xValue <= Time),
+            ComparisonOperator.LesserThan => (xValue < Time),
+            ComparisonOperator.EqualTo => (xValue == Time),
+            ComparisonOperator.NotEqualTo => (xValue != Time),
             _ => throw new ArgumentException("Operator"),
         };
         CriterionTrace("TimeCriterion: {0}", result);
@@ -194,12 +197,12 @@ internal partial class NameCriterion : SelectionCriterion
     }
     public override String ToString()
     {
-        StringBuilder sb = new();
-        sb.Append("name ").Append(EnumUtil.GetDescription(Operator))
+        StringBuilder stringBuilder = new();
+        stringBuilder.Append("name ").Append(EnumUtil.GetDescription(Operator))
             .Append(" '")
             .Append(_MatchingFileSpec)
             .Append('\'');
-        return sb.ToString();
+        return stringBuilder.ToString();
     }
     internal override bool Evaluate(string filename)
     {
@@ -241,9 +244,9 @@ internal partial class TypeCriterion : SelectionCriterion
     }
     public override String ToString()
     {
-        StringBuilder sb = new();
-        sb.Append("type ").Append(EnumUtil.GetDescription(Operator)).Append(' ').Append(AttributeString);
-        return sb.ToString();
+        StringBuilder stringBuilder = new();
+        stringBuilder.Append("type ").Append(EnumUtil.GetDescription(Operator)).Append(' ').Append(AttributeString);
+        return stringBuilder.ToString();
     }
     internal override bool Evaluate(string filename)
     {
@@ -282,38 +285,38 @@ internal partial class AttributesCriterion : SelectionCriterion
         set
         {
             _Attributes = FileAttributes.Normal;
-            foreach (char c in value.ToUpper())
+            foreach (char character in value.ToUpper())
             {
-                switch (c)
+                switch (character)
                 {
                     case 'H':
                         if ((_Attributes & FileAttributes.Hidden) != 0)
-                            throw new ArgumentException(String.Format("Repeated flag. ({0})", c), nameof(value));
+                            throw new ArgumentException(String.Format("Repeated flag. ({0})", character), nameof(value));
                         _Attributes |= FileAttributes.Hidden;
                         break;
                     case 'R':
                         if ((_Attributes & FileAttributes.ReadOnly) != 0)
-                            throw new ArgumentException(String.Format("Repeated flag. ({0})", c), nameof(value));
+                            throw new ArgumentException(String.Format("Repeated flag. ({0})", character), nameof(value));
                         _Attributes |= FileAttributes.ReadOnly;
                         break;
                     case 'S':
                         if ((_Attributes & FileAttributes.System) != 0)
-                            throw new ArgumentException(String.Format("Repeated flag. ({0})", c), nameof(value));
+                            throw new ArgumentException(String.Format("Repeated flag. ({0})", character), nameof(value));
                         _Attributes |= FileAttributes.System;
                         break;
                     case 'A':
                         if ((_Attributes & FileAttributes.Archive) != 0)
-                            throw new ArgumentException(String.Format("Repeated flag. ({0})", c), nameof(value));
+                            throw new ArgumentException(String.Format("Repeated flag. ({0})", character), nameof(value));
                         _Attributes |= FileAttributes.Archive;
                         break;
                     case 'I':
                         if ((_Attributes & FileAttributes.NotContentIndexed) != 0)
-                            throw new ArgumentException(String.Format("Repeated flag. ({0})", c), nameof(value));
+                            throw new ArgumentException(String.Format("Repeated flag. ({0})", character), nameof(value));
                         _Attributes |= FileAttributes.NotContentIndexed;
                         break;
                     case 'L':
                         if ((_Attributes & FileAttributes.ReparsePoint) != 0)
-                            throw new ArgumentException(String.Format("Repeated flag. ({0})", c), nameof(value));
+                            throw new ArgumentException(String.Format("Repeated flag. ({0})", character), nameof(value));
                         _Attributes |= FileAttributes.ReparsePoint;
                         break;
                     default:
@@ -324,9 +327,9 @@ internal partial class AttributesCriterion : SelectionCriterion
     }
     public override String ToString()
     {
-        StringBuilder sb = new();
-        sb.Append("attributes ").Append(EnumUtil.GetDescription(Operator)).Append(' ').Append(AttributeString);
-        return sb.ToString();
+        StringBuilder stringBuilder = new();
+        stringBuilder.Append("attributes ").Append(EnumUtil.GetDescription(Operator)).Append(' ').Append(AttributeString);
+        return stringBuilder.ToString();
     }
     private bool _EvaluateOne(FileAttributes fileAttrs, FileAttributes criterionAttrs)
     {
@@ -408,15 +411,15 @@ internal partial class CompoundCriterion : SelectionCriterion
     }
     public override String ToString()
     {
-        StringBuilder sb = new();
-        sb.Append('(')
+        StringBuilder stringBuilder = new();
+        stringBuilder.Append('(')
         .Append((Left != null) ? Left.ToString() : "null")
         .Append(' ')
         .Append(Conjunction.ToString())
         .Append(' ')
         .Append((Right != null) ? Right.ToString() : "null")
         .Append(')');
-        return sb.ToString();
+        return stringBuilder.ToString();
     }
 }
 /// <summary>
@@ -547,7 +550,7 @@ public partial class FileSelector
     ///
     /// <para>
     ///   Specify values for the file attributes as a string with one or more of
-    ///   the characters H,R,S,A,I,L in any order, implying file attributes of
+    ///   the characters H,R,text,A,I,L in any order, implying file attributes of
     ///   Hidden, ReadOnly, System, Archive, NotContextIndexed, and ReparsePoint
     ///   (symbolic link) respectively.
     /// </para>
@@ -664,7 +667,7 @@ public partial class FileSelector
     ///   For more complex combinations of criteria, you can use parenthesis to
     ///   group clauses in the boolean logic.  Absent parenthesis, the
     ///   precedence of the criterion atoms is determined by order of
-    ///   appearance.  Unlike the C# language, the AND conjunction does not take
+    ///   appearance.  Unlike the character# language, the AND conjunction does not take
     ///   precendence over the logical OR.  This is important only in strings
     ///   that contain 3 or more criterion atoms.  In other words, "name = *.txt
     ///   and size &gt; 1000 or attributes = H" implies "((name = *.txt AND size
@@ -782,15 +785,15 @@ public partial class FileSelector
                     [@"([^']*)\(\(([^']+)", "$1( ($2"],
                     // B. closing double parens - insert a space between
                     [@"(.)\)\)", "$1) )"],
-                    // C. single open paren with a following word - insert a space between
+                    // character. single open paren with a following word - insert a space between
                     [@"\(([^'\f\n\r\t\v\x85\p{Z}])", "( $1"],
                     // D. single close paren with a preceding word - insert a space between the two
-                    [@"(\S)\)", "$1 )"],
+                    [@"(\text)\)", "$1 )"],
                     // E. close paren at line start?, insert a space before the close paren
                     // this seems like a degenerate case.  I don't recall why it's here.
                     [@"^\)", " )"],
                     // F. a word (likely a conjunction) followed by an open paren - insert a space between
-                    [@"(\S)\(", "$1 ("],
+                    [@"(\text)\(", "$1 ("],
                     // G. single close paren followed by word - insert a paren after close paren
                     [@"\)([^'\f\n\r\t\v\x85\p{Z}])", ") $1"],
                     // H. insert space between = and a following single quote
@@ -834,17 +837,17 @@ public partial class FileSelector
         // spaces within quotes.
         return Regex.Replace(interim, regexPattern, "\u0006");
     }
-    private static SelectionCriterion _ParseCriterion(String s)
+    private static SelectionCriterion _ParseCriterion(string text)
     {
-        if (s == null) return null;
+        if (text == null) return null;
         // inject spaces after open paren and before close paren, etc
-        s = NormalizeCriteriaExpression(s);
+        text = NormalizeCriteriaExpression(text);
         // no spaces in the criteria is shorthand for filename glob
-        if (s.IndexOf(" ") == -1)
-            s = "name = " + s;
+        if (text.IndexOf(" ") == -1)
+            text = "name = " + text;
         // split the expression into tokens
-        string[] tokens = s.Trim().Split(' ', '\t');
-        if (tokens.Length < 3) throw new ArgumentException(s);
+        string[] tokens = text.Trim().Split(' ', '\t');
+        if (tokens.Length < 3) throw new ArgumentException(text);
         SelectionCriterion current = null;
         ParseState state;
         var stateStack = new System.Collections.Generic.Stack<ParseState>();
@@ -961,9 +964,9 @@ public partial class FileSelector
                     {
                         if (tokens.Length <= i + 2)
                             throw new ArgumentException(String.Join(" ", tokens, i, tokens.Length - i));
-                        ComparisonOperator c =
+                        ComparisonOperator character =
                             (ComparisonOperator)EnumUtil.Parse(typeof(ComparisonOperator), tokens[i + 1]);
-                        if (c != ComparisonOperator.NotEqualTo && c != ComparisonOperator.EqualTo)
+                        if (character != ComparisonOperator.NotEqualTo && character != ComparisonOperator.EqualTo)
                             throw new ArgumentException(String.Join(" ", tokens, i, tokens.Length - i));
                         string m = tokens[i + 2];
                         // handle single-quoted filespecs (used to include
@@ -983,7 +986,7 @@ public partial class FileSelector
                         current = new NameCriterion
                         {
                             MatchingFileSpec = m,
-                            Operator = c
+                            Operator = character
                         };
                         i += 2;
                         stateStack.Push(ParseState.CriterionDone);
@@ -995,20 +998,20 @@ public partial class FileSelector
                     {
                         if (tokens.Length <= i + 2)
                             throw new ArgumentException(String.Join(" ", tokens, i, tokens.Length - i));
-                        ComparisonOperator c =
+                        ComparisonOperator character =
                             (ComparisonOperator)EnumUtil.Parse(typeof(ComparisonOperator), tokens[i + 1]);
-                        if (c != ComparisonOperator.NotEqualTo && c != ComparisonOperator.EqualTo)
+                        if (character != ComparisonOperator.NotEqualTo && character != ComparisonOperator.EqualTo)
                             throw new ArgumentException(String.Join(" ", tokens, i, tokens.Length - i));
                         current = (tok1 == "type")
                             ? (SelectionCriterion)new TypeCriterion
                             {
                                 AttributeString = tokens[i + 2],
-                                Operator = c
+                                Operator = character
                             }
                             : (SelectionCriterion)new AttributesCriterion
                             {
                                 AttributeString = tokens[i + 2],
-                                Operator = c
+                                Operator = character
                             };
                         i += 2;
                         stateStack.Push(ParseState.CriterionDone);

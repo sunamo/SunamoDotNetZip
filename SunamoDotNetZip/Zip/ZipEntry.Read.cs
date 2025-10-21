@@ -1,3 +1,6 @@
+// EN: Variable names have been checked and replaced with self-descriptive names
+// CZ: Názvy proměnných byly zkontrolovány a nahrazeny samopopisnými názvy
+
 namespace Ionic.Zip;
 
 // ZipEntry.Read.cs
@@ -502,10 +505,10 @@ public partial class ZipEntry
         {
             if (remainingData < 8)
                 throw new BadReadException(String.Format("  Missing data for ZIP64 extra field, position 0x{0:X16}", posn));
-            var x = BitConverter.ToInt64(buffer, j);
+            var xValue = BitConverter.ToInt64(buffer, j);
             j += 8;
             remainingData -= 8;
-            return x;
+            return xValue;
         });
         if (this._UncompressedSize == 0xFFFFFFFF)
             this._UncompressedSize = slurp();

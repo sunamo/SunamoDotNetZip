@@ -1,3 +1,6 @@
+// EN: Variable names have been checked and replaced with self-descriptive names
+// CZ: Názvy proměnných byly zkontrolovány a nahrazeny samopopisnými názvy
+
 namespace Ionic.BZip2;
 
 // ParallelBZip2OutputStream.cs
@@ -570,18 +573,18 @@ public class ParallelBZip2OutputStream : System.IO.Stream
             }
             WorkItem workitem = this.pool[ix];
             workitem.ordinal = this.lastFilled;
-            int n = workitem.Compressor.Fill(buffer, offset, bytesRemaining);
-            if (n != bytesRemaining)
+            int bytesRead = workitem.Compressor.Fill(buffer, offset, bytesRemaining);
+            if (bytesRead != bytesRemaining)
             {
                 if (!ThreadPool.QueueUserWorkItem(CompressOne, workitem))
                     throw new Exception("Cannot enqueue workitem");
                 this.currentlyFilling = -1; // will get a new buffer next time
-                offset += n;
+                offset += bytesRead;
             }
             else
                 this.currentlyFilling = ix;
-            bytesRemaining -= n;
-            bytesWritten += n;
+            bytesRemaining -= bytesRead;
+            bytesWritten += bytesRead;
         }
         while (bytesRemaining > 0);
         totalBytesWrittenIn += bytesWritten;
@@ -653,36 +656,36 @@ public class ParallelBZip2OutputStream : System.IO.Stream
                         // ms.WriteTo(this.output);
                         //
                         // must do byte shredding:
-                        int n;
-                        int y = -1;
+                        int bytesRead;
+                        int lastBytesRead = -1;
                         long totOut = 0;
                         var buffer = new byte[1024];
-                        while ((n = ms.Read(buffer, 0, buffer.Length)) > 0)
+                        while ((bytesRead = ms.Read(buffer, 0, buffer.Length)) > 0)
                         {
 #if Trace
-                                if (y == -1) // diagnostics only
+                                if (lastBytesRead == -1) // diagnostics only
                                 {
-                                    var sb1 = new System.Text.StringBuilder();
-                                    sb1.Append("first 16 whole bytes in block: ");
+                                    var stringBuilder1 = new System.Text.StringBuilder();
+                                    stringBuilder1.Append("first 16 whole bytes in block: ");
                                     for (int z=0; z < 16; z++)
-                                        sb1.Append(String.Format(" {0:X2}", buffer[z]));
-                                    TraceOutput(TraceBits.Write, sb1.ToString());
+                                        stringBuilder1.Append(String.Format(" {0:X2}", buffer[z]));
+                                    TraceOutput(TraceBits.Write, stringBuilder1.ToString());
                                 }
 #endif
-                            y = n;
-                            for (int k = 0; k < n; k++)
+                            lastBytesRead = bytesRead;
+                            for (int k = 0; k < bytesRead; k++)
                             {
                                 this.bw.WriteByte(buffer[k]);
                             }
-                            totOut += n;
+                            totOut += bytesRead;
                         }
 #if Trace
                             TraceOutput(TraceBits.Write,"out block length (bytes): {0} (0x{0:X})", totOut);
-                            var sb = new System.Text.StringBuilder();
-                            sb.Append("final 16 whole bytes in block: ");
+                            var stringBuilder = new System.Text.StringBuilder();
+                            stringBuilder.Append("final 16 whole bytes in block: ");
                             for (int z=0; z < 16; z++)
-                                sb.Append(String.Format(" {0:X2}", buffer[y-1-12+z]));
-                            TraceOutput(TraceBits.Write, sb.ToString());
+                                stringBuilder.Append(String.Format(" {0:X2}", buffer[lastBytesRead-1-12+z]));
+                            TraceOutput(TraceBits.Write, stringBuilder.ToString());
 #endif
                         // and now any remaining bits
                         TraceOutput(TraceBits.Write,

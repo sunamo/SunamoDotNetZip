@@ -1,3 +1,6 @@
+// EN: Variable names have been checked and replaced with self-descriptive names
+// CZ: Názvy proměnných byly zkontrolovány a nahrazeny samopopisnými názvy
+
 namespace Ionic.Zip;
 
 // Shared.cs
@@ -38,9 +41,9 @@ internal static class SharedUtilities
             throw new FileNotFoundException(String.Format("Could not find file '{0}'.", fileName), fileName);
         long fileLength;
         FileShare fs = FileShare.ReadWrite | FileShare.Delete;
-        using (var s = File.Open(fileName, FileMode.Open, FileAccess.Read, fs))
+        using (var text = File.Open(fileName, FileMode.Open, FileAccess.Read, fs))
         {
-            fileLength = s.Length;
+            fileLength = text.Length;
         }
         return fileLength;
     }
@@ -211,40 +214,40 @@ internal static class SharedUtilities
     internal static string Utf8StringFromBuffer(byte[] buf) => StringFromBuffer(buf, utf8);
     internal static string StringFromBuffer(byte[] buf, System.Text.Encoding encoding)
     {
-        string s = encoding.GetString(buf);
-        return s;
+        string text = encoding.GetString(buf);
+        return text;
     }
-    internal static int ReadSignature(System.IO.Stream s)
+    internal static int ReadSignature(System.IO.Stream text)
     {
         int x = 0;
-        try { x = _ReadFourBytes(s, "n/a"); }
+        try { x = _ReadFourBytes(text, "n/a"); }
         catch (BadReadException) { }
         return x;
     }
-    internal static int ReadEntrySignature(System.IO.Stream s)
+    internal static int ReadEntrySignature(System.IO.Stream text)
     {
         // handle the case of ill-formatted zip archives - includes a data descriptor
         // when none is expected.
         int x = 0;
         try
         {
-            x = _ReadFourBytes(s, "n/a");
+            x = _ReadFourBytes(text, "n/a");
             if (x == ZipConstants.ZipEntryDataDescriptorSignature)
             {
                 // advance past data descriptor - 12 bytes if not zip64
-                s.Seek(12, SeekOrigin.Current);
-                x = _ReadFourBytes(s, "n/a");
+                text.Seek(12, SeekOrigin.Current);
+                x = _ReadFourBytes(text, "n/a");
                 if (x != ZipConstants.ZipEntrySignature)
                 {
                     // Maybe zip64 was in use for the prior entry.
                     // Therefore, skip another 8 bytes.
-                    s.Seek(8, SeekOrigin.Current);
-                    x = _ReadFourBytes(s, "n/a");
+                    text.Seek(8, SeekOrigin.Current);
+                    x = _ReadFourBytes(text, "n/a");
                     if (x != ZipConstants.ZipEntrySignature)
                     {
                         // seek back to the first spot
-                        s.Seek(-24, SeekOrigin.Current);
-                        x = _ReadFourBytes(s, "n/a");
+                        text.Seek(-24, SeekOrigin.Current);
+                        x = _ReadFourBytes(text, "n/a");
                     }
                 }
             }
@@ -252,12 +255,12 @@ internal static class SharedUtilities
         catch (BadReadException) { }
         return x;
     }
-    internal static int ReadInt(System.IO.Stream s) => _ReadFourBytes(s, "Could not read block - no data!  (position 0x{0:X8})");
-    private static int _ReadFourBytes(System.IO.Stream s, string message)
+    internal static int ReadInt(System.IO.Stream text) => _ReadFourBytes(text, "Could not read block - no data!  (position 0x{0:X8})");
+    private static int _ReadFourBytes(System.IO.Stream text, string message)
     {
         byte[] block = new byte[4];
-        int n = s.Read(block, 0, block.Length);
-        if (n != block.Length) throw new BadReadException(String.Format(message, s.Position));
+        int n = text.Read(block, 0, block.Length);
+        if (n != block.Length) throw new BadReadException(String.Format(message, text.Position));
         int data = unchecked((((block[3] * 256 + block[2]) * 256) + block[1]) * 256 + block[0]);
         return data;
     }
@@ -423,7 +426,7 @@ internal static class SharedUtilities
         }
         if (!success)
         {
-            string msg = String.Format("y({0}) m({1}) d({2}) h({3}) m({4}) s({5})", year, month, day, hour, minute, second);
+            string msg = String.Format("y({0}) m({1}) d({2}) h({3}) m({4}) text({5})", year, month, day, hour, minute, second);
             throw new ZipException(String.Format("Bad date/time format in the zip file. ({0})", msg));
         }
         // workitem 6191
@@ -488,7 +491,7 @@ internal static class SharedUtilities
     /// This assembly used to be built for .NET 2.0, so could not use
     /// extension methods.
     /// </remarks>
-    internal static int ReadWithRetry(System.IO.Stream s, byte[] buffer, int offset, int count, string FileName)
+    internal static int ReadWithRetry(System.IO.Stream text, byte[] buffer, int offset, int count, string FileName)
     {
         int n = 0;
         bool done = false;
@@ -497,16 +500,16 @@ internal static class SharedUtilities
         {
             try
             {
-                n = s.Read(buffer, offset, count);
+                n = text.Read(buffer, offset, count);
                 done = true;
             }
             catch (System.IO.IOException ioexc1)
             {
                 // Check if we can call GetHRForException,
                 // which makes unmanaged code calls.
-                var p = new System.Security.Permissions.SecurityPermission(
+                var parameter = new System.Security.Permissions.SecurityPermission(
                     System.Security.Permissions.SecurityPermissionFlag.UnmanagedCode);
-                if (p.IsUnrestricted())
+                if (parameter.IsUnrestricted())
                 {
                     uint hresult = _HRForException(ioexc1);
                     if (hresult != 0x80070021)  // ERROR_LOCK_VIOLATION

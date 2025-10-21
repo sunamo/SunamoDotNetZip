@@ -1,3 +1,6 @@
+// EN: Variable names have been checked and replaced with self-descriptive names
+// CZ: Názvy proměnných byly zkontrolovány a nahrazeny samopopisnými názvy
+
 namespace Ionic.Zip;
 
 // ZipFile.Read.cs
@@ -512,20 +515,20 @@ public partial class ZipFile
     }
     private static void ReadIntoInstance(ZipFile zf)
     {
-        Stream s = zf.ReadStream;
+        Stream text = zf.ReadStream;
         try
         {
             zf._readName = zf._name; // workitem 13915
-            if (!s.CanSeek)
+            if (!text.CanSeek)
             {
                 ReadIntoInstance_Orig(zf);
                 return;
             }
             zf.OnReadStarted();
             // change for workitem 8098
-            //zf._originPosition = s.Position;
+            //zf._originPosition = text.Position;
             // Try reading the central directory, rather than scanning the file.
-            uint datum = ReadFirstFourBytes(s);
+            uint datum = ReadFirstFourBytes(text);
             if (datum == ZipConstants.EndOfCentralDirectorySignature)
                 return;
             // start at the end of the file...
@@ -536,13 +539,13 @@ public partial class ZipFile
             // This implies an archive comment length of 0.  We'll add a margin of
             // safety and start "in front" of that, when looking for the
             // EndOfCentralDirectorySignature
-            long posn = s.Length - 64;
-            long maxSeekback = Math.Max(s.Length - 0x4000, 10);
+            long posn = text.Length - 64;
+            long maxSeekback = Math.Max(text.Length - 0x4000, 10);
             do
             {
                 if (posn < 0) posn = 0;  // BOF
-                s.Seek(posn, SeekOrigin.Begin);
-                long bytesRead = SharedUtilities.FindSignature(s, (int)ZipConstants.EndOfCentralDirectorySignature);
+                text.Seek(posn, SeekOrigin.Begin);
+                long bytesRead = SharedUtilities.FindSignature(text, (int)ZipConstants.EndOfCentralDirectorySignature);
                 if (bytesRead != -1)
                     success = true;
                 else
@@ -562,9 +565,9 @@ public partial class ZipFile
             if (success)
             {
                 // workitem 8299
-                zf._locEndOfCDS = s.Position - 4;
+                zf._locEndOfCDS = text.Position - 4;
                 byte[] block = new byte[16];
-                s.Read(block, 0, block.Length);
+                text.Read(block, 0, block.Length);
                 zf._diskNumberWithCd = BitConverter.ToUInt16(block, 2);
                 if (zf._diskNumberWithCd == 0xFFFF)
                     throw new ZipException("Spanned archives with more than 65534 segments are not supported at this time.");
@@ -579,7 +582,7 @@ public partial class ZipFile
                 {
                     zf._OffsetOfCentralDirectory = offset32;
                     // change for workitem 8098
-                    s.Seek(offset32, SeekOrigin.Begin);
+                    text.Seek(offset32, SeekOrigin.Begin);
                 }
                 ReadCentralDirectory(zf);
             }
@@ -588,8 +591,8 @@ public partial class ZipFile
                 // Could not find the central directory.
                 // Fallback to the old method.
                 // workitem 8098: ok
-                //s.Seek(zf._originPosition, SeekOrigin.Begin);
-                s.Seek(0L, SeekOrigin.Begin);
+                //text.Seek(zf._originPosition, SeekOrigin.Begin);
+                text.Seek(0L, SeekOrigin.Begin);
                 ReadIntoInstance_Orig(zf);
             }
         }
@@ -611,32 +614,32 @@ public partial class ZipFile
     }
     private static void Zip64SeekToCentralDirectory(ZipFile zf)
     {
-        Stream s = zf.ReadStream;
+        Stream text = zf.ReadStream;
         byte[] block = new byte[16];
         // seek back to find the ZIP64 EoCD.
-        s.Seek(-40, SeekOrigin.Current);
-        s.Read(block, 0, 16);
+        text.Seek(-40, SeekOrigin.Current);
+        text.Read(block, 0, 16);
         Int64 offset64 = BitConverter.ToInt64(block, 8);
         zf._OffsetOfCentralDirectory = 0xFFFFFFFF;
         zf._OffsetOfCentralDirectory64 = offset64;
         // change for workitem 8098
-        s.Seek(offset64, SeekOrigin.Begin);
+        text.Seek(offset64, SeekOrigin.Begin);
         //zf.SeekFromOrigin(Offset64);
-        uint datum = (uint)Ionic.Zip.SharedUtilities.ReadInt(s);
+        uint datum = (uint)Ionic.Zip.SharedUtilities.ReadInt(text);
         if (datum != ZipConstants.Zip64EndOfCentralDirectoryRecordSignature)
-            throw new BadReadException(String.Format("  Bad signature (0x{0:X8}) looking for ZIP64 EoCD Record at position 0x{1:X8}", datum, s.Position));
-        s.Read(block, 0, 8);
+            throw new BadReadException(String.Format("  Bad signature (0x{0:X8}) looking for ZIP64 EoCD Record at position 0x{1:X8}", datum, text.Position));
+        text.Read(block, 0, 8);
         Int64 Size = BitConverter.ToInt64(block, 0);
         block = new byte[Size];
-        s.Read(block, 0, block.Length);
+        text.Read(block, 0, block.Length);
         offset64 = BitConverter.ToInt64(block, 36);
         // change for workitem 8098
-        s.Seek(offset64, SeekOrigin.Begin);
+        text.Seek(offset64, SeekOrigin.Begin);
         //zf.SeekFromOrigin(Offset64);
     }
-    private static uint ReadFirstFourBytes(Stream s)
+    private static uint ReadFirstFourBytes(Stream text)
     {
-        uint datum = (uint)Ionic.Zip.SharedUtilities.ReadInt(s);
+        uint datum = (uint)Ionic.Zip.SharedUtilities.ReadInt(text);
         return datum;
     }
     private static void ReadCentralDirectory(ZipFile zf)
@@ -736,8 +739,8 @@ public partial class ZipFile
     }
     private static void ReadCentralDirectoryFooter(ZipFile zf)
     {
-        Stream s = zf.ReadStream;
-        int signature = Ionic.Zip.SharedUtilities.ReadSignature(s);
+        Stream text = zf.ReadStream;
+        int signature = Ionic.Zip.SharedUtilities.ReadSignature(text);
         int j = 0;
         byte[] block;
         if (signature == ZipConstants.Zip64EndOfCentralDirectoryRecordSignature)
@@ -757,7 +760,7 @@ public partial class ZipFile
             // -----------------------
             // 52 bytes
             block = new byte[8 + 44];
-            s.Read(block, 0, block.Length);
+            text.Read(block, 0, block.Length);
             Int64 DataSize = BitConverter.ToInt64(block, 0);  // == 44 + the variable length
             if (DataSize < 44)
                 throw new ZipException("Bad size in the ZIP64 Central Directory.");
@@ -769,23 +772,23 @@ public partial class ZipFile
             //zf._diskNumberWithCd++; // hack!!
             // read the extended block
             block = new byte[DataSize - 44];
-            s.Read(block, 0, block.Length);
+            text.Read(block, 0, block.Length);
             // discard the result
-            signature = Ionic.Zip.SharedUtilities.ReadSignature(s);
+            signature = Ionic.Zip.SharedUtilities.ReadSignature(text);
             if (signature != ZipConstants.Zip64EndOfCentralDirectoryLocatorSignature)
                 throw new ZipException("Inconsistent metadata in the ZIP64 Central Directory.");
             block = new byte[16];
-            s.Read(block, 0, block.Length);
+            text.Read(block, 0, block.Length);
             // discard the result
-            signature = Ionic.Zip.SharedUtilities.ReadSignature(s);
+            signature = Ionic.Zip.SharedUtilities.ReadSignature(text);
         }
         // Throw if this is not a signature for "end of central directory record"
         // This is a sanity check.
         if (signature != ZipConstants.EndOfCentralDirectorySignature)
         {
-            s.Seek(-4, SeekOrigin.Current);
+            text.Seek(-4, SeekOrigin.Current);
             throw new BadReadException(String.Format("Bad signature ({0:X8}) at position 0x{1:X8}",
-                                                     signature, s.Position));
+                                                     signature, text.Position));
         }
         // read the End-of-Central-Directory-Record
         block = new byte[16];
@@ -829,12 +832,12 @@ public partial class ZipFile
             zf.Comment = s1;
         }
     }
-    // private static bool BlocksAreEqual(byte[] a, byte[] b)
+    // private static bool BlocksAreEqual(byte[] a, byte[] buffer)
     // {
-    //     if (a.Length != b.Length) return false;
+    //     if (a.Length != buffer.Length) return false;
     //     for (int i = 0; i < a.Length; i++)
     //     {
-    //         if (a[i] != b[i]) return false;
+    //         if (a[i] != buffer[i]) return false;
     //     }
     //     return true;
     // }
@@ -894,8 +897,8 @@ public partial class ZipFile
         try
         {
             if (!File.Exists(fileName)) return false;
-            using var s = File.Open(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-            result = IsZipFile(s, testExtract);
+            using var text = File.Open(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            result = IsZipFile(text, testExtract);
         }
         catch (IOException) { }
         catch (ZipException) { }

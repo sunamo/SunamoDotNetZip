@@ -1,3 +1,5 @@
+// EN: Variable names have been checked and replaced with self-descriptive names
+// CZ: Názvy proměnných byly zkontrolovány a nahrazeny samopopisnými názvy
 global using Ionic.BZip2;
 global using Ionic.Zip;
 global using Ionic.Zlib;

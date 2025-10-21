@@ -1,3 +1,6 @@
+// EN: Variable names have been checked and replaced with self-descriptive names
+// CZ: Názvy proměnných byly zkontrolovány a nahrazeny samopopisnými názvy
+
 namespace Ionic.Zip;
 
 // ZipSegmentedStream.cs
@@ -215,8 +218,8 @@ namespace Ionic.Zip;
                 _exceptionPending = true;
                 throw new InvalidOperationException("Stream Error: Cannot Read.");
             }
-            int r = _innerStream.Read(buffer, offset, count);
-            int r1 = r;
+            int result = _innerStream.Read(buffer, offset, count);
+            int r1 = result;
             while (r1 != count)
             {
                 if (_innerStream.Position != _innerStream.Length)
@@ -225,15 +228,15 @@ namespace Ionic.Zip;
                     throw new ZipException(String.Format("Read error in file {0}", CurrentName));
                 }
                 if (CurrentSegment + 1 == _maxDiskNumber)
-                    return r; // no more to read
+                    return result; // no more to read
                 CurrentSegment++;
                 _SetReadStream();
                 offset += r1;
                 count -= r1;
                 r1 = _innerStream.Read(buffer, offset, count);
-                r += r1;
+                result += r1;
             }
-            return r;
+            return result;
         }
         private void _SetWriteStream(uint increment)
         {
@@ -310,8 +313,8 @@ namespace Ionic.Zip;
             // Check if it is the same segment.  If it is, very simple.
             if (diskNumber == CurrentSegment)
             {
-                var x =_innerStream.Seek(offset, SeekOrigin.Begin);
-                return x;
+                var xValue =_innerStream.Seek(offset, SeekOrigin.Begin);
+                return xValue;
             }
             // Seeking back to a prior segment.
             // The current segment and any intervening segments must be removed.
@@ -325,10 +328,10 @@ namespace Ionic.Zip;
             // Now, remove intervening segments.
             for (uint j= CurrentSegment-1; j > diskNumber; j--)
             {
-                string s = _NameForSegment(j);
-                // Console.WriteLine("***ZSS.Trunc:  removing file {0}", s);
-                if (File.Exists(s))
-                    File.Delete(s);
+                string text = _NameForSegment(j);
+                // Console.WriteLine("***ZSS.Trunc:  removing file {0}", text);
+                if (File.Exists(text))
+                    File.Delete(text);
             }
             // now, open the desired segment.  It must exist.
             CurrentSegment = diskNumber;
@@ -350,8 +353,8 @@ namespace Ionic.Zip;
             }
             // open it
             _innerStream = new FileStream(_currentTempName, FileMode.Open);
-            var r =  _innerStream.Seek(offset, SeekOrigin.Begin);
-            return r;
+            var result =  _innerStream.Seek(offset, SeekOrigin.Begin);
+            return result;
         }
         public override bool CanRead
         {
@@ -394,8 +397,8 @@ namespace Ionic.Zip;
         }
         public override long Seek(long offset, System.IO.SeekOrigin origin)
         {
-            var x = _innerStream.Seek(offset, origin);
-            return x;
+            var xValue = _innerStream.Seek(offset, origin);
+            return xValue;
         }
         public override void SetLength(long value)
         {

@@ -1,3 +1,6 @@
+// EN: Variable names have been checked and replaced with self-descriptive names
+// CZ: Názvy proměnných byly zkontrolovány a nahrazeny samopopisnými názvy
+
 namespace Ionic.BZip2;
 
 // BZip2InputStream.cs
@@ -579,10 +582,10 @@ namespace Ionic.BZip2;
         }
         private void recvDecodingTables()
         {
-            var s = this.data;
-            bool[] inUse = s.inUse;
-            byte[] pos = s.recvDecodingTables_pos;
-            //byte[] selector = s.selector;
+            var text = this.data;
+            bool[] inUse = text.inUse;
+            byte[] pos = text.recvDecodingTables_pos;
+            //byte[] selector = text.selector;
             int inUse16 = 0;
             /* Receive the mapping table */
             for (int i = 0; i < 16; i++)
@@ -622,7 +625,7 @@ namespace Ionic.BZip2;
                 {
                     j++;
                 }
-                s.selectorMtf[i] = (byte) j;
+                text.selectorMtf[i] = (byte) j;
             }
             /* Undo the MTF values for the selectors. */
             for (int v = nGroups; --v >= 0;)
@@ -631,7 +634,7 @@ namespace Ionic.BZip2;
             }
             for (int i = 0; i < nSelectors; i++)
             {
-                int v = s.selectorMtf[i];
+                int v = text.selectorMtf[i];
                 byte tmp = pos[v];
                 while (v > 0)
                 {
@@ -640,9 +643,9 @@ namespace Ionic.BZip2;
                     v--;
                 }
                 pos[0] = tmp;
-                s.selector[i] = tmp;
+                text.selector[i] = tmp;
             }
-            char[][] len = s.temp_charArray2d;
+            char[][] len = text.temp_charArray2d;
             /* Now the coding tables */
             for (int t = 0; t < nGroups; t++)
             {
@@ -666,8 +669,8 @@ namespace Ionic.BZip2;
         private void createHuffmanDecodingTables(int alphaSize,
                                                  int nGroups)
         {
-            var s = this.data;
-            char[][] len = s.temp_charArray2d;
+            var text = this.data;
+            char[][] len = text.temp_charArray2d;
             for (int t = 0; t < nGroups; t++)
             {
                 int minLen = 32;
@@ -681,21 +684,21 @@ namespace Ionic.BZip2;
                     if (lent < minLen)
                         minLen = lent;
                 }
-                hbCreateDecodeTables(s.gLimit[t], s.gBase[t], s.gPerm[t], len[t], minLen,
+                hbCreateDecodeTables(text.gLimit[t], text.gBase[t], text.gPerm[t], len[t], minLen,
                                      maxLen, alphaSize);
-                s.gMinlen[t] = minLen;
+                text.gMinlen[t] = minLen;
             }
         }
         private void getAndMoveToFrontDecode()
         {
-            var s = this.data;
+            var text = this.data;
             this.origPtr = GetBits(24);
             if (this.origPtr < 0)
                 throw new IOException("BZ_DATA_ERROR");
             if (this.origPtr > 10 + BZip2.BlockSizeMultiple * this.blockSize100k)
                 throw new IOException("BZ_DATA_ERROR");
             recvDecodingTables();
-            byte[] yy = s.getAndMoveToFrontDecode_yy;
+            byte[] yy = text.getAndMoveToFrontDecode_yy;
             int limitLast = this.blockSize100k * BZip2.BlockSizeMultiple;
             /*
              * Setting up the unzftab entries here is not strictly necessary, but it
@@ -705,7 +708,7 @@ namespace Ionic.BZip2;
             for (int i = 256; --i >= 0;)
             {
                 yy[i] = (byte) i;
-                s.unzftab[i] = 0;
+                text.unzftab[i] = 0;
             }
             int groupNo = 0;
             int groupPos = BZip2.G_SIZE - 1;
@@ -714,11 +717,11 @@ namespace Ionic.BZip2;
             int bsBuffShadow = this.bsBuff;
             int bsLiveShadow = this.bsLive;
             int lastShadow = -1;
-            int zt = s.selector[groupNo] & 0xff;
-            int[] base_zt = s.gBase[zt];
-            int[] limit_zt = s.gLimit[zt];
-            int[] perm_zt = s.gPerm[zt];
-            int minLens_zt = s.gMinlen[zt];
+            int zt = text.selector[groupNo] & 0xff;
+            int[] base_zt = text.gBase[zt];
+            int[] limit_zt = text.gLimit[zt];
+            int[] perm_zt = text.gPerm[zt];
+            int minLens_zt = text.gMinlen[zt];
             while (nextSym != eob)
             {
                 if ((nextSym == BZip2.RUNA) || (nextSym == BZip2.RUNB))
@@ -741,11 +744,11 @@ namespace Ionic.BZip2;
                         if (groupPos == 0)
                         {
                             groupPos = BZip2.G_SIZE - 1;
-                            zt = s.selector[++groupNo] & 0xff;
-                            base_zt = s.gBase[zt];
-                            limit_zt = s.gLimit[zt];
-                            perm_zt = s.gPerm[zt];
-                            minLens_zt = s.gMinlen[zt];
+                            zt = text.selector[++groupNo] & 0xff;
+                            base_zt = text.gBase[zt];
+                            limit_zt = text.gLimit[zt];
+                            perm_zt = text.gPerm[zt];
+                            minLens_zt = text.gMinlen[zt];
                         }
                         else
                         {
@@ -794,11 +797,11 @@ namespace Ionic.BZip2;
                         }
                         nextSym = perm_zt[zvec - base_zt[zn]];
                     }
-                    byte ch = s.seqToUnseq[yy[0]];
-                    s.unzftab[ch & 0xff] += es + 1;
+                    byte ch = text.seqToUnseq[yy[0]];
+                    text.unzftab[ch & 0xff] += es + 1;
                     while (es-- >= 0)
                     {
-                        s.ll8[++lastShadow] = ch;
+                        text.ll8[++lastShadow] = ch;
                     }
                     if (lastShadow >= limitLast)
                         throw new IOException("block overrun");
@@ -808,8 +811,8 @@ namespace Ionic.BZip2;
                     if (++lastShadow >= limitLast)
                         throw new IOException("block overrun");
                     byte tmp = yy[nextSym - 1];
-                    s.unzftab[s.seqToUnseq[tmp] & 0xff]++;
-                    s.ll8[lastShadow] = s.seqToUnseq[tmp];
+                    text.unzftab[text.seqToUnseq[tmp] & 0xff]++;
+                    text.ll8[lastShadow] = text.seqToUnseq[tmp];
                     /*
                      * This loop is hammered during decompression, hence avoid
                      * native method call overhead of System.Buffer.BlockCopy for very
@@ -830,11 +833,11 @@ namespace Ionic.BZip2;
                     if (groupPos == 0)
                     {
                         groupPos = BZip2.G_SIZE - 1;
-                        zt = s.selector[++groupNo] & 0xff;
-                        base_zt = s.gBase[zt];
-                        limit_zt = s.gLimit[zt];
-                        perm_zt = s.gPerm[zt];
-                        minLens_zt = s.gMinlen[zt];
+                        zt = text.selector[++groupNo] & 0xff;
+                        base_zt = text.gBase[zt];
+                        limit_zt = text.gLimit[zt];
+                        perm_zt = text.gPerm[zt];
+                        minLens_zt = text.gMinlen[zt];
                     }
                     else
                     {
@@ -889,10 +892,10 @@ namespace Ionic.BZip2;
         }
         private int getAndMoveToFrontDecode0(int groupNo)
         {
-            var s = this.data;
-            int zt = s.selector[groupNo] & 0xff;
-            int[] limit_zt = s.gLimit[zt];
-            int zn = s.gMinlen[zt];
+            var text = this.data;
+            int zt = text.selector[groupNo] & 0xff;
+            int[] limit_zt = text.gLimit[zt];
+            int zn = text.gMinlen[zt];
             int zvec = GetBits(zn);
             int bsLiveShadow = this.bsLive;
             int bsBuffShadow = this.bsBuff;
@@ -918,46 +921,46 @@ namespace Ionic.BZip2;
             }
             this.bsLive = bsLiveShadow;
             this.bsBuff = bsBuffShadow;
-            return s.gPerm[zt][zvec - s.gBase[zt][zn]];
+            return text.gPerm[zt][zvec - text.gBase[zt][zn]];
         }
         private void SetupBlock()
         {
             if (this.data == null)
                 return;
             int i;
-            var s = this.data;
-            int[] tt = s.initTT(this.last + 1);
+            var text = this.data;
+            int[] tt = text.initTT(this.last + 1);
             //       xxxx
             /* Check: unzftab entries in range. */
             for (i = 0; i <= 255; i++)
             {
-                if (s.unzftab[i] < 0 || s.unzftab[i] > this.last)
+                if (text.unzftab[i] < 0 || text.unzftab[i] > this.last)
                     throw new Exception("BZ_DATA_ERROR");
             }
             /* Actually generate cftab. */
-            s.cftab[0] = 0;
-            for (i = 1; i <= 256; i++) s.cftab[i] = s.unzftab[i-1];
-            for (i = 1; i <= 256; i++) s.cftab[i] += s.cftab[i-1];
+            text.cftab[0] = 0;
+            for (i = 1; i <= 256; i++) text.cftab[i] = text.unzftab[i-1];
+            for (i = 1; i <= 256; i++) text.cftab[i] += text.cftab[i-1];
             /* Check: cftab entries in range. */
             for (i = 0; i <= 256; i++)
             {
-                if (s.cftab[i] < 0 || s.cftab[i] > this.last+1)
+                if (text.cftab[i] < 0 || text.cftab[i] > this.last+1)
                 {
                     var msg = String.Format("BZ_DATA_ERROR: cftab[{0}]={1} last={2}",
-                                            i, s.cftab[i], this.last);
+                                            i, text.cftab[i], this.last);
                     throw new Exception(msg);
                 }
             }
             /* Check: cftab entries non-descending. */
             for (i = 1; i <= 256; i++)
             {
-                if (s.cftab[i-1] > s.cftab[i])
+                if (text.cftab[i-1] > text.cftab[i])
                     throw new Exception("BZ_DATA_ERROR");
             }
             int lastShadow;
             for (i = 0, lastShadow = this.last; i <= lastShadow; i++)
             {
-                tt[s.cftab[s.ll8[i] & 0xff]++] = i;
+                tt[text.cftab[text.ll8[i] & 0xff]++] = i;
             }
             if ((this.origPtr < 0) || (this.origPtr >= tt.Length))
                 throw new IOException("stream corrupted");
@@ -1206,12 +1209,12 @@ namespace Ionic.BZip2;
     {
             internal static T[][] InitRectangularArray<T>(int d1, int d2)
             {
-                var x = new T[d1][];
+                var xValue = new T[d1][];
                 for (int i=0; i < d1; i++)
                 {
-                    x[i] = new T[d2];
+                    xValue[i] = new T[d2];
                 }
-                return x;
+                return xValue;
             }
         public static readonly int BlockSizeMultiple       = 100000;
         public static readonly int MinBlockSize       = 1;

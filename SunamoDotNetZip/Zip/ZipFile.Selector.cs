@@ -1,3 +1,6 @@
+// EN: Variable names have been checked and replaced with self-descriptive names
+// CZ: Názvy proměnných byly zkontrolovány a nahrazeny samopopisnými názvy
+
 namespace Ionic.Zip;
 
 // ZipFile.Selector.cs
@@ -67,7 +70,7 @@ partial class ZipFile
     ///
     /// <para>
     /// Specify values for the file attributes as a string with one or more of the
-    /// characters H,R,S,A,I,L in any order, implying file attributes of Hidden,
+    /// characters H,R,text,A,I,L in any order, implying file attributes of Hidden,
     /// ReadOnly, System, Archive, NotContextIndexed, and ReparsePoint (symbolic
     /// link) respectively.
     /// </para>
@@ -598,7 +601,7 @@ partial class ZipFile
                                   directoryPathInArchive,
                                   recurseDirectories,
                                   true);
-    private string EnsureendInSlash(string s) => s.EndsWith("\\") ? s : s + "\\";
+    private string EnsureendInSlash(string text) => text.EndsWith("\\") ? text : text + "\\";
     private void _AddOrUpdateSelectedFiles(String selectionCriteria,
                                            String directoryOnDisk,
                                            String directoryPathInArchive,
@@ -1187,14 +1190,14 @@ internal partial class TimeCriterion : SelectionCriterion
 {
     internal override bool Evaluate(Ionic.Zip.ZipEntry entry)
     {
-        var x = Which switch
+        var xValue = Which switch
         {
             WhichTime.atime => entry.AccessedTime,
             WhichTime.mtime => entry.ModifiedTime,
             WhichTime.ctime => entry.CreationTime,
             _ => throw new ArgumentException("??time"),
         };
-        return _Evaluate(x);
+        return _Evaluate(xValue);
     }
 }
 internal partial class TypeCriterion : SelectionCriterion

@@ -1,3 +1,6 @@
+// EN: Variable names have been checked and replaced with self-descriptive names
+// CZ: Názvy proměnných byly zkontrolovány a nahrazeny samopopisnými názvy
+
 namespace Ionic.Zip;
 
 // ZipEntry.Extract.cs
@@ -810,8 +813,8 @@ public partial class ZipEntry
     }
     void EnsurePassword(string password)
     {
-        var p = (password ?? _Password ?? _container.Password) ?? throw new BadPasswordException();
-        SetupCryptoForExtract(p);
+        var parameter = (password ?? _Password ?? _container.Password) ?? throw new BadPasswordException();
+        SetupCryptoForExtract(parameter);
     }
     FileStream OpenFileStream(string tmpPath, ref bool checkLaterForResetDirTimes)
     {
