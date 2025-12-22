@@ -1,6 +1,4 @@
-// EN: Variable names have been checked and replaced with self-descriptive names
-// CZ: Názvy proměnných byly zkontrolovány a nahrazeny samopopisnými názvy
-
+namespace Ionic.Zip;
 
 // EncryptionAlgorithm.cs
 // ------------------------------------------------------------------
@@ -27,7 +25,6 @@
 //
 // 
 // ------------------------------------------------------------------
-namespace Ionic.Zip;
 /// <summary>
 /// An enum that provides the various encryption algorithms supported by this
 /// library.

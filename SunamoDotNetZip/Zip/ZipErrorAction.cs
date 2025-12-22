@@ -1,6 +1,4 @@
-// EN: Variable names have been checked and replaced with self-descriptive names
-// CZ: Názvy proměnných byly zkontrolovány a nahrazeny samopopisnými názvy
-
+namespace Ionic.Zip;
 
 // ZipErrorAction.cs
 // ------------------------------------------------------------------
@@ -28,7 +26,6 @@
 // files to be added to a zip file. 
 // 
 // ------------------------------------------------------------------
-namespace Ionic.Zip;
 /// <summary>
 /// An enum providing the options when an error occurs during opening or reading
 /// of a file or directory that is being saved to a zip file. 

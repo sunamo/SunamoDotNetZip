@@ -1,6 +1,7 @@
+namespace Ionic.BZip2;
+
 // EN: Variable names have been checked and replaced with self-descriptive names
 // CZ: Názvy proměnných byly zkontrolovány a nahrazeny samopopisnými názvy
-namespace Ionic.BZip2;
 // Rand.cs
 // ------------------------------------------------------------------
 //
@@ -93,4 +94,3 @@ namespace Ionic.BZip2;
     /// <returns>the random number</returns>
     internal static int Rnums(int i) => RNUMS[i];
 }
-
