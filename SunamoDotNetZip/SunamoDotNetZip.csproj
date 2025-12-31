@@ -4,8 +4,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <Description>.NET 9 fork for DotNetZip because have high security vulnerability</Description>
-    <Version>25.12.22.1</Version>
-    <PackageReleaseNotes>feat: Upgrade to net10.0</PackageReleaseNotes>
+    <Version>25.12.31.1</Version>
+    <PackageReleaseNotes>feat: better naming for variables</PackageReleaseNotes>
     <Authors>www.sunamo.cz</Authors>
     <Copyright>www.sunamo.cz</Copyright>
     <PackageProjectUrl>https://sunamo.cz/</PackageProjectUrl>
