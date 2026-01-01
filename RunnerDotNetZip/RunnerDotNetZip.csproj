@@ -11,11 +11,9 @@
     <ProjectReference Include="..\SunamoDotNetZip.Tests\SunamoDotNetZip.Tests.csproj" />
   </ItemGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <NoWarn>CS1573;CS1572;CS1570;CA1822;CA1865;CA1866;CA1867;CS1998;CA1847;IDE0066</NoWarn>
     <DefineConstants>$(DefineConstants);ASYNC</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <NoWarn>CS1573;CS1572;CS1570;CA1822;CA1865;CA1866;CA1867;CS1998;CA1847;IDE0066</NoWarn>
     <DefineConstants>$(DefineConstants);ASYNC</DefineConstants>
   </PropertyGroup>
 </Project>

@@ -535,15 +535,15 @@ namespace Ionic.Zip;
                 SetupStream();
             if (_LeftToRead == 0) return 0;
             int len = (_LeftToRead > count) ? count : (int)_LeftToRead;
-            int n = _crcStream.Read(buffer, offset, len);
-            _LeftToRead -= n;
+            int bytesRead = _crcStream.Read(buffer, offset, len);
+            _LeftToRead -= bytesRead;
             if (_LeftToRead == 0)
             {
                 int CrcResult = _crcStream.Crc;
                 _currentEntry.VerifyCrcAfterExtract(CrcResult, _currentEntry.Encryption, _currentEntry._Crc32, _currentEntry.ArchiveStream, _currentEntry.UncompressedSize);
                 _inputStream.Seek(_endOfEntry, SeekOrigin.Begin);
             }
-            return n;
+            return bytesRead;
         }
         /// <summary>
         ///   Read the next entry from the zip file.
@@ -584,8 +584,8 @@ namespace Ionic.Zip;
             if (_findRequired)
             {
                 // find the next signature
-                long d = SharedUtilities.FindSignature(_inputStream, ZipConstants.ZipEntrySignature);
-                if (d == -1) return null;
+                long bytesSkipped = SharedUtilities.FindSignature(_inputStream, ZipConstants.ZipEntrySignature);
+                if (bytesSkipped == -1) return null;
                 // back up 4 bytes: ReadEntry assumes the file pointer is positioned before the entry signature
                 _inputStream.Seek(-4, SeekOrigin.Current);
             }

@@ -70,12 +70,13 @@ namespace Ionic.BZip2;
         private int bsBuff;
         private int bsLive;
         private readonly Ionic.Zlib.CRC32 crc = new(true);
-        private int nInUse;
+        private int inUseCount;
         private Stream input;
         private int currentChar = -1;
         /// <summary>
         ///   Compressor State
         /// </summary>
+        // variables names: ok
         enum CState
         {
             EOF = 0,
@@ -91,15 +92,15 @@ namespace Ionic.BZip2;
         private uint storedBlockCRC, storedCombinedCRC;
         private uint computedBlockCRC, computedCombinedCRC;
         // Variables used by setup* methods exclusively
-        private int su_count;
-        private int su_ch2;
-        private int su_chPrev;
-        private int su_i2;
-        private int su_j2;
-        private int su_rNToGo;
-        private int su_rTPos;
-        private int su_tPos;
-        private char su_z;
+        private int setupCount;
+        private int setupChar2;
+        private int setupPreviousChar;
+        private int setupIndex2;
+        private int setupJ2;
+        private int setupRandomToGo;
+        private int setupRandomPosition;
+        private int setupTPosition;
+        private char setupZ;
         private BZip2InputStream.DecompressionState data;
         /// <summary>
         ///   Create a BZip2InputStream, wrapping it around the given input Stream.
@@ -199,13 +200,13 @@ namespace Ionic.BZip2;
         {
             bool[] inUse = this.data.inUse;
             byte[] seqToUnseq = this.data.seqToUnseq;
-            int n = 0;
+            int sequenceIndex = 0;
             for (int i = 0; i < 256; i++)
             {
                 if (inUse[i])
-                    seqToUnseq[n++] = (byte) i;
+                    seqToUnseq[sequenceIndex++] = (byte) i;
             }
-            this.nInUse = n;
+            this.inUseCount = sequenceIndex;
         }
         /// <summary>
         ///   Read a single byte from the stream.
@@ -473,7 +474,7 @@ namespace Ionic.BZip2;
             }
         }
         /// <summary>
-        ///   Read n bits from input, right justifying the result.
+        ///   Read bitCount bits from input, right justifying the result.
         /// </summary>
         /// <remarks>
         ///   <para>
@@ -481,28 +482,28 @@ namespace Ionic.BZip2;
         ///     or 1.
         ///   </para>
         /// </remarks>
-        /// <param name ="n">
+        /// <param name ="bitCount">
         ///   The number of bits to read, always between 1 and 32.
         /// </param>
-        private int GetBits(int n)
+        private int GetBits(int bitCount)
         {
             int bsLiveShadow = this.bsLive;
             int bsBuffShadow = this.bsBuff;
-            if (bsLiveShadow < n)
+            if (bsLiveShadow < bitCount)
             {
                 do
                 {
-                    int thech = this.input.ReadByte();
-                    if (thech < 0)
+                    int byteValue = this.input.ReadByte();
+                    if (byteValue < 0)
                         throw new IOException("unexpected end of stream");
-                    // Console.WriteLine("R {0:X2}", thech);
-                    bsBuffShadow = (bsBuffShadow << 8) | thech;
+                    // Console.WriteLine("R {0:X2}", byteValue);
+                    bsBuffShadow = (bsBuffShadow << 8) | byteValue;
                     bsLiveShadow += 8;
-                } while (bsLiveShadow < n);
+                } while (bsLiveShadow < bitCount);
                 this.bsBuff = bsBuffShadow;
             }
-            this.bsLive = bsLiveShadow - n;
-            return (bsBuffShadow >> (bsLiveShadow - n)) & ((1 << n) - 1);
+            this.bsLive = bsLiveShadow - bitCount;
+            return (bsBuffShadow >> (bsLiveShadow - bitCount)) & ((1 << bitCount) - 1);
         }
         // private bool bsGetBit()
         // {
@@ -537,52 +538,52 @@ namespace Ionic.BZip2;
      * Called by createHuffmanDecodingTables() exclusively.
      */
     private static void hbCreateDecodeTables(int[] limit,
-                                                 int[] bbase, int[] perm,  char[] length,
+                                                 int[] baseArray, int[] perm,  char[] length,
                                                  int minLen, int maxLen, int alphaSize)
         {
-            for (int i = minLen, pp = 0; i <= maxLen; i++)
+            for (int i = minLen, permPosition = 0; i <= maxLen; i++)
             {
                 for (int j = 0; j < alphaSize; j++)
                 {
                     if (length[j] == i)
                     {
-                        perm[pp++] = j;
+                        perm[permPosition++] = j;
                     }
                 }
             }
             for (int i = BZip2.MaxCodeLength; --i > 0;)
             {
-                bbase[i] = 0;
+                baseArray[i] = 0;
                 limit[i] = 0;
             }
             for (int i = 0; i < alphaSize; i++)
             {
-                bbase[length[i] + 1]++;
+                baseArray[length[i] + 1]++;
             }
-            for (int i = 1, b = bbase[0]; i < BZip2.MaxCodeLength; i++)
+            for (int i = 1, baseValue = baseArray[0]; i < BZip2.MaxCodeLength; i++)
             {
-                b += bbase[i];
-                bbase[i] = b;
+                baseValue += baseArray[i];
+                baseArray[i] = baseValue;
             }
-            for (int i = minLen, vec = 0, b =  bbase[i]; i <= maxLen; i++)
+            for (int i = minLen, vectorValue = 0, baseValue =  baseArray[i]; i <= maxLen; i++)
             {
-                int nb = bbase[i + 1];
-                vec += nb - b;
-                b = nb;
-                limit[i] = vec - 1;
-                vec <<= 1;
+                int nextBase = baseArray[i + 1];
+                vectorValue += nextBase - baseValue;
+                baseValue = nextBase;
+                limit[i] = vectorValue - 1;
+                vectorValue <<= 1;
             }
             for (int i = minLen + 1; i <= maxLen; i++)
             {
-                bbase[i] = ((limit[i - 1] + 1) << 1) - bbase[i];
+                baseArray[i] = ((limit[i - 1] + 1) << 1) - baseArray[i];
             }
         }
         private void recvDecodingTables()
         {
-            var text = this.data;
-            bool[] inUse = text.inUse;
-            byte[] pos = text.recvDecodingTables_pos;
-            //byte[] selector = text.selector;
+            var state = this.data;
+            bool[] inUse = state.inUse;
+            byte[] pos = state.recvDecodingTables_pos;
+            //byte[] selector = state.selector;
             int inUse16 = 0;
             /* Receive the mapping table */
             for (int i = 0; i < 16; i++)
@@ -611,7 +612,7 @@ namespace Ionic.BZip2;
                 }
             }
             MakeMaps();
-            int alphaSize = this.nInUse + 2;
+            int alphaSize = this.inUseCount + 2;
             /* Now the selectors */
             int nGroups = GetBits(3);
             int nSelectors = GetBits(15);
@@ -622,32 +623,32 @@ namespace Ionic.BZip2;
                 {
                     j++;
                 }
-                text.selectorMtf[i] = (byte) j;
+                state.selectorMtf[i] = (byte) j;
             }
             /* Undo the MTF values for the selectors. */
-            for (int v = nGroups; --v >= 0;)
+            for (int valueIndex = nGroups; --valueIndex >= 0;)
             {
-                pos[v] = (byte) v;
+                pos[valueIndex] = (byte) valueIndex;
             }
             for (int i = 0; i < nSelectors; i++)
             {
-                int v = text.selectorMtf[i];
-                byte tmp = pos[v];
-                while (v > 0)
+                int valueIndex = state.selectorMtf[i];
+                byte selectedValue = pos[valueIndex];
+                while (valueIndex > 0)
                 {
-                    // nearly all times v is zero, 4 in most other cases
-                    pos[v] = pos[v - 1];
-                    v--;
+                    // nearly all times valueIndex is zero, 4 in most other cases
+                    pos[valueIndex] = pos[valueIndex - 1];
+                    valueIndex--;
                 }
-                pos[0] = tmp;
-                text.selector[i] = tmp;
+                pos[0] = selectedValue;
+                state.selector[i] = selectedValue;
             }
-            char[][] len = text.temp_charArray2d;
+            char[][] len = state.temp_charArray2d;
             /* Now the coding tables */
-            for (int t = 0; t < nGroups; t++)
+            for (int tableIndex = 0; tableIndex < nGroups; tableIndex++)
             {
                 int curr = GetBits(5);
-                char[] len_t = len[t];
+                char[] len_t = len[tableIndex];
                 for (int i = 0; i < alphaSize; i++)
                 {
                     while (bsGetBit())
@@ -666,13 +667,13 @@ namespace Ionic.BZip2;
         private void createHuffmanDecodingTables(int alphaSize,
                                                  int nGroups)
         {
-            var text = this.data;
-            char[][] len = text.temp_charArray2d;
-            for (int t = 0; t < nGroups; t++)
+            var state = this.data;
+            char[][] len = state.temp_charArray2d;
+            for (int tableIndex = 0; tableIndex < nGroups; tableIndex++)
             {
                 int minLen = 32;
                 int maxLen = 0;
-                char[] len_t = len[t];
+                char[] len_t = len[tableIndex];
                 for (int i = alphaSize; --i >= 0;)
                 {
                     char lent = len_t[i];
@@ -681,21 +682,21 @@ namespace Ionic.BZip2;
                     if (lent < minLen)
                         minLen = lent;
                 }
-                hbCreateDecodeTables(text.gLimit[t], text.gBase[t], text.gPerm[t], len[t], minLen,
+                hbCreateDecodeTables(state.gLimit[tableIndex], state.gBase[tableIndex], state.gPerm[tableIndex], len[tableIndex], minLen,
                                      maxLen, alphaSize);
-                text.gMinlen[t] = minLen;
+                state.gMinlen[tableIndex] = minLen;
             }
         }
         private void getAndMoveToFrontDecode()
         {
-            var text = this.data;
+            var state = this.data;
             this.origPtr = GetBits(24);
             if (this.origPtr < 0)
                 throw new IOException("BZ_DATA_ERROR");
             if (this.origPtr > 10 + BZip2.BlockSizeMultiple * this.blockSize100k)
                 throw new IOException("BZ_DATA_ERROR");
             recvDecodingTables();
-            byte[] yy = text.getAndMoveToFrontDecode_yy;
+            byte[] yy = state.getAndMoveToFrontDecode_yy;
             int limitLast = this.blockSize100k * BZip2.BlockSizeMultiple;
             /*
              * Setting up the unzftab entries here is not strictly necessary, but it
@@ -705,34 +706,34 @@ namespace Ionic.BZip2;
             for (int i = 256; --i >= 0;)
             {
                 yy[i] = (byte) i;
-                text.unzftab[i] = 0;
+                state.unzftab[i] = 0;
             }
             int groupNo = 0;
             int groupPos = BZip2.G_SIZE - 1;
-            int eob = this.nInUse + 1;
+            int endOfBlock = this.inUseCount + 1;
             int nextSym = getAndMoveToFrontDecode0(0);
             int bsBuffShadow = this.bsBuff;
             int bsLiveShadow = this.bsLive;
             int lastShadow = -1;
-            int zt = text.selector[groupNo] & 0xff;
-            int[] base_zt = text.gBase[zt];
-            int[] limit_zt = text.gLimit[zt];
-            int[] perm_zt = text.gPerm[zt];
-            int minLens_zt = text.gMinlen[zt];
-            while (nextSym != eob)
+            int tableIndex = state.selector[groupNo] & 0xff;
+            int[] base_tableIndex = state.gBase[tableIndex];
+            int[] limit_tableIndex = state.gLimit[tableIndex];
+            int[] perm_tableIndex = state.gPerm[tableIndex];
+            int minLens_tableIndex = state.gMinlen[tableIndex];
+            while (nextSym != endOfBlock)
             {
                 if ((nextSym == BZip2.RUNA) || (nextSym == BZip2.RUNB))
                 {
-                    int es = -1;
-                    for (int n = 1; true; n <<= 1)
+                    int runLength = -1;
+                    for (int multiplier = 1; true; multiplier <<= 1)
                     {
                         if (nextSym == BZip2.RUNA)
                         {
-                            es += n;
+                            runLength += multiplier;
                         }
                         else if (nextSym == BZip2.RUNB)
                         {
-                            es += n << 1;
+                            runLength += multiplier << 1;
                         }
                         else
                         {
@@ -741,25 +742,25 @@ namespace Ionic.BZip2;
                         if (groupPos == 0)
                         {
                             groupPos = BZip2.G_SIZE - 1;
-                            zt = text.selector[++groupNo] & 0xff;
-                            base_zt = text.gBase[zt];
-                            limit_zt = text.gLimit[zt];
-                            perm_zt = text.gPerm[zt];
-                            minLens_zt = text.gMinlen[zt];
+                            tableIndex = state.selector[++groupNo] & 0xff;
+                            base_tableIndex = state.gBase[tableIndex];
+                            limit_tableIndex = state.gLimit[tableIndex];
+                            perm_tableIndex = state.gPerm[tableIndex];
+                            minLens_tableIndex = state.gMinlen[tableIndex];
                         }
                         else
                         {
                             groupPos--;
                         }
-                        int zn = minLens_zt;
+                        int codeLength = minLens_tableIndex;
                         // Inlined:
-                        // int zvec = GetBits(zn);
-                        while (bsLiveShadow < zn)
+                        // int vectorValue = GetBits(codeLength);
+                        while (bsLiveShadow < codeLength)
                         {
-                            int thech = this.input.ReadByte();
-                            if (thech >= 0)
+                            int byteValue = this.input.ReadByte();
+                            if (byteValue >= 0)
                             {
-                                bsBuffShadow = (bsBuffShadow << 8) | thech;
+                                bsBuffShadow = (bsBuffShadow << 8) | byteValue;
                                 bsLiveShadow += 8;
                                 continue;
                             }
@@ -768,18 +769,18 @@ namespace Ionic.BZip2;
                                 throw new IOException("unexpected end of stream");
                             }
                         }
-                        int zvec = (bsBuffShadow >> (bsLiveShadow - zn))
-                            & ((1 << zn) - 1);
-                        bsLiveShadow -= zn;
-                        while (zvec > limit_zt[zn])
+                        int vectorValue = (bsBuffShadow >> (bsLiveShadow - codeLength))
+                            & ((1 << codeLength) - 1);
+                        bsLiveShadow -= codeLength;
+                        while (vectorValue > limit_tableIndex[codeLength])
                         {
-                            zn++;
+                            codeLength++;
                             while (bsLiveShadow < 1)
                             {
-                                int thech = this.input.ReadByte();
-                                if (thech >= 0)
+                                int byteValue = this.input.ReadByte();
+                                if (byteValue >= 0)
                                 {
-                                    bsBuffShadow = (bsBuffShadow << 8) | thech;
+                                    bsBuffShadow = (bsBuffShadow << 8) | byteValue;
                                     bsLiveShadow += 8;
                                     continue;
                                 }
@@ -789,16 +790,16 @@ namespace Ionic.BZip2;
                                 }
                             }
                             bsLiveShadow--;
-                            zvec = (zvec << 1)
+                            vectorValue = (vectorValue << 1)
                                 | ((bsBuffShadow >> bsLiveShadow) & 1);
                         }
-                        nextSym = perm_zt[zvec - base_zt[zn]];
+                        nextSym = perm_tableIndex[vectorValue - base_tableIndex[codeLength]];
                     }
-                    byte ch = text.seqToUnseq[yy[0]];
-                    text.unzftab[ch & 0xff] += es + 1;
-                    while (es-- >= 0)
+                    byte character = state.seqToUnseq[yy[0]];
+                    state.unzftab[character & 0xff] += runLength + 1;
+                    while (runLength-- >= 0)
                     {
-                        text.ll8[++lastShadow] = ch;
+                        state.ll8[++lastShadow] = character;
                     }
                     if (lastShadow >= limitLast)
                         throw new IOException("block overrun");
@@ -807,9 +808,9 @@ namespace Ionic.BZip2;
                 {
                     if (++lastShadow >= limitLast)
                         throw new IOException("block overrun");
-                    byte tmp = yy[nextSym - 1];
-                    text.unzftab[text.seqToUnseq[tmp] & 0xff]++;
-                    text.ll8[lastShadow] = text.seqToUnseq[tmp];
+                    byte symbolValue = yy[nextSym - 1];
+                    state.unzftab[state.seqToUnseq[symbolValue] & 0xff]++;
+                    state.ll8[lastShadow] = state.seqToUnseq[symbolValue];
                     /*
                      * This loop is hammered during decompression, hence avoid
                      * native method call overhead of System.Buffer.BlockCopy for very
@@ -826,29 +827,29 @@ namespace Ionic.BZip2;
                     {
                         System.Buffer.BlockCopy(yy, 0, yy, 1, nextSym - 1);
                     }
-                    yy[0] = tmp;
+                    yy[0] = symbolValue;
                     if (groupPos == 0)
                     {
                         groupPos = BZip2.G_SIZE - 1;
-                        zt = text.selector[++groupNo] & 0xff;
-                        base_zt = text.gBase[zt];
-                        limit_zt = text.gLimit[zt];
-                        perm_zt = text.gPerm[zt];
-                        minLens_zt = text.gMinlen[zt];
+                        tableIndex = state.selector[++groupNo] & 0xff;
+                        base_tableIndex = state.gBase[tableIndex];
+                        limit_tableIndex = state.gLimit[tableIndex];
+                        perm_tableIndex = state.gPerm[tableIndex];
+                        minLens_tableIndex = state.gMinlen[tableIndex];
                     }
                     else
                     {
                         groupPos--;
                     }
-                    int zn = minLens_zt;
+                    int codeLength = minLens_tableIndex;
                     // Inlined:
-                    // int zvec = GetBits(zn);
-                    while (bsLiveShadow < zn)
+                    // int vectorValue = GetBits(codeLength);
+                    while (bsLiveShadow < codeLength)
                     {
-                        int thech = this.input.ReadByte();
-                        if (thech >= 0)
+                        int byteValue = this.input.ReadByte();
+                        if (byteValue >= 0)
                         {
-                            bsBuffShadow = (bsBuffShadow << 8) | thech;
+                            bsBuffShadow = (bsBuffShadow << 8) | byteValue;
                             bsLiveShadow += 8;
                             continue;
                         }
@@ -857,18 +858,18 @@ namespace Ionic.BZip2;
                             throw new IOException("unexpected end of stream");
                         }
                     }
-                    int zvec = (bsBuffShadow >> (bsLiveShadow - zn))
-                        & ((1 << zn) - 1);
-                    bsLiveShadow -= zn;
-                    while (zvec > limit_zt[zn])
+                    int vectorValue = (bsBuffShadow >> (bsLiveShadow - codeLength))
+                        & ((1 << codeLength) - 1);
+                    bsLiveShadow -= codeLength;
+                    while (vectorValue > limit_tableIndex[codeLength])
                     {
-                        zn++;
+                        codeLength++;
                         while (bsLiveShadow < 1)
                         {
-                            int thech = this.input.ReadByte();
-                            if (thech >= 0)
+                            int byteValue = this.input.ReadByte();
+                            if (byteValue >= 0)
                             {
-                                bsBuffShadow = (bsBuffShadow << 8) | thech;
+                                bsBuffShadow = (bsBuffShadow << 8) | byteValue;
                                 bsLiveShadow += 8;
                                 continue;
                             }
@@ -878,9 +879,9 @@ namespace Ionic.BZip2;
                             }
                         }
                         bsLiveShadow--;
-                        zvec = (zvec << 1) | ((bsBuffShadow >> bsLiveShadow) & 1);
+                        vectorValue = (vectorValue << 1) | ((bsBuffShadow >> bsLiveShadow) & 1);
                     }
-                    nextSym = perm_zt[zvec - base_zt[zn]];
+                    nextSym = perm_tableIndex[vectorValue - base_tableIndex[codeLength]];
                 }
             }
             this.last = lastShadow;
@@ -889,22 +890,22 @@ namespace Ionic.BZip2;
         }
         private int getAndMoveToFrontDecode0(int groupNo)
         {
-            var text = this.data;
-            int zt = text.selector[groupNo] & 0xff;
-            int[] limit_zt = text.gLimit[zt];
-            int zn = text.gMinlen[zt];
-            int zvec = GetBits(zn);
+            var state = this.data;
+            int tableIndex = state.selector[groupNo] & 0xff;
+            int[] limit_tableIndex = state.gLimit[tableIndex];
+            int codeLength = state.gMinlen[tableIndex];
+            int vectorValue = GetBits(codeLength);
             int bsLiveShadow = this.bsLive;
             int bsBuffShadow = this.bsBuff;
-            while (zvec > limit_zt[zn])
+            while (vectorValue > limit_tableIndex[codeLength])
             {
-                zn++;
+                codeLength++;
                 while (bsLiveShadow < 1)
                 {
-                    int thech = this.input.ReadByte();
-                    if (thech >= 0)
+                    int byteValue = this.input.ReadByte();
+                    if (byteValue >= 0)
                     {
-                        bsBuffShadow = (bsBuffShadow << 8) | thech;
+                        bsBuffShadow = (bsBuffShadow << 8) | byteValue;
                         bsLiveShadow += 8;
                         continue;
                     }
@@ -914,61 +915,61 @@ namespace Ionic.BZip2;
                     }
                 }
                 bsLiveShadow--;
-                zvec = (zvec << 1) | ((bsBuffShadow >> bsLiveShadow) & 1);
+                vectorValue = (vectorValue << 1) | ((bsBuffShadow >> bsLiveShadow) & 1);
             }
             this.bsLive = bsLiveShadow;
             this.bsBuff = bsBuffShadow;
-            return text.gPerm[zt][zvec - text.gBase[zt][zn]];
+            return state.gPerm[tableIndex][vectorValue - state.gBase[tableIndex][codeLength]];
         }
         private void SetupBlock()
         {
             if (this.data == null)
                 return;
             int i;
-            var text = this.data;
-            int[] tt = text.initTT(this.last + 1);
+            var state = this.data;
+            int[] tt = state.initTT(this.last + 1);
             //       xxxx
             /* Check: unzftab entries in range. */
             for (i = 0; i <= 255; i++)
             {
-                if (text.unzftab[i] < 0 || text.unzftab[i] > this.last)
+                if (state.unzftab[i] < 0 || state.unzftab[i] > this.last)
                     throw new Exception("BZ_DATA_ERROR");
             }
             /* Actually generate cftab. */
-            text.cftab[0] = 0;
-            for (i = 1; i <= 256; i++) text.cftab[i] = text.unzftab[i-1];
-            for (i = 1; i <= 256; i++) text.cftab[i] += text.cftab[i-1];
+            state.cftab[0] = 0;
+            for (i = 1; i <= 256; i++) state.cftab[i] = state.unzftab[i-1];
+            for (i = 1; i <= 256; i++) state.cftab[i] += state.cftab[i-1];
             /* Check: cftab entries in range. */
             for (i = 0; i <= 256; i++)
             {
-                if (text.cftab[i] < 0 || text.cftab[i] > this.last+1)
+                if (state.cftab[i] < 0 || state.cftab[i] > this.last+1)
                 {
                     var msg = String.Format("BZ_DATA_ERROR: cftab[{0}]={1} last={2}",
-                                            i, text.cftab[i], this.last);
+                                            i, state.cftab[i], this.last);
                     throw new Exception(msg);
                 }
             }
             /* Check: cftab entries non-descending. */
             for (i = 1; i <= 256; i++)
             {
-                if (text.cftab[i-1] > text.cftab[i])
+                if (state.cftab[i-1] > state.cftab[i])
                     throw new Exception("BZ_DATA_ERROR");
             }
             int lastShadow;
             for (i = 0, lastShadow = this.last; i <= lastShadow; i++)
             {
-                tt[text.cftab[text.ll8[i] & 0xff]++] = i;
+                tt[state.cftab[state.ll8[i] & 0xff]++] = i;
             }
             if ((this.origPtr < 0) || (this.origPtr >= tt.Length))
                 throw new IOException("stream corrupted");
-            this.su_tPos = tt[this.origPtr];
-            this.su_count = 0;
-            this.su_i2 = 0;
-            this.su_ch2 = 256; /* not a valid 8-bit byte value?, and not EOF */
+            this.setupTPosition = tt[this.origPtr];
+            this.setupCount = 0;
+            this.setupIndex2 = 0;
+            this.setupChar2 = 256; /* not a valid 8-bit byte value?, and not EOF */
             if (this.blockRandomised)
             {
-                this.su_rNToGo = 0;
-                this.su_rTPos = 0;
+                this.setupRandomToGo = 0;
+                this.setupRandomPosition = 0;
                 SetupRandPartA();
             }
             else
@@ -978,28 +979,28 @@ namespace Ionic.BZip2;
         }
         private void SetupRandPartA()
         {
-            if (this.su_i2 <= this.last)
+            if (this.setupIndex2 <= this.last)
             {
-                this.su_chPrev = this.su_ch2;
-                int su_ch2Shadow = this.data.ll8[this.su_tPos] & 0xff;
-                this.su_tPos = this.data.tt[this.su_tPos];
-                if (this.su_rNToGo == 0)
+                this.setupPreviousChar = this.setupChar2;
+                int setupChar2Shadow = this.data.ll8[this.setupTPosition] & 0xff;
+                this.setupTPosition = this.data.tt[this.setupTPosition];
+                if (this.setupRandomToGo == 0)
                 {
-                    this.su_rNToGo = Rand.Rnums(this.su_rTPos) - 1;
-                    if (++this.su_rTPos == 512)
+                    this.setupRandomToGo = Rand.Rnums(this.setupRandomPosition) - 1;
+                    if (++this.setupRandomPosition == 512)
                     {
-                        this.su_rTPos = 0;
+                        this.setupRandomPosition = 0;
                     }
                 }
                 else
                 {
-                    this.su_rNToGo--;
+                    this.setupRandomToGo--;
                 }
-                this.su_ch2 = su_ch2Shadow ^= (this.su_rNToGo == 1) ? 1 : 0;
-                this.su_i2++;
-                this.currentChar = su_ch2Shadow;
+                this.setupChar2 = setupChar2Shadow ^= (this.setupRandomToGo == 1) ? 1 : 0;
+                this.setupIndex2++;
+                this.currentChar = setupChar2Shadow;
                 this.currentState = CState.RAND_PART_B;
-                this.crc.UpdateCRC((byte)su_ch2Shadow);
+                this.crc.UpdateCRC((byte)setupChar2Shadow);
             }
             else
             {
@@ -1010,16 +1011,16 @@ namespace Ionic.BZip2;
         }
         private void SetupNoRandPartA()
         {
-            if (this.su_i2 <= this.last)
+            if (this.setupIndex2 <= this.last)
             {
-                this.su_chPrev = this.su_ch2;
-                int su_ch2Shadow = this.data.ll8[this.su_tPos] & 0xff;
-                this.su_ch2 = su_ch2Shadow;
-                this.su_tPos = this.data.tt[this.su_tPos];
-                this.su_i2++;
-                this.currentChar = su_ch2Shadow;
+                this.setupPreviousChar = this.setupChar2;
+                int setupChar2Shadow = this.data.ll8[this.setupTPosition] & 0xff;
+                this.setupChar2 = setupChar2Shadow;
+                this.setupTPosition = this.data.tt[this.setupTPosition];
+                this.setupIndex2++;
+                this.currentChar = setupChar2Shadow;
                 this.currentState = CState.NO_RAND_PART_B;
-                this.crc.UpdateCRC((byte)su_ch2Shadow);
+                this.crc.UpdateCRC((byte)setupChar2Shadow);
             }
             else
             {
@@ -1031,33 +1032,33 @@ namespace Ionic.BZip2;
         }
         private void SetupRandPartB()
         {
-            if (this.su_ch2 != this.su_chPrev)
+            if (this.setupChar2 != this.setupPreviousChar)
             {
                 this.currentState = CState.RAND_PART_A;
-                this.su_count = 1;
+                this.setupCount = 1;
                 SetupRandPartA();
             }
-            else if (++this.su_count >= 4)
+            else if (++this.setupCount >= 4)
             {
-                this.su_z = (char) (this.data.ll8[this.su_tPos] & 0xff);
-                this.su_tPos = this.data.tt[this.su_tPos];
-                if (this.su_rNToGo == 0)
+                this.setupZ = (char) (this.data.ll8[this.setupTPosition] & 0xff);
+                this.setupTPosition = this.data.tt[this.setupTPosition];
+                if (this.setupRandomToGo == 0)
                 {
-                    this.su_rNToGo = Rand.Rnums(this.su_rTPos) - 1;
-                    if (++this.su_rTPos == 512)
+                    this.setupRandomToGo = Rand.Rnums(this.setupRandomPosition) - 1;
+                    if (++this.setupRandomPosition == 512)
                     {
-                        this.su_rTPos = 0;
+                        this.setupRandomPosition = 0;
                     }
                 }
                 else
                 {
-                    this.su_rNToGo--;
+                    this.setupRandomToGo--;
                 }
-                this.su_j2 = 0;
+                this.setupJ2 = 0;
                 this.currentState = CState.RAND_PART_C;
-                if (this.su_rNToGo == 1)
+                if (this.setupRandomToGo == 1)
                 {
-                    this.su_z ^= (char)1;
+                    this.setupZ ^= (char)1;
                 }
                 SetupRandPartC();
             }
@@ -1069,32 +1070,32 @@ namespace Ionic.BZip2;
         }
         private void SetupRandPartC()
         {
-            if (this.su_j2 < this.su_z)
+            if (this.setupJ2 < this.setupZ)
             {
-                this.currentChar = this.su_ch2;
-                this.crc.UpdateCRC((byte)this.su_ch2);
-                this.su_j2++;
+                this.currentChar = this.setupChar2;
+                this.crc.UpdateCRC((byte)this.setupChar2);
+                this.setupJ2++;
             }
             else
             {
                 this.currentState = CState.RAND_PART_A;
-                this.su_i2++;
-                this.su_count = 0;
+                this.setupIndex2++;
+                this.setupCount = 0;
                 SetupRandPartA();
             }
         }
         private void SetupNoRandPartB()
         {
-            if (this.su_ch2 != this.su_chPrev)
+            if (this.setupChar2 != this.setupPreviousChar)
             {
-                this.su_count = 1;
+                this.setupCount = 1;
                 SetupNoRandPartA();
             }
-            else if (++this.su_count >= 4)
+            else if (++this.setupCount >= 4)
             {
-                this.su_z = (char) (this.data.ll8[this.su_tPos] & 0xff);
-                this.su_tPos = this.data.tt[this.su_tPos];
-                this.su_j2 = 0;
+                this.setupZ = (char) (this.data.ll8[this.setupTPosition] & 0xff);
+                this.setupTPosition = this.data.tt[this.setupTPosition];
+                this.setupJ2 = 0;
                 SetupNoRandPartC();
             }
             else
@@ -1104,18 +1105,18 @@ namespace Ionic.BZip2;
         }
         private void SetupNoRandPartC()
         {
-            if (this.su_j2 < this.su_z)
+            if (this.setupJ2 < this.setupZ)
             {
-                int su_ch2Shadow = this.su_ch2;
-                this.currentChar = su_ch2Shadow;
-                this.crc.UpdateCRC((byte)su_ch2Shadow);
-                this.su_j2++;
+                int setupChar2Shadow = this.setupChar2;
+                this.currentChar = setupChar2Shadow;
+                this.crc.UpdateCRC((byte)setupChar2Shadow);
+                this.setupJ2++;
                 this.currentState = CState.NO_RAND_PART_C;
             }
             else
             {
-                this.su_i2++;
-                this.su_count = 0;
+                this.setupIndex2++;
+                this.setupCount = 0;
                 SetupNoRandPartA();
             }
         }
@@ -1204,14 +1205,14 @@ namespace Ionic.BZip2;
     // }
     internal static class BZip2
     {
-            internal static T[][] InitRectangularArray<T>(int d1, int d2)
+            internal static T[][] InitRectangularArray<T>(int rowCount, int columnCount)
             {
-                var xValue = new T[d1][];
-                for (int i=0; i < d1; i++)
+                var array = new T[rowCount][];
+                for (int i=0; i < rowCount; i++)
                 {
-                    xValue[i] = new T[d2];
+                    array[i] = new T[columnCount];
                 }
-                return xValue;
+                return array;
             }
         public static readonly int BlockSizeMultiple       = 100000;
         public static readonly int MinBlockSize       = 1;

@@ -1,7 +1,5 @@
 namespace Ionic.BZip2;
 
-// EN: Variable names have been checked and replaced with self-descriptive names
-// CZ: Názvy proměnných byly zkontrolovány a nahrazeny samopopisnými názvy
 // Rand.cs
 // ------------------------------------------------------------------
 //
@@ -30,7 +28,7 @@ namespace Ionic.BZip2;
 
     internal static class Rand
     {
-        private static readonly int[] RNUMS =
+        private static readonly int[] randomNumbers =
         [
             619, 720, 127, 481, 931, 816, 813, 233, 566, 247,
             985, 724, 205, 454, 863, 491, 741, 242, 949, 214,
@@ -90,7 +88,7 @@ namespace Ionic.BZip2;
     /// <summary>
     ///   Returns the "random" number at a specific index.
     /// </summary>
-    /// <param name='i'>the index</param>
+    /// <param name='index'>the index</param>
     /// <returns>the random number</returns>
-    internal static int Rnums(int i) => RNUMS[i];
+    internal static int Rnums(int index) => randomNumbers[index];
 }

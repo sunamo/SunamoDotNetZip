@@ -60,29 +60,29 @@ namespace Ionic.Zip;
         private ZipCrypto() { }
         public static ZipCrypto ForWrite(string password)
         {
-            ZipCrypto z = new();
+            ZipCrypto crypto = new();
             if (password == null)
                 throw new BadPasswordException("This entry requires a password.");
-            z.InitCipher(password);
-            return z;
+            crypto.InitCipher(password);
+            return crypto;
         }
-        public static ZipCrypto ForRead(string password, ZipEntry e)
+        public static ZipCrypto ForRead(string password, ZipEntry entry)
         {
-            System.IO.Stream s = e._archiveStream;
-            e._WeakEncryptionHeader = new byte[12];
-            byte[] eh = e._WeakEncryptionHeader;
-            ZipCrypto z = new();
+            System.IO.Stream stream = entry._archiveStream;
+            entry._WeakEncryptionHeader = new byte[12];
+            byte[] encryptionHeader = entry._WeakEncryptionHeader;
+            ZipCrypto crypto = new();
             if (password == null)
                 throw new BadPasswordException("This entry requires a password.");
-            z.InitCipher(password);
-            ZipEntry.ReadWeakEncryptionHeader(s, eh);
+            crypto.InitCipher(password);
+            ZipEntry.ReadWeakEncryptionHeader(stream, encryptionHeader);
             // Decrypt the header.  This has a side effect of "further initializing the
             // encryption keys" in the traditional zip encryption.
-            byte[] DecryptedHeader = z.DecryptMessage(eh, eh.Length);
+            byte[] DecryptedHeader = crypto.DecryptMessage(encryptionHeader, encryptionHeader.Length);
             // CRC check
             // According to the pkzip spec, the final byte in the decrypted header
             // is the highest-order byte in the CRC. We check it here.
-            if (DecryptedHeader[11] != (byte)((e._Crc32 >> 24) & 0xff))
+            if (DecryptedHeader[11] != (byte)((entry._Crc32 >> 24) & 0xff))
             {
                 // In the case that bit 3 of the general purpose bit flag is set to
                 // indicate the presence of an 'Extended File Header' or a 'data
@@ -109,11 +109,11 @@ namespace Ionic.Zip;
                 // when PKZIP encryption is in use, and instead, reads the stream
                 // twice.
                 //
-                if ((e._BitField & 0x0008) != 0x0008)
+                if ((entry._BitField & 0x0008) != 0x0008)
                 {
                     throw new BadPasswordException("The password did not match.");
                 }
-                else if (DecryptedHeader[11] != (byte)((e._TimeBlob >> 8) & 0xff))
+                else if (DecryptedHeader[11] != (byte)((entry._TimeBlob >> 8) & 0xff))
                 {
                     throw new BadPasswordException("The password did not match.");
                 }
@@ -123,7 +123,7 @@ namespace Ionic.Zip;
             {
                 // A-OK
             }
-            return z;
+            return crypto;
         }
         /// <summary>
         /// From AppNote.txt:
@@ -320,14 +320,14 @@ namespace Ionic.Zip;
         private readonly System.IO.Stream _s;
         private readonly CryptoMode _mode;
         /// <summary>  The constructor. </summary>
-        /// <param name="s">The underlying stream</param>
+        /// <param name="stream">The underlying stream</param>
         /// <param name="mode">To either encrypt or decrypt.</param>
         /// <param name="cipher">The pre-initialized ZipCrypto object.</param>
-        public ZipCipherStream(System.IO.Stream s, ZipCrypto cipher, CryptoMode mode)
+        public ZipCipherStream(System.IO.Stream stream, ZipCrypto cipher, CryptoMode mode)
         {
-        ArgumentNullException.ThrowIfNull(s);
+        ArgumentNullException.ThrowIfNull(stream);
         _cipher = cipher;
-            _s = s;
+            _s = stream;
             _mode = mode;
         }
         public override int Read(byte[] buffer, int offset, int count)
@@ -336,13 +336,13 @@ namespace Ionic.Zip;
                 throw new NotSupportedException("This stream does not encrypt via Read()");
         ArgumentNullException.ThrowIfNull(buffer);
         byte[] db = new byte[count];
-            int n = _s.Read(db, 0, count);
-            byte[] decrypted = _cipher.DecryptMessage(db, n);
-            for (int i = 0; i < n; i++)
+            int bytesRead = _s.Read(db, 0, count);
+            byte[] decrypted = _cipher.DecryptMessage(db, bytesRead);
+            for (int i = 0; i < bytesRead; i++)
             {
                 buffer[offset + i] = decrypted[i];
             }
-            return n;
+            return bytesRead;
         }
         public override void Write(byte[] buffer, int offset, int count)
         {

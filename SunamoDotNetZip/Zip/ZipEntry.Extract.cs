@@ -954,12 +954,12 @@ public partial class ZipEntry
                 // because that only happens when it is less than bytes.Length,
                 // which is much less than MAX_INT.
                 int len = (leftToRead > bytes.Length) ? bytes.Length : (int)leftToRead;
-                int n = s1.Read(bytes, 0, len);
+                int bytesRead = s1.Read(bytes, 0, len);
                 // must check data read - essential for detecting corrupt zip files
-                _CheckRead(n);
-                targetOutput.Write(bytes, 0, n);
-                leftToRead -= n;
-                bytesWritten += n;
+                _CheckRead(bytesRead);
+                targetOutput.Write(bytes, 0, bytesRead);
+                leftToRead -= bytesRead;
+                bytesWritten += bytesRead;
                 // fire the progress event, check for cancels
                 OnExtractProgress(bytesWritten, uncompressedSize);
                 if (_ioOperationCanceled)
@@ -1175,16 +1175,16 @@ public partial class ZipEntry
         // Sometimes the name on the entry starts with a slash.
         // Rather than unpack to the root of the volume, we're going to
         // drop the slash and unpack to the specified base directory.
-        var f = FileName.Replace(Path.DirectorySeparatorChar, '/');
+        var fileName = FileName.Replace(Path.DirectorySeparatorChar, '/');
         // workitem 11772: remove drive letter with separator
-        if (f.IndexOf(':') == 1)
-            f = f[2..];
-        if (f.StartsWith("/"))
-            f = f[1..];
-        f = SharedUtilities.SanitizePath(f);
+        if (fileName.IndexOf(':') == 1)
+            fileName = fileName[2..];
+        if (fileName.StartsWith("/"))
+            fileName = fileName[1..];
+        fileName = SharedUtilities.SanitizePath(fileName);
         outFileName = _container.ZipFile.FlattenFoldersOnExtract
-            ? Path.Combine(baseDir, f.Contains("/") ? Path.GetFileName(f) : f)
-            : Path.Combine(baseDir, f);
+            ? Path.Combine(baseDir, fileName.Contains("/") ? Path.GetFileName(fileName) : fileName)
+            : Path.Combine(baseDir, fileName);
         // workitem 10639
         outFileName = outFileName.Replace('/', Path.DirectorySeparatorChar);
         // Resolve any directory traversal sequence and compare the result with the intended base directory

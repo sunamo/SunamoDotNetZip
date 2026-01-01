@@ -183,9 +183,15 @@ public class ParallelBZip2OutputStream : System.IO.Stream
     private System.Collections.Generic.Queue<int> toWrite;
     private System.Collections.Generic.Queue<int> toFill;
     private System.Collections.Generic.List<WorkItem> pool;
+#if NET9_0_OR_GREATER
     private readonly Lock latestLock = new();
     private readonly Lock eLock = new(); // for exceptions
     private readonly Lock outputLock = new(); // for multi-thread output
+#else
+    private readonly object latestLock = new();
+    private readonly object eLock = new(); // for exceptions
+    private readonly object outputLock = new(); // for multi-thread output
+#endif
     private AutoResetEvent newlyCompressedBlob;
     long totalBytesWrittenIn;
     long totalBytesWrittenOut;
@@ -396,15 +402,15 @@ public class ParallelBZip2OutputStream : System.IO.Stream
         if (this.pendingException != null)
         {
             this.handlingException = true;
-            var pe = this.pendingException;
+            var exceptionToThrow = this.pendingException;
             this.pendingException = null;
-            throw pe;
+            throw exceptionToThrow;
         }
         if (this.handlingException)
             return;
         if (output == null)
             return;
-        Stream o = this.output;
+        Stream outputStream = this.output;
         try
         {
             FlushOutput(true);
@@ -415,7 +421,7 @@ public class ParallelBZip2OutputStream : System.IO.Stream
             this.bw = null;
         }
         if (!leaveOpen)
-            o.Close();
+            outputStream.Close();
     }
     private void FlushOutput(bool lastInput)
     {
@@ -523,9 +529,9 @@ public class ParallelBZip2OutputStream : System.IO.Stream
         if (this.pendingException != null)
         {
             this.handlingException = true;
-            var pe = this.pendingException;
+            var exceptionToThrow = this.pendingException;
             this.pendingException = null;
-            throw pe;
+            throw exceptionToThrow;
         }
         if (offset < 0)
             throw new IndexOutOfRangeException(String.Format("offset ({0}) must be > 0", offset));
@@ -551,10 +557,10 @@ public class ParallelBZip2OutputStream : System.IO.Stream
             EmitPendingBuffers(false, mustWait);
             mustWait = false;
             // get a compressor to fill
-            int ix = -1;
+            int workItemIndex = -1;
             if (this.currentlyFilling >= 0)
             {
-                ix = this.currentlyFilling;
+                workItemIndex = this.currentlyFilling;
             }
             else
             {
@@ -565,10 +571,10 @@ public class ParallelBZip2OutputStream : System.IO.Stream
                     mustWait = true;
                     continue;
                 }
-                ix = this.toFill.Dequeue();
+                workItemIndex = this.toFill.Dequeue();
                 ++this.lastFilled;
             }
-            WorkItem workitem = this.pool[ix];
+            WorkItem workitem = this.pool[workItemIndex];
             workitem.ordinal = this.lastFilled;
             int bytesRead = workitem.Compressor.Fill(buffer, offset, bytesRemaining);
             if (bytesRead != bytesRemaining)
@@ -579,7 +585,7 @@ public class ParallelBZip2OutputStream : System.IO.Stream
                 offset += bytesRead;
             }
             else
-                this.currentlyFilling = ix;
+                this.currentlyFilling = workItemIndex;
             bytesRemaining -= bytesRead;
             bytesWritten += bytesRead;
         }
@@ -647,17 +653,17 @@ public class ParallelBZip2OutputStream : System.IO.Stream
                         // write the data to the output
                         var bw2 = workitem.bw;
                         bw2.Flush(); // not bw2.FinishAndPad()!
-                        var ms = workitem.ms;
-                        ms.Seek(0, SeekOrigin.Begin);
+                        var memoryStream = workitem.ms;
+                        memoryStream.Seek(0, SeekOrigin.Begin);
                         // cannot dump bytes!!
                         // ms.WriteTo(this.output);
                         //
                         // must do byte shredding:
                         int bytesRead;
                         int lastBytesRead = -1;
-                        long totOut = 0;
+                        long totalOut = 0;
                         var buffer = new byte[1024];
-                        while ((bytesRead = ms.Read(buffer, 0, buffer.Length)) > 0)
+                        while ((bytesRead = memoryStream.Read(buffer, 0, buffer.Length)) > 0)
                         {
 #if Trace
                                 if (lastBytesRead == -1) // diagnostics only
@@ -674,10 +680,10 @@ public class ParallelBZip2OutputStream : System.IO.Stream
                             {
                                 this.bw.WriteByte(buffer[k]);
                             }
-                            totOut += bytesRead;
+                            totalOut += bytesRead;
                         }
 #if Trace
-                            TraceOutput(TraceBits.Write,"out block length (bytes): {0} (0x{0:X})", totOut);
+                            TraceOutput(TraceBits.Write,"out block length (bytes): {0} (0x{0:X})", totalOut);
                             var stringBuilder = new System.Text.StringBuilder();
                             stringBuilder.Append("final 16 whole bytes in block: ");
                             for (int z=0; z < 16; z++)
@@ -707,7 +713,7 @@ public class ParallelBZip2OutputStream : System.IO.Stream
                                     "total written out: {0} (0x{0:X})",
                                     this.bw.TotalBytesWrittenOut);
                         TraceOutput(TraceBits.Write | TraceBits.Crc, "");
-                        this.totalBytesWrittenOut += totOut;
+                        this.totalBytesWrittenOut += totalOut;
                         bw2.Reset();
                         this.lastWritten = workitem.ordinal;
                         workitem.ordinal = -1;

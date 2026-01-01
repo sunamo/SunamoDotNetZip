@@ -460,20 +460,20 @@ internal class ZlibBaseStream : System.IO.Stream
         Reader,
         Undefined,
     }
-    public static void CompressString(String s, Stream compressor)
+    public static void CompressString(String text, Stream compressor)
     {
-        byte[] uncompressed = System.Text.Encoding.UTF8.GetBytes(s);
+        byte[] uncompressed = System.Text.Encoding.UTF8.GetBytes(text);
         using (compressor)
         {
             compressor.Write(uncompressed, 0, uncompressed.Length);
         }
     }
-    public static void CompressBuffer(byte[] b, Stream compressor)
+    public static void CompressBuffer(byte[] buffer, Stream compressor)
     {
         // workitem 8460
         using (compressor)
         {
-            compressor.Write(b, 0, b.Length);
+            compressor.Write(buffer, 0, buffer.Length);
         }
     }
     public static String UncompressString(Stream decompressor)

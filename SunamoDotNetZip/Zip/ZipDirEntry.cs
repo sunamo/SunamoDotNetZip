@@ -101,47 +101,45 @@ namespace Ionic.Zip;
                 new(" \\(copy (\\d+)\\)$");
             private static int callCount = 0;
         internal static void Reset() => callCount = 0;
-        internal static string AppendCopyToFileName(string f)
+        internal static string AppendCopyToFileName(string fileName)
             {
                 callCount++;
                 if (callCount > 25)
                     throw new OverflowException("overflow while creating filename");
-                int n = 1;
-                int r = f.LastIndexOf(".");
-                if (r == -1)
+                int copyNumber = 1;
+                int dotIndex = fileName.LastIndexOf(".");
+                if (dotIndex == -1)
                 {
                     // there is no extension
-                    System.Text.RegularExpressions.Match m = re.Match(f);
-                    if (m.Success)
+                    System.Text.RegularExpressions.Match match = re.Match(fileName);
+                    if (match.Success)
                     {
-                        n = Int32.Parse(m.Groups[1].Value) + 1;
-                        string copy = String.Format(" (copy {0})", n);
-                        f = f[..m.Index] + copy;
+                        copyNumber = Int32.Parse(match.Groups[1].Value) + 1;
+                        string copy = String.Format(" (copy {0})", copyNumber);
+                        fileName = fileName[..match.Index] + copy;
                     }
                     else
                     {
-                        string copy = String.Format(" (copy {0})", n);
-                        f = f + copy;
+                        string copy = String.Format(" (copy {0})", copyNumber);
+                        fileName = fileName + copy;
                     }
                 }
                 else
                 {
-                    //System.Console.WriteLine("HasExtension");
-                    System.Text.RegularExpressions.Match m = re.Match(f[..r]);
-                    if (m.Success)
+                    System.Text.RegularExpressions.Match match = re.Match(fileName[..dotIndex]);
+                    if (match.Success)
                     {
-                        n = Int32.Parse(m.Groups[1].Value) + 1;
-                        string copy = String.Format(" (copy {0})", n);
-                        f = f[..m.Index] + copy + f[r..];
+                        copyNumber = Int32.Parse(match.Groups[1].Value) + 1;
+                        string copy = String.Format(" (copy {0})", copyNumber);
+                        fileName = fileName[..match.Index] + copy + fileName[dotIndex..];
                     }
                     else
                     {
-                        string copy = String.Format(" (copy {0})", n);
-                        f = f[..r] + copy + f[r..];
+                        string copy = String.Format(" (copy {0})", copyNumber);
+                        fileName = fileName[..dotIndex] + copy + fileName[dotIndex..];
                     }
-                    //System.Console.WriteLine("returning f({0})", f);
                 }
-                return f;
+                return fileName;
             }
         }
         /// <summary>

@@ -98,7 +98,11 @@ public class ParallelDeflateOutputStream : System.IO.Stream
     private AutoResetEvent _newlyCompressedBlob;
     //private ManualResetEvent            _writingDone;
     //private ManualResetEvent            _sessionReset;
+#if NET9_0_OR_GREATER
     private readonly Lock _outputLock = new();
+#else
+    private readonly object _outputLock = new();
+#endif
     private bool _isClosed;
     private bool _firstWriteDone;
     private int _currentlyFilling;
@@ -107,14 +111,22 @@ public class ParallelDeflateOutputStream : System.IO.Stream
     private int _latestCompressed;
     private int _Crc32;
     private Ionic.Zlib.CRC32 _runningCrc;
+#if NET9_0_OR_GREATER
     private readonly Lock _latestLock = new();
+#else
+    private readonly object _latestLock = new();
+#endif
     private System.Collections.Generic.Queue<int> _toWrite;
     private System.Collections.Generic.Queue<int> _toFill;
     private Int64 _totalBytesProcessed;
     private readonly CompressionLevel _compressLevel;
     private volatile Exception _pendingException;
     private bool _handlingException;
+#if NET9_0_OR_GREATER
     private readonly Lock _eLock = new();  // protects _pendingException
+#else
+    private readonly object _eLock = new();  // protects _pendingException
+#endif
     // This bitfield is used only when Trace is defined.
     //private TraceBits _DesiredTrace = TraceBits.Write | TraceBits.WriteBegin |
     //TraceBits.WriteDone | TraceBits.Lifecycle | TraceBits.Fill | TraceBits.Flush |

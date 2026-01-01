@@ -159,9 +159,6 @@ namespace Ionic.BZip2;
             }
             this.accumulator = currentAccumulator | (value << (32 - accumulatedCount - bitCount));
             this.accumulatedBitsCount = accumulatedCount + bitCount;
-            // Console.WriteLine("WriteBits({0}, 0x{1:X2}) => {2:X8} n({3})",
-            //                   bitCount, value, accumulator, accumulatedBitsCount);
-            // Console.ReadLine();
             // At this point the accumulator may contain up to 31 bits waiting for
             // output.
         }

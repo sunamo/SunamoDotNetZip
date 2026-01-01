@@ -248,9 +248,9 @@ using Interop=System.Runtime.InteropServices;
         /// <summary>
         /// This ctor collects a message attached to the exception.
         /// </summary>
-        /// <param name="s">the message for the exception.</param>
-        public ZlibException(System.String s)
-            : base(s)
+        /// <param name="message">the message for the exception.</param>
+        public ZlibException(System.String message)
+            : base(message)
         {
         }
     }

@@ -316,7 +316,6 @@ sealed public class ZlibCodec
     ///
     /// </code>
     /// </example>
-    /// <param name="flush">The flush to use when inflating.</param>
     /// <returns>Z_OK if everything goes well.</returns>
     public int Inflate() => istate == null ? throw new ZlibException("No Inflate State!") : istate.Inflate();
     /// <summary>
@@ -332,9 +331,9 @@ sealed public class ZlibCodec
     {
         if (istate == null)
             throw new ZlibException("No Inflate State!");
-        int ret = istate.End();
+        int result = istate.End();
         istate = null;
-        return ret;
+        return result;
     }
     /// <summary>
     /// I don't know what this does!

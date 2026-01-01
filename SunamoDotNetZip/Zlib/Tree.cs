@@ -169,7 +169,7 @@ namespace Ionic.Zlib;
         //     array bl_count contains the frequencies for each bit length.
         //     The length opt_len is updated; static_len is also updated if stree is
         //     not null.
-        internal void  gen_bitlen(DeflateManager s)
+        internal void  gen_bitlen(DeflateManager manager)
         {
             short[] tree = dyn_tree;
             short[] stree = staticTree.treeCodes;
@@ -183,13 +183,13 @@ namespace Ionic.Zlib;
             short f; // frequency
             int overflow = 0; // number of elements with bit length too large
             for (bits = 0; bits <= InternalConstants.MAX_BITS; bits++)
-                s.bl_count[bits] = 0;
+                manager.bl_count[bits] = 0;
             // In a first pass, compute the optimal bit lengths (which may
             // overflow in the case of the bit length tree).
-            tree[s.heap[s.heap_max] * 2 + 1] = 0; // root of the heap
-            for (h = s.heap_max + 1; h < HEAP_SIZE; h++)
+            tree[manager.heap[manager.heap_max] * 2 + 1] = 0; // root of the heap
+            for (h = manager.heap_max + 1; h < HEAP_SIZE; h++)
             {
-                n = s.heap[h];
+                n = manager.heap[h];
                 bits = tree[tree[n * 2 + 1] * 2 + 1] + 1;
                 if (bits > max_length)
                 {
@@ -199,27 +199,27 @@ namespace Ionic.Zlib;
                 // We overwrite tree[n*2+1] which is no longer needed
                 if (n > max_code)
                     continue; // not a leaf node
-                s.bl_count[bits]++;
+                manager.bl_count[bits]++;
                 xbits = 0;
                 if (n >= base_Renamed)
                     xbits = extra[n - base_Renamed];
                 f = tree[n * 2];
-                s.opt_len += f * (bits + xbits);
+                manager.opt_len += f * (bits + xbits);
                 if (stree != null)
-                    s.static_len += f * (stree[n * 2 + 1] + xbits);
+                    manager.static_len += f * (stree[n * 2 + 1] + xbits);
             }
             if (overflow == 0)
                 return ;
             // This happens for example on obj2 and pic of the Calgary corpus
             // Find the first bit length which could increase:
-            do 
+            do
             {
                 bits = max_length - 1;
-                while (s.bl_count[bits] == 0)
+                while (manager.bl_count[bits] == 0)
                     bits--;
-                s.bl_count[bits]--; // move one leaf down the tree
-                s.bl_count[bits + 1] = (short) (s.bl_count[bits + 1] + 2); // move one overflow item as its brother
-                s.bl_count[max_length]--;
+                manager.bl_count[bits]--; // move one leaf down the tree
+                manager.bl_count[bits + 1] = (short) (manager.bl_count[bits + 1] + 2); // move one overflow item as its brother
+                manager.bl_count[max_length]--;
                 // The brother of the overflow item also moves one step up,
                 // but this does not affect bl_count[max_length]
                 overflow -= 2;
@@ -227,15 +227,15 @@ namespace Ionic.Zlib;
             while (overflow > 0);
             for (bits = max_length; bits != 0; bits--)
             {
-                n = s.bl_count[bits];
+                n = manager.bl_count[bits];
                 while (n != 0)
                 {
-                    m = s.heap[--h];
+                    m = manager.heap[--h];
                     if (m > max_code)
                         continue;
                     if (tree[m * 2 + 1] != bits)
                     {
-                        s.opt_len = (int) (s.opt_len + ((long) bits - (long) tree[m * 2 + 1]) * (long) tree[m * 2]);
+                        manager.opt_len = (int) (manager.opt_len + ((long) bits - (long) tree[m * 2 + 1]) * (long) tree[m * 2]);
                         tree[m * 2 + 1] = (short) bits;
                     }
                     n--;
@@ -248,7 +248,7 @@ namespace Ionic.Zlib;
         // OUT assertions: the fields len and code are set to the optimal bit length
         //     and corresponding code. The length opt_len is updated; static_len is
         //     also updated if stree is not null. The field max_code is set.
-        internal void  build_tree(DeflateManager s)
+        internal void  build_tree(DeflateManager manager)
         {
             short[] tree  = dyn_tree;
             short[] stree = staticTree.treeCodes;
@@ -259,14 +259,14 @@ namespace Ionic.Zlib;
             // Construct the initial heap, with least frequent element in
             // heap[1]. The sons of heap[n] are heap[2*n] and heap[2*n+1].
             // heap[0] is not used.
-            s.heap_len = 0;
-            s.heap_max = HEAP_SIZE;
+            manager.heap_len = 0;
+            manager.heap_max = HEAP_SIZE;
             for (n = 0; n < elems; n++)
             {
                 if (tree[n * 2] != 0)
                 {
-                    s.heap[++s.heap_len] = max_code = n;
-                    s.depth[n] = 0;
+                    manager.heap[++manager.heap_len] = max_code = n;
+                    manager.depth[n] = 0;
                 }
                 else
                 {
@@ -277,48 +277,48 @@ namespace Ionic.Zlib;
             // and that at least one bit should be sent even if there is only one
             // possible code. So to avoid special checks later on we force at least
             // two codes of non zero frequency.
-            while (s.heap_len < 2)
+            while (manager.heap_len < 2)
             {
-                node = s.heap[++s.heap_len] = (max_code < 2?++max_code:0);
+                node = manager.heap[++manager.heap_len] = (max_code < 2?++max_code:0);
                 tree[node * 2] = 1;
-                s.depth[node] = 0;
-                s.opt_len--;
+                manager.depth[node] = 0;
+                manager.opt_len--;
                 if (stree != null)
-                    s.static_len -= stree[node * 2 + 1];
+                    manager.static_len -= stree[node * 2 + 1];
                 // node is 0 or 1 so it does not have extra bits
             }
             this.max_code = max_code;
             // The elements heap[heap_len/2+1 .. heap_len] are leaves of the tree,
             // establish sub-heaps of increasing lengths:
-            for (n = s.heap_len / 2; n >= 1; n--)
-                s.pqdownheap(tree, n);
+            for (n = manager.heap_len / 2; n >= 1; n--)
+                manager.pqdownheap(tree, n);
             // Construct the Huffman tree by repeatedly combining the least two
             // frequent nodes.
             node = elems; // next internal node of the tree
-            do 
+            do
             {
                 // n = node of least frequency
-                n = s.heap[1];
-                s.heap[1] = s.heap[s.heap_len--];
-                s.pqdownheap(tree, 1);
-                m = s.heap[1]; // m = node of next least frequency
-                s.heap[--s.heap_max] = n; // keep the nodes sorted by frequency
-                s.heap[--s.heap_max] = m;
+                n = manager.heap[1];
+                manager.heap[1] = manager.heap[manager.heap_len--];
+                manager.pqdownheap(tree, 1);
+                m = manager.heap[1]; // m = node of next least frequency
+                manager.heap[--manager.heap_max] = n; // keep the nodes sorted by frequency
+                manager.heap[--manager.heap_max] = m;
                 // Create a new node father of n and m
                 tree[node * 2] = unchecked((short) (tree[n * 2] + tree[m * 2]));
-                s.depth[node] = (sbyte) (System.Math.Max((byte) s.depth[n], (byte) s.depth[m]) + 1);
+                manager.depth[node] = (sbyte) (System.Math.Max((byte) manager.depth[n], (byte) manager.depth[m]) + 1);
                 tree[n * 2 + 1] = tree[m * 2 + 1] = (short) node;
                 // and insert the new node in the heap
-                s.heap[1] = node++;
-                s.pqdownheap(tree, 1);
+                manager.heap[1] = node++;
+                manager.pqdownheap(tree, 1);
             }
-            while (s.heap_len >= 2);
-            s.heap[--s.heap_max] = s.heap[1];
+            while (manager.heap_len >= 2);
+            manager.heap[--manager.heap_max] = manager.heap[1];
             // At this point, the fields freq and dad are set. We can now
             // generate the bit lengths.
-            gen_bitlen(s);
+            gen_bitlen(manager);
             // The field len is now set, we can generate the bit codes
-            gen_codes(tree, max_code, s.bl_count);
+            gen_codes(tree, max_code, manager.bl_count);
         }
         // Generate the codes for a given tree and bit counts (which need not be
         // optimal).

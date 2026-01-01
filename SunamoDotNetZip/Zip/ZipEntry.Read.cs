@@ -69,9 +69,9 @@ public partial class ZipEntry
                 : false;
         }
         byte[] block = new byte[26];
-        int n = ze.ArchiveStream.Read(block, 0, block.Length);
-        if (n != block.Length) return false;
-        bytesRead += n;
+        int currentBytesRead = ze.ArchiveStream.Read(block, 0, block.Length);
+        if (currentBytesRead != block.Length) return false;
+        bytesRead += currentBytesRead;
         int i = 0;
         ze._VersionNeeded = (Int16)(block[i++] + block[i++] * 256);
         ze._BitField = (Int16)(block[i++] + block[i++] * 256);
@@ -100,8 +100,8 @@ public partial class ZipEntry
         Int16 filenameLength = (short)(block[i++] + block[i++] * 256);
         Int16 extraFieldLength = (short)(block[i++] + block[i++] * 256);
         block = new byte[filenameLength];
-        n = ze.ArchiveStream.Read(block, 0, block.Length);
-        bytesRead += n;
+        currentBytesRead = ze.ArchiveStream.Read(block, 0, block.Length);
+        bytesRead += currentBytesRead;
         // if the UTF8 bit is set for this entry, override the
         // encoding the application requested.
         if ((ze._BitField & 0x0800) == 0x0800)
@@ -147,19 +147,19 @@ public partial class ZipEntry
                 // stream we had to seek forward, to find the sig.  We need this to
                 // determine if the zip entry is valid, later.
                 ze._container.ZipFile?.OnReadBytes(ze);
-                long d = Ionic.Zip.SharedUtilities.FindSignature(ze.ArchiveStream, ZipConstants.ZipEntryDataDescriptorSignature);
-                if (d == -1) return false;
+                long bytesSkipped = Ionic.Zip.SharedUtilities.FindSignature(ze.ArchiveStream, ZipConstants.ZipEntryDataDescriptorSignature);
+                if (bytesSkipped == -1) return false;
                 // total size of data read (through all loops of this).
-                SizeOfDataRead += d;
+                SizeOfDataRead += bytesSkipped;
                 if (ze._InputUsesZip64)
                 {
                     // read 1x 4-byte (CRC) and 2x 8-bytes (Compressed Size, Uncompressed Size)
                     block = new byte[20];
-                    n = ze.ArchiveStream.Read(block, 0, block.Length);
-                    if (n != 20) return false;
+                    currentBytesRead = ze.ArchiveStream.Read(block, 0, block.Length);
+                    if (currentBytesRead != 20) return false;
                     // do not increment bytesRead - it is for entry header only.
                     // the data we have just read is a footer (falls after the file data)
-                    //bytesRead += n;
+                    //bytesRead += currentBytesRead;
                     i = 0;
                     ze._Crc32 = (Int32)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
                     ze._CompressedSize = BitConverter.ToInt64(block, i);
@@ -171,11 +171,11 @@ public partial class ZipEntry
                 {
                     // read 3x 4-byte fields (CRC, Compressed Size, Uncompressed Size)
                     block = new byte[12];
-                    n = ze.ArchiveStream.Read(block, 0, block.Length);
-                    if (n != 12) return false;
+                    currentBytesRead = ze.ArchiveStream.Read(block, 0, block.Length);
+                    if (currentBytesRead != 12) return false;
                     // do not increment bytesRead - it is for entry header only.
                     // the data we have just read is a footer (falls after the file data)
-                    //bytesRead += n;
+                    //bytesRead += currentBytesRead;
                     i = 0;
                     ze._Crc32 = (Int32)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
                     ze._CompressedSize = (uint)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
@@ -237,7 +237,7 @@ public partial class ZipEntry
         // bytes).
         return true;
     }
-    internal static int ReadWeakEncryptionHeader(Stream s, byte[] buffer)
+    internal static int ReadWeakEncryptionHeader(Stream stream, byte[] buffer)
     {
         // PKZIP encrypts the compressed data stream.  Encrypted files must
         // be decrypted before they can be extracted.
@@ -249,9 +249,9 @@ public partial class ZipEntry
         // number generation techniques in combination with the same CRC-32 algorithm used
         // in PKZIP and implemented in the CRC32.cs module in this project.
         // read the 12-byte encryption header
-        int additionalBytesRead = s.Read(buffer, 0, 12);
+        int additionalBytesRead = stream.Read(buffer, 0, 12);
         return additionalBytesRead != 12
-            ? throw new ZipException(String.Format("Unexpected end of data at position 0x{0:X8}", s.Position))
+            ? throw new ZipException(String.Format("Unexpected end of data at position 0x{0:X8}", stream.Position))
             : additionalBytesRead;
     }
     private static bool IsNotValidSig(int signature) => (signature != ZipConstants.ZipEntrySignature);
@@ -301,14 +301,14 @@ public partial class ZipEntry
         }
         return entry;
     }
-    internal static void HandlePK00Prefix(Stream s)
+    internal static void HandlePK00Prefix(Stream stream)
     {
         // in some cases, the zip file begins with "PK00".  This is a throwback and is rare,
         // but we handle it anyway. We do not change behavior based on it.
-        uint datum = (uint)Ionic.Zip.SharedUtilities.ReadInt(s);
+        uint datum = (uint)Ionic.Zip.SharedUtilities.ReadInt(stream);
         if (datum != ZipConstants.PackedToRemovableMedia)
         {
-            s.Seek(-4, SeekOrigin.Current); // unread the block
+            stream.Seek(-4, SeekOrigin.Current); // unread the block
         }
     }
     private static void HandleUnexpectedDataDescriptor(ZipEntry entry)
@@ -353,14 +353,14 @@ public partial class ZipEntry
     /// </summary>
     static internal int FindExtraFieldSegment(byte[] extra, int offx, UInt16 targetHeaderId)
     {
-        int j = offx;
-        while (j + 3 < extra.Length)
+        int index = offx;
+        while (index + 3 < extra.Length)
         {
-            UInt16 headerId = (UInt16)(extra[j++] + extra[j++] * 256);
-            if (headerId == targetHeaderId) return j - 2;
+            UInt16 headerId = (UInt16)(extra[index++] + extra[index++] * 256);
+            if (headerId == targetHeaderId) return index - 2;
             // else advance to next segment
-            Int16 dataSize = (short)(extra[j++] + extra[j++] * 256);
-            j += dataSize;
+            Int16 dataSize = (short)(extra[index++] + extra[index++] * 256);
+            index += dataSize;
         }
         return -1;
     }
@@ -371,32 +371,32 @@ public partial class ZipEntry
     ///   Extra field in the Central Directory, or in the local
     ///   header.
     /// </summary>
-    internal int ProcessExtraField(Stream s, Int16 extraFieldLength)
+    internal int ProcessExtraField(Stream stream, Int16 extraFieldLength)
     {
         int additionalBytesRead = 0;
         if (extraFieldLength > 0)
         {
             byte[] buffer = this._Extra = new byte[extraFieldLength];
-            additionalBytesRead = s.Read(buffer, 0, buffer.Length);
-            long posn = s.Position - additionalBytesRead;
-            int j = 0;
-            while (j + 3 < buffer.Length)
+            additionalBytesRead = stream.Read(buffer, 0, buffer.Length);
+            long posn = stream.Position - additionalBytesRead;
+            int index = 0;
+            while (index + 3 < buffer.Length)
             {
-                int start = j;
-                UInt16 headerId = (UInt16)(buffer[j++] + buffer[j++] * 256);
-                UInt16 dataSize = (UInt16)(buffer[j++] + buffer[j++] * 256);
+                int start = index;
+                UInt16 headerId = (UInt16)(buffer[index++] + buffer[index++] * 256);
+                UInt16 dataSize = (UInt16)(buffer[index++] + buffer[index++] * 256);
                 switch (headerId)
                 {
                     case 0x000a:  // NTFS ctime, atime, mtime
-                        j = ProcessExtraFieldWindowsTimes(buffer, j, dataSize, posn);
+                        index = ProcessExtraFieldWindowsTimes(buffer, index, dataSize, posn);
                         break;
                     case 0x5455:  // Unix ctime, atime, mtime
-                        j = ProcessExtraFieldUnixTimes(buffer, j, dataSize, posn);
+                        index = ProcessExtraFieldUnixTimes(buffer, index, dataSize, posn);
                         break;
                     case 0x5855:  // Info-zip Extra field (outdated)
                                   // This is outdated, so the field is supported on
                                   // read only.
-                        j = ProcessExtraFieldInfoZipTimes(buffer, j, dataSize, posn);
+                        index = ProcessExtraFieldInfoZipTimes(buffer, index, dataSize, posn);
                         break;
                     case 0x7855:  // Unix uid/gid
                                   // ignored. DotNetZip does not handle this field.
@@ -406,25 +406,25 @@ public partial class ZipEntry
                                   // though it appears in some zip files.
                         break;
                     case 0x0001: // ZIP64
-                        j = ProcessExtraFieldZip64(buffer, j, dataSize, posn);
+                        index = ProcessExtraFieldZip64(buffer, index, dataSize, posn);
                         break;
 #if AESCRYPTO
                         case 0x9901: // WinZip AES encryption is in use.  (workitem 6834)
                             // we will handle this extra field only  if compressionmethod is 0x63
-                            j = ProcessExtraFieldWinZipAes(buffer, j, dataSize, posn);
+                            index = ProcessExtraFieldWinZipAes(buffer, index, dataSize, posn);
                             break;
 #endif
                     case 0x0017: // workitem 7968: handle PKWare Strong encryption header
-                        j = ProcessExtraFieldPkwareStrongEncryption(buffer, j);
+                        index = ProcessExtraFieldPkwareStrongEncryption(buffer, index);
                         break;
                 }
                 // move to the next Header in the extra field
-                j = start + dataSize + 4;
+                index = start + dataSize + 4;
             }
         }
         return additionalBytesRead;
     }
-    private int ProcessExtraFieldPkwareStrongEncryption(byte[] Buffer, int j)
+    private int ProcessExtraFieldPkwareStrongEncryption(byte[] Buffer, int offset)
     {
         //           Value     Size     Description
         //           -----     ----     -----------
@@ -439,16 +439,16 @@ public partial class ZipEntry
         //                               in the section describing the
         //                               Certificate Processing Method under
         //                               the Strong Encryption Specification)
-        j += 2;
-        _UnsupportedAlgorithmId = (UInt16)(Buffer[j++] + Buffer[j++] * 256);
+        offset += 2;
+        _UnsupportedAlgorithmId = (UInt16)(Buffer[offset++] + Buffer[offset++] * 256);
         _Encryption_FromZipFile = _Encryption = EncryptionAlgorithm.Unsupported;
         // DotNetZip doesn't support this algorithm, but we don't need to throw
         // here.  we might just be reading the archive, which is fine.  We'll
         // need to throw if Extract() is called.
-        return j;
+        return offset;
     }
 #if AESCRYPTO
-        private int ProcessExtraFieldWinZipAes(byte[] buffer, int j, UInt16 dataSize, long posn)
+        private int ProcessExtraFieldWinZipAes(byte[] buffer, int offset, UInt16 dataSize, long posn)
         {
             if (this._CompressionMethod == 0x0063)
             {
@@ -459,32 +459,32 @@ public partial class ZipEntry
                 // see spec at http://www.winzip.com/aes_info.htm
                 if (dataSize != 7)
                     throw new BadReadException(String.Format("  Inconsistent size (0x{0:X4}) in WinZip AES field at position 0x{1:X16}", dataSize, posn));
-                this._WinZipAesMethod = BitConverter.ToInt16(buffer, j);
-                j += 2;
+                this._WinZipAesMethod = BitConverter.ToInt16(buffer, offset);
+                offset += 2;
                 if (this._WinZipAesMethod != 0x01 && this._WinZipAesMethod != 0x02)
                     throw new BadReadException(String.Format("  Unexpected vendor version number (0x{0:X4}) for WinZip AES metadata at position 0x{1:X16}",
                         this._WinZipAesMethod, posn));
-                Int16 vendorId = BitConverter.ToInt16(buffer, j);
-                j += 2;
+                Int16 vendorId = BitConverter.ToInt16(buffer, offset);
+                offset += 2;
                 if (vendorId != 0x4541)
                     throw new BadReadException(String.Format("  Unexpected vendor ID (0x{0:X4}) for WinZip AES metadata at position 0x{1:X16}", vendorId, posn));
-                int keystrength = (buffer[j] == 1) ? 128 : (buffer[j] == 3) ? 256 : -1;
+                int keystrength = (buffer[offset] == 1) ? 128 : (buffer[offset] == 3) ? 256 : -1;
                 if (keystrength < 0)
                     throw new BadReadException(String.Format("Invalid key strength ({0})", keystrength));
                 _Encryption_FromZipFile = this._Encryption = (keystrength == 128)
                     ? EncryptionAlgorithm.WinZipAes128
                     : EncryptionAlgorithm.WinZipAes256;
-                j++;
+                offset++;
                 // set the actual compression method
                 this._CompressionMethod_FromZipFile =
-                this._CompressionMethod = BitConverter.ToInt16(buffer, j);
-                j += 2; // for the next segment of the extra field
+                this._CompressionMethod = BitConverter.ToInt16(buffer, offset);
+                offset += 2; // for the next segment of the extra field
             }
-            return j;
+            return offset;
         }
 #endif
     private delegate T Func<T>();
-    private int ProcessExtraFieldZip64(byte[] buffer, int j, UInt16 dataSize, long posn)
+    private int ProcessExtraFieldZip64(byte[] buffer, int offset, UInt16 dataSize, long posn)
     {
         // The PKWare spec says that any of {UncompressedSize, CompressedSize,
         // RelativeOffset} exceeding 0xFFFFFFFF can lead to the ZIP64 header,
@@ -502,8 +502,8 @@ public partial class ZipEntry
         {
             if (remainingData < 8)
                 throw new BadReadException(String.Format("  Missing data for ZIP64 extra field, position 0x{0:X16}", posn));
-            var xValue = BitConverter.ToInt64(buffer, j);
-            j += 8;
+            var xValue = BitConverter.ToInt64(buffer, offset);
+            offset += 8;
             remainingData -= 8;
             return xValue;
         });
@@ -529,26 +529,26 @@ public partial class ZipEntry
         // Zip64 header is emmited (ex: file size over int32 range)
         if (this._diskNumber == 0xFFFF && remainingData >= 4)
         {
-            this._diskNumber = BitConverter.ToUInt32(buffer, j);
-            j += 4;
+            this._diskNumber = BitConverter.ToUInt32(buffer, offset);
+            offset += 4;
         }
-        return j;
+        return offset;
     }
-    private int ProcessExtraFieldInfoZipTimes(byte[] buffer, int j, UInt16 dataSize, long posn)
+    private int ProcessExtraFieldInfoZipTimes(byte[] buffer, int offset, UInt16 dataSize, long posn)
     {
         if (dataSize != 12 && dataSize != 8)
             throw new BadReadException(String.Format("  Unexpected size (0x{0:X4}) for InfoZip v1 extra field at position 0x{1:X16}", dataSize, posn));
-        Int32 timet = BitConverter.ToInt32(buffer, j);
+        Int32 timet = BitConverter.ToInt32(buffer, offset);
         this._Mtime = _unixEpoch.AddSeconds(timet);
-        j += 4;
-        timet = BitConverter.ToInt32(buffer, j);
+        offset += 4;
+        timet = BitConverter.ToInt32(buffer, offset);
         this._Atime = _unixEpoch.AddSeconds(timet);
-        j += 4;
+        offset += 4;
         this._Ctime = DateTime.UtcNow;
         _ntfsTimesAreSet = true;
-        _timestamp |= ZipEntryTimestamp.InfoZip1; return j;
+        _timestamp |= ZipEntryTimestamp.InfoZip1; return offset;
     }
-    private int ProcessExtraFieldUnixTimes(byte[] buffer, int j, UInt16 dataSize, long posn)
+    private int ProcessExtraFieldUnixTimes(byte[] buffer, int offset, UInt16 dataSize, long posn)
     {
         // The Unix filetimes are 32-bit unsigned integers,
         // storing seconds since Unix epoch.
@@ -557,14 +557,14 @@ public partial class ZipEntry
         int remainingData = dataSize;
         var slurp = new Func<DateTime>(() =>
         {
-            Int32 timet = BitConverter.ToInt32(buffer, j);
-            j += 4;
+            Int32 timet = BitConverter.ToInt32(buffer, offset);
+            offset += 4;
             remainingData -= 4;
             return _unixEpoch.AddSeconds(timet);
         });
         if (dataSize == 13 || _readExtraDepth > 0)
         {
-            byte flag = buffer[j++];
+            byte flag = buffer[offset++];
             remainingData--;
             if ((flag & 0x0001) != 0 && remainingData >= 4)
                 this._Mtime = slurp();
@@ -580,9 +580,9 @@ public partial class ZipEntry
         }
         else
             ReadExtraField(); // will recurse
-        return j;
+        return offset;
     }
-    private int ProcessExtraFieldWindowsTimes(byte[] buffer, int j, UInt16 dataSize, long posn)
+    private int ProcessExtraFieldWindowsTimes(byte[] buffer, int offset, UInt16 dataSize, long posn)
     {
         // The NTFS filetimes are 64-bit unsigned integers, stored in Intel
         // (least significant byte first) byte order. They are expressed as the
@@ -599,15 +599,15 @@ public partial class ZipEntry
         // ctime      8 bytes    win32 ticks since win32epoch
         if (dataSize != 32)
             throw new BadReadException(String.Format("  Unexpected size (0x{0:X4}) for NTFS times extra field at position 0x{1:X16}", dataSize, posn));
-        j += 4;  // reserved
-        Int16 timetag = (Int16)(buffer[j] + buffer[j + 1] * 256);
-        Int16 addlsize = (Int16)(buffer[j + 2] + buffer[j + 3] * 256);
-        j += 4;  // tag and size
+        offset += 4;  // reserved
+        Int16 timetag = (Int16)(buffer[offset] + buffer[offset + 1] * 256);
+        Int16 addlsize = (Int16)(buffer[offset + 2] + buffer[offset + 3] * 256);
+        offset += 4;  // tag and size
         if (timetag == 0x0001 && addlsize == 24)
         {
-            Int64 z = BitConverter.ToInt64(buffer, j);
+            Int64 z = BitConverter.ToInt64(buffer, offset);
             this._Mtime = DateTime.FromFileTimeUtc(z);
-            j += 8;
+            offset += 8;
             // At this point the library *could* set the LastModified value
             // to coincide with the Mtime value.  In theory, they refer to
             // the same property of the file, and should be the same anyway,
@@ -621,16 +621,16 @@ public partial class ZipEntry
             // germaine to the correctness of the library. but note: when
             // explicitly setting either value, both are set. See the setter
             // for LastModified or the SetNtfsTimes() method.
-            z = BitConverter.ToInt64(buffer, j);
+            z = BitConverter.ToInt64(buffer, offset);
             this._Atime = DateTime.FromFileTimeUtc(z);
-            j += 8;
-            z = BitConverter.ToInt64(buffer, j);
+            offset += 8;
+            z = BitConverter.ToInt64(buffer, offset);
             this._Ctime = DateTime.FromFileTimeUtc(z);
-            j += 8;
+            offset += 8;
             _ntfsTimesAreSet = true;
             _timestamp |= ZipEntryTimestamp.Windows;
             _emitNtfsTimes = true;
         }
-        return j;
+        return offset;
     }
 }

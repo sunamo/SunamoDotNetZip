@@ -160,11 +160,11 @@ namespace Ionic.Zip.Deflate64;
             }
         }
         /// <summary>Skip n bits in the buffer.</summary>
-        public void SkipBits(int n)
+        public void SkipBits(int bitCount)
         {
-            Debug.Assert(_bitsInBuffer >= n, "No enough bits in the buffer, Did you call EnsureBitsAvailable?");
-            _bitBuffer >>= n;
-            _bitsInBuffer -= n;
+            Debug.Assert(_bitsInBuffer >= bitCount, "No enough bits in the buffer, Did you call EnsureBitsAvailable?");
+            _bitBuffer >>= bitCount;
+            _bitsInBuffer -= bitCount;
         }
         /// <summary>Skips to the next byte boundary.</summary>
         public void SkipToByteBoundary()

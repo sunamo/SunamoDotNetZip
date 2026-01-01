@@ -196,10 +196,10 @@ namespace Ionic.BZip2;
         {
             if (output != null)
             {
-                Stream o = this.output;
+                Stream outputStream = this.output;
                 Finish();
                 if (!leaveOpen)
-                    o.Close();
+                    outputStream.Close();
             }
         }
         /// <summary>
@@ -244,7 +244,6 @@ namespace Ionic.BZip2;
         }
         void Finish()
         {
-            // Console.WriteLine("BZip2:Finish");
             try
             {
                 var totalBefore = this.bw.TotalBytesWrittenOut;
@@ -313,8 +312,8 @@ namespace Ionic.BZip2;
             int bytesRemaining = count;
             do
             {
-                int n = compressor.Fill(buffer, offset, bytesRemaining);
-                if (n != bytesRemaining)
+                int bytesFilled = compressor.Fill(buffer, offset, bytesRemaining);
+                if (bytesFilled != bytesRemaining)
                 {
                     // The compressor data block is full.  Compress and
                     // write out the compressed data, then reset the
@@ -336,10 +335,10 @@ namespace Ionic.BZip2;
                                 compressor.Crc32);
                     TraceOutput(TraceBits.Crc, " combined CRC (after) : {0:X8}",
                                 this.combinedCRC);
-                    offset += n;
+                    offset += bytesFilled;
                 }
-                bytesRemaining -= n;
-                bytesWritten += n;
+                bytesRemaining -= bytesFilled;
+                bytesWritten += bytesFilled;
             } while (bytesRemaining > 0);
             totalBytesWrittenIn += bytesWritten;
         }

@@ -38,9 +38,9 @@ internal static class SharedUtilities
             throw new FileNotFoundException(String.Format("Could not find file '{0}'.", fileName), fileName);
         long fileLength;
         FileShare fs = FileShare.ReadWrite | FileShare.Delete;
-        using (var text = File.Open(fileName, FileMode.Open, FileAccess.Read, fs))
+        using (var fileStream = File.Open(fileName, FileMode.Open, FileAccess.Read, fs))
         {
-            fileLength = text.Length;
+            fileLength = fileStream.Length;
         }
         return fileLength;
     }
@@ -162,8 +162,8 @@ internal static class SharedUtilities
     static readonly System.Text.Encoding utf8 = System.Text.Encoding.GetEncoding("UTF-8");
     internal static byte[] StringToByteArray(string value, System.Text.Encoding encoding)
     {
-        byte[] a = encoding.GetBytes(value);
-        return a;
+        byte[] bytes = encoding.GetBytes(value);
+        return bytes;
     }
     internal static byte[] StringToByteArray(string value)
     {
@@ -214,50 +214,50 @@ internal static class SharedUtilities
         string text = encoding.GetString(buf);
         return text;
     }
-    internal static int ReadSignature(System.IO.Stream text)
+    internal static int ReadSignature(System.IO.Stream stream)
     {
-        int x = 0;
-        try { x = _ReadFourBytes(text, "n/a"); }
+        int signature = 0;
+        try { signature = _ReadFourBytes(stream, "n/a"); }
         catch (BadReadException) { }
-        return x;
+        return signature;
     }
-    internal static int ReadEntrySignature(System.IO.Stream text)
+    internal static int ReadEntrySignature(System.IO.Stream stream)
     {
         // handle the case of ill-formatted zip archives - includes a data descriptor
         // when none is expected.
-        int x = 0;
+        int signature = 0;
         try
         {
-            x = _ReadFourBytes(text, "n/a");
-            if (x == ZipConstants.ZipEntryDataDescriptorSignature)
+            signature = _ReadFourBytes(stream, "n/a");
+            if (signature == ZipConstants.ZipEntryDataDescriptorSignature)
             {
                 // advance past data descriptor - 12 bytes if not zip64
-                text.Seek(12, SeekOrigin.Current);
-                x = _ReadFourBytes(text, "n/a");
-                if (x != ZipConstants.ZipEntrySignature)
+                stream.Seek(12, SeekOrigin.Current);
+                signature = _ReadFourBytes(stream, "n/a");
+                if (signature != ZipConstants.ZipEntrySignature)
                 {
                     // Maybe zip64 was in use for the prior entry.
                     // Therefore, skip another 8 bytes.
-                    text.Seek(8, SeekOrigin.Current);
-                    x = _ReadFourBytes(text, "n/a");
-                    if (x != ZipConstants.ZipEntrySignature)
+                    stream.Seek(8, SeekOrigin.Current);
+                    signature = _ReadFourBytes(stream, "n/a");
+                    if (signature != ZipConstants.ZipEntrySignature)
                     {
                         // seek back to the first spot
-                        text.Seek(-24, SeekOrigin.Current);
-                        x = _ReadFourBytes(text, "n/a");
+                        stream.Seek(-24, SeekOrigin.Current);
+                        signature = _ReadFourBytes(stream, "n/a");
                     }
                 }
             }
         }
         catch (BadReadException) { }
-        return x;
+        return signature;
     }
-    internal static int ReadInt(System.IO.Stream text) => _ReadFourBytes(text, "Could not read block - no data!  (position 0x{0:X8})");
-    private static int _ReadFourBytes(System.IO.Stream text, string message)
+    internal static int ReadInt(System.IO.Stream stream) => _ReadFourBytes(stream, "Could not read block - no data!  (position 0x{0:X8})");
+    private static int _ReadFourBytes(System.IO.Stream stream, string message)
     {
         byte[] block = new byte[4];
-        int n = text.Read(block, 0, block.Length);
-        if (n != block.Length) throw new BadReadException(String.Format(message, text.Position));
+        int bytesRead = stream.Read(block, 0, block.Length);
+        if (bytesRead != block.Length) throw new BadReadException(String.Format(message, stream.Position));
         int data = unchecked((((block[3] * 256 + block[2]) * 256) + block[1]) * 256 + block[0]);
         return data;
     }
@@ -280,34 +280,34 @@ internal static class SharedUtilities
     /// </remarks>
     ///
     /// <param name="stream">The stream to search</param>
-    /// <param name="SignatureToFind">The 4-byte signature to find</param>
+    /// <param name="signatureToFind">The 4-byte signature to find</param>
     /// <returns>The number of bytes read</returns>
-    internal static long FindSignature(System.IO.Stream stream, int SignatureToFind)
+    internal static long FindSignature(System.IO.Stream stream, int signatureToFind)
     {
         long startingPosition = stream.Position;
         int BATCH_SIZE = 65536; //  8192;
         byte[] targetBytes =
         [
-            (byte)(SignatureToFind >> 24),
-                (byte)((SignatureToFind & 0x00FF0000) >> 16),
-                (byte)((SignatureToFind & 0x0000FF00) >> 8),
-                (byte)(SignatureToFind & 0x000000FF),
+            (byte)(signatureToFind >> 24),
+                (byte)((signatureToFind & 0x00FF0000) >> 16),
+                (byte)((signatureToFind & 0x0000FF00) >> 8),
+                (byte)(signatureToFind & 0x000000FF),
             ];
         byte[] batch = new byte[BATCH_SIZE];
         bool success = false;
         do
         {
-            int n = stream.Read(batch, 0, batch.Length);
-            if (n >= 4)
+            int batchBytesRead = stream.Read(batch, 0, batch.Length);
+            if (batchBytesRead >= 4)
             {
-                for (int i = 0; i < n - 3; i++)
+                for (int i = 0; i < batchBytesRead - 3; i++)
                 {
                     if (batch[i] == targetBytes[3]
                         && batch[i + 1] == targetBytes[2]
                         && batch[i + 2] == targetBytes[1]
                         && batch[i + 3] == targetBytes[0])
                     {
-                        stream.Seek(i - n + 4, System.IO.SeekOrigin.Current);
+                        stream.Seek(i - batchBytesRead + 4, System.IO.SeekOrigin.Current);
                         success = true;
                         break; // out of for loop
                     }
@@ -372,11 +372,11 @@ internal static class SharedUtilities
         if (second >= 60) { minute++; second = 0; }
         if (minute >= 60) { hour++; minute = 0; }
         if (hour >= 24) { day++; hour = 0; }
-        DateTime d = System.DateTime.Now;
+        DateTime dateTime = System.DateTime.Now;
         bool success = false;
         try
         {
-            d = new System.DateTime(year, month, day, hour, minute, second, 0);
+            dateTime = new System.DateTime(year, month, day, hour, minute, second, 0);
             success = true;
         }
         catch (System.ArgumentOutOfRangeException)
@@ -385,14 +385,14 @@ internal static class SharedUtilities
             {
                 try
                 {
-                    d = new System.DateTime(1980, 1, 1, hour, minute, second, 0);
+                    dateTime = new System.DateTime(1980, 1, 1, hour, minute, second, 0);
                     success = true;
                 }
                 catch (System.ArgumentOutOfRangeException)
                 {
                     try
                     {
-                        d = new System.DateTime(1980, 1, 1, 0, 0, 0, 0);
+                        dateTime = new System.DateTime(1980, 1, 1, 0, 0, 0, 0);
                         success = true;
                     }
                     catch (System.ArgumentOutOfRangeException) { }
@@ -415,7 +415,7 @@ internal static class SharedUtilities
                     while (minute > 59) minute--;
                     while (second < 0) second++;
                     while (second > 59) second--;
-                    d = new System.DateTime(year, month, day, hour, minute, second, 0);
+                    dateTime = new System.DateTime(year, month, day, hour, minute, second, 0);
                     success = true;
                 }
                 catch (System.ArgumentOutOfRangeException) { }
@@ -423,13 +423,13 @@ internal static class SharedUtilities
         }
         if (!success)
         {
-            string msg = String.Format("y({0}) m({1}) d({2}) h({3}) m({4}) text({5})", year, month, day, hour, minute, second);
+            string msg = String.Format("y({0}) m({1}) d({2}) h({3}) m({4}) s({5})", year, month, day, hour, minute, second);
             throw new ZipException(String.Format("Bad date/time format in the zip file. ({0})", msg));
         }
         // workitem 6191
-        //d = AdjustTime_Reverse(d);
-        d = DateTime.SpecifyKind(d, DateTimeKind.Local);
-        return d;
+        //dateTime = AdjustTime_Reverse(dateTime);
+        dateTime = DateTime.SpecifyKind(dateTime, DateTimeKind.Local);
+        return dateTime;
     }
     internal
      static Int32 DateTimeToPacked(DateTime time)
@@ -488,32 +488,34 @@ internal static class SharedUtilities
     /// This assembly used to be built for .NET 2.0, so could not use
     /// extension methods.
     /// </remarks>
-    internal static int ReadWithRetry(System.IO.Stream text, byte[] buffer, int offset, int count, string FileName)
+    internal static int ReadWithRetry(System.IO.Stream stream, byte[] buffer, int offset, int count, string fileName)
     {
-        int n = 0;
+        int bytesRead = 0;
         bool done = false;
         int retries = 0;
         do
         {
             try
             {
-                n = text.Read(buffer, offset, count);
+                bytesRead = stream.Read(buffer, offset, count);
                 done = true;
             }
-            catch (System.IO.IOException ioexc1)
+            catch (System.IO.IOException ioException)
             {
                 // Check if we can call GetHRForException,
                 // which makes unmanaged code calls.
+#pragma warning disable SYSLIB0003 // Type or member is obsolete
                 var parameter = new System.Security.Permissions.SecurityPermission(
                     System.Security.Permissions.SecurityPermissionFlag.UnmanagedCode);
                 if (parameter.IsUnrestricted())
+#pragma warning restore SYSLIB0003
                 {
-                    uint hresult = _HRForException(ioexc1);
+                    uint hresult = _HRForException(ioException);
                     if (hresult != 0x80070021)  // ERROR_LOCK_VIOLATION
-                        throw new System.IO.IOException(String.Format("Cannot read file {0}", FileName), ioexc1);
+                        throw new System.IO.IOException(String.Format("Cannot read file {0}", fileName), ioException);
                     retries++;
                     if (retries > 10)
-                        throw new System.IO.IOException(String.Format("Cannot read file {0}, at offset 0x{1:X8} after 10 retries", FileName, offset), ioexc1);
+                        throw new System.IO.IOException(String.Format("Cannot read file {0}, at offset 0x{1:X8} after 10 retries", fileName, offset), ioException);
                     // max time waited on last retry = 250 + 10*550 = 5.75s
                     // aggregate time waited after 10 retries: 250 + 55*550 = 30.5s
                     System.Threading.Thread.Sleep(250 + retries * 550);
@@ -528,7 +530,7 @@ internal static class SharedUtilities
             }
         }
         while (!done);
-        return n;
+        return bytesRead;
     }
     // workitem 8009
     //
@@ -548,11 +550,11 @@ internal static class SharedUtilities
     // JIT-compiles this method when UnmanagedCode is disallowed, and thus never
     // generates the JIT-compile time exception.
     //
-    private static uint _HRForException(System.Exception ex1) =>
+    private static uint _HRForException(System.Exception exception) =>
 #if IOS
             return 0;
 #else
-        unchecked((uint)System.Runtime.InteropServices.Marshal.GetHRForException(ex1));
+        unchecked((uint)System.Runtime.InteropServices.Marshal.GetHRForException(exception));
 #endif
 }
 /// <summary>
@@ -673,9 +675,9 @@ public class CountingStream : System.IO.Stream
     /// <returns>the number of bytes read, after decryption and decompression.</returns>
     public override int Read(byte[] buffer, int offset, int count)
     {
-        int n = _s.Read(buffer, offset, count);
-        _bytesRead += n;
-        return n;
+        int bytesRead = _s.Read(buffer, offset, count);
+        _bytesRead += bytesRead;
+        return bytesRead;
     }
     /// <summary>
     ///   Write data into the stream.

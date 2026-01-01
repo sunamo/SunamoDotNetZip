@@ -274,9 +274,9 @@ namespace Ionic.Zip;
             }
             return;
         }
-        private static void NotifyEntriesSaveComplete(ICollection<ZipEntry> c)
+        private static void NotifyEntriesSaveComplete(ICollection<ZipEntry> entries)
         {
-            foreach (ZipEntry element in  c)
+            foreach (ZipEntry element in  entries)
             {
                 element.NotifySaveComplete();
             }
@@ -515,14 +515,14 @@ namespace Ionic.Zip;
     }
     internal static class ZipOutput
     {
-        public static bool WriteCentralDirectoryStructure(Stream s,
+        public static bool WriteCentralDirectoryStructure(Stream stream,
                                                           ICollection<ZipEntry> entries,
                                                           uint numSegments,
                                                           Zip64Option zip64,
                                                           String comment,
                                                           ZipContainer container)
         {
-            var zss = s as ZipSegmentedStream;
+            var zss = stream as ZipSegmentedStream;
             if (zss != null)
                 zss.ContiguousWrite = true;
             // write to argument memory stream in order to keep the
@@ -539,7 +539,7 @@ namespace Ionic.Zip;
                     }
                 }
                 var argument = ms.ToArray();
-                s.Write(argument, 0, argument.Length);
+                stream.Write(argument, 0, argument.Length);
                 aLength = argument.Length;
             }
         // We need to keep track of the start and
@@ -547,15 +547,15 @@ namespace Ionic.Zip;
         // Cannot always use WriteStream.Length or Position; some streams do
         // not support these. (eg, ASP.NET Response.OutputStream) In those
         // cases we have argument CountingStream.
-        // Also, we cannot just set Start as s.Position bfore the write, and Finish
-        // as s.Position after the write.  In argument split zip, the write may actually
+        // Also, we cannot just set Start as stream.Position bfore the write, and Finish
+        // as stream.Position after the write.  In argument split zip, the write may actually
         // flip to the next segment.  In that case, Start will be zero.  But we
         // don't know that til after we know the size of the thing to write.  So the
         // answer is to compute the directory, then ask the ZipSegmentedStream which
         // segment that directory would fall in, it it were written.  Then, include
         // that data into the directory, and finally, write the directory to the
         // output stream.
-        long Finish = (s is CountingStream output) ? output.ComputedPosition : s.Position;  // BytesWritten
+        long Finish = (stream is CountingStream output) ? output.ComputedPosition : stream.Position;  // BytesWritten
         long Start = Finish - aLength;
             // need to know which segment the EOCD record starts in
             UInt32 startSegment = (zss != null)
@@ -602,7 +602,7 @@ namespace Ionic.Zip;
                     // total number of disks
                     Array.Copy(BitConverter.GetBytes(thisSegment), 0, argument, i, 4);
                 }
-                s.Write(argument, 0, argument.Length);
+                stream.Write(argument, 0, argument.Length);
             }
             else
                 a2 = GenCentralDirectoryFooter(Start, Finish, zip64, countOfEntries, comment, container);
@@ -620,13 +620,13 @@ namespace Ionic.Zip;
                 //Array.Copy(BitConverter.GetBytes((UInt16)startSegment), 0, a2, i, 2);
                 Array.Copy(BitConverter.GetBytes(thisSegment), 0, a2, i, 2);
         }
-        s.Write(a2, 0, a2.Length);
+        stream.Write(a2, 0, a2.Length);
             // reset the contiguous write property if necessary
             if (zss != null)
                 zss.ContiguousWrite = false;
             return needZip64CentralDirectory;
         }
-        private static System.Text.Encoding GetEncoding(ZipContainer container, string t)
+        private static System.Text.Encoding GetEncoding(ZipContainer container, string text)
         {
             switch (container.AlternateEncodingUsage)
             {
@@ -637,10 +637,10 @@ namespace Ionic.Zip;
             }
             // AsNecessary is in force
             var element = container.DefaultEncoding;
-            if (t == null) return element;
-            var bytes = element.GetBytes(t);
-            var t2 = element.GetString(bytes,0,bytes.Length);
-        return t2.Equals(t) ? element : container.AlternateEncoding;
+            if (text == null) return element;
+            var bytes = element.GetBytes(text);
+            var decodedText = element.GetString(bytes,0,bytes.Length);
+        return decodedText.Equals(text) ? element : container.AlternateEncoding;
     }
     private static byte[] GenCentralDirectoryFooter(long StartOfCentralDirectory,
                                                         long EndOfCentralDirectory,

@@ -103,11 +103,11 @@ using Interop = System.Runtime.InteropServices;
     ///   Get the CRC32 for the given (word,byte) combo.  This is a
     ///   computation defined by PKzip for PKZIP 2.0 (weak) encryption.
     /// </summary>
-    /// <param name="W">The word to start with.</param>
-    /// <param name="B">The byte to combine it with.</param>
+    /// <param name="word">The word to start with.</param>
+    /// <param name="byteValue">The byte to combine it with.</param>
     /// <returns>The CRC-ized result.</returns>
-    public Int32 ComputeCrc32(Int32 W, byte B) => _InternalComputeCrc32((UInt32)W, B);
-    internal Int32 _InternalComputeCrc32(UInt32 W, byte B) => (Int32)(crc32Table[(W ^ B) & 0xFF] ^ (W >> 8));
+    public Int32 ComputeCrc32(Int32 word, byte byteValue) => _InternalComputeCrc32((UInt32)word, byteValue);
+    internal Int32 _InternalComputeCrc32(UInt32 word, byte byteValue) => (Int32)(crc32Table[(word ^ byteValue) & 0xFF] ^ (word >> 8));
     /// <summary>
     /// Update the value for the running CRC32 using the given block of bytes.
     /// This is useful when using the CRC32() class in a Stream.
@@ -192,12 +192,12 @@ using Interop = System.Runtime.InteropServices;
         {
             unchecked
             {
-                uint ret = data;
-                ret = (ret & 0x55555555) << 1 | (ret >> 1) & 0x55555555;
-                ret = (ret & 0x33333333) << 2 | (ret >> 2) & 0x33333333;
-                ret = (ret & 0x0F0F0F0F) << 4 | (ret >> 4) & 0x0F0F0F0F;
-                ret = (ret << 24) | ((ret & 0xFF00) << 8) | ((ret >> 8) & 0xFF00) | (ret >> 24);
-                return ret;
+                uint reversedValue = data;
+                reversedValue = (reversedValue & 0x55555555) << 1 | (reversedValue >> 1) & 0x55555555;
+                reversedValue = (reversedValue & 0x33333333) << 2 | (reversedValue >> 2) & 0x33333333;
+                reversedValue = (reversedValue & 0x0F0F0F0F) << 4 | (reversedValue >> 4) & 0x0F0F0F0F;
+                reversedValue = (reversedValue << 24) | ((reversedValue & 0xFF00) << 8) | ((reversedValue >> 8) & 0xFF00) | (reversedValue >> 24);
+                return reversedValue;
             }
         }
         private static byte ReverseBits(byte data)
@@ -259,15 +259,15 @@ using Interop = System.Runtime.InteropServices;
             Console.WriteLine();
 #endif
         }
-        private uint gf2_matrix_times(uint[] matrix, uint vec)
+        private uint gf2_matrix_times(uint[] matrix, uint vectorValue)
         {
             uint sum = 0;
             int i=0;
-            while (vec != 0)
+            while (vectorValue != 0)
             {
-                if ((vec & 0x01)== 0x01)
+                if ((vectorValue & 0x01)== 0x01)
                     sum ^= matrix[i];
-                vec >>= 1;
+                vectorValue >>= 1;
                 i++;
             }
             return sum;

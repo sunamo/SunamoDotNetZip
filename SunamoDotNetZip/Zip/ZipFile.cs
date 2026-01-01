@@ -3546,7 +3546,11 @@ IDisposable
     private bool _hasBeenSaved;
     private String _TempFileFolder;
     private bool _ReadStreamIsOurs = true;
+#if NET9_0_OR_GREATER
     private readonly Lock LOCK = new();
+#else
+    private readonly object LOCK = new();
+#endif
     private bool _saveOperationCanceled;
     private bool _extractOperationCanceled;
     private bool _addOperationCanceled;

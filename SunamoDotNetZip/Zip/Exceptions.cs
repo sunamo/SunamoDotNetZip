@@ -225,7 +225,9 @@ public class ZipException : Exception
     /// </summary>
     /// <param name="info">The serialization info for the exception.</param>
     /// <param name="context">The streaming context from which to deserialize.</param>
+#pragma warning disable SYSLIB0051 // Type or member is obsolete
     protected ZipException(SerializationInfo info, StreamingContext context)
         : base(info, context)
     { }
+#pragma warning restore SYSLIB0051
 }

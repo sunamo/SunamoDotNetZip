@@ -1,5 +1,6 @@
 namespace Ionic.Zip.Deflate64;
 
+    /// <summary>
     /// This class maintains a window for decompressed output.
     /// We need to keep this because the decompressed information can be
     /// a literal or a length/distance pair. For length/distance pair,
@@ -18,10 +19,10 @@ namespace Ionic.Zip.Deflate64;
         private int _bytesUsed; // The number of bytes in the output window which is not consumed.
     internal void ClearBytesUsed() => _bytesUsed = 0;
     /// <summary>Add a byte to output window.</summary>
-    public void Write(byte b)
+    public void Write(byte byteValue)
         {
             Debug.Assert(_bytesUsed < WindowSize, "Can't add byte when window is full!");
-            _window[_end++] = b;
+            _window[_end++] = byteValue;
             _end &= WindowMask;
             ++_bytesUsed;
         }

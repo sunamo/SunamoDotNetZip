@@ -316,32 +316,32 @@ namespace Ionic.Zlib;
         // exchanging a node with the smallest of its two sons if necessary, stopping
         // when the heap property is re-established (each father smaller than its
         // two sons).
-        internal void pqdownheap(short[] tree, int k)
+        internal void pqdownheap(short[] tree, int heapIndex)
         {
-            int v = heap[k];
-            int j = k << 1; // left son of k
-            while (j <= heap_len)
+            int heapValue = heap[heapIndex];
+            int childIndex = heapIndex << 1; // left son of heapIndex
+            while (childIndex <= heap_len)
             {
-                // Set j to the smallest of the two sons:
-                if (j < heap_len && _IsSmaller(tree, heap[j + 1], heap[j], depth))
+                // Set childIndex to the smallest of the two sons:
+                if (childIndex < heap_len && _IsSmaller(tree, heap[childIndex + 1], heap[childIndex], depth))
                 {
-                    j++;
+                    childIndex++;
                 }
-                // Exit if v is smaller than both sons
-                if (_IsSmaller(tree, v, heap[j], depth))
+                // Exit if heapValue is smaller than both sons
+                if (_IsSmaller(tree, heapValue, heap[childIndex], depth))
                     break;
-                // Exchange v with the smallest son
-                heap[k] = heap[j]; k = j;
-                // And continue down the tree, setting j to the left son of k
-                j <<= 1;
+                // Exchange heapValue with the smallest son
+                heap[heapIndex] = heap[childIndex]; heapIndex = childIndex;
+                // And continue down the tree, setting childIndex to the left son of heapIndex
+                childIndex <<= 1;
             }
-            heap[k] = v;
+            heap[heapIndex] = heapValue;
         }
-        internal static bool _IsSmaller(short[] tree, int n, int m, sbyte[] depth)
+        internal static bool _IsSmaller(short[] tree, int firstIndex, int secondIndex, sbyte[] depth)
         {
-            short tn2 = tree[n * 2];
-            short tm2 = tree[m * 2];
-            return (tn2 < tm2 || (tn2 == tm2 && depth[n] <= depth[m]));
+            short tn2 = tree[firstIndex * 2];
+            short tm2 = tree[secondIndex * 2];
+            return (tn2 < tm2 || (tn2 == tm2 && depth[firstIndex] <= depth[secondIndex]));
         }
         // Scan a literal or distance tree to determine the frequencies of the codes
         // in the bit length tree.
@@ -505,36 +505,36 @@ namespace Ionic.Zlib;
         }
         // Output a block of bytes on the stream.
         // IN assertion: there is enough room in pending_buf.
-        private void put_bytes(byte[] p, int start, int len)
+        private void put_bytes(byte[] buffer, int start, int len)
         {
-            Array.Copy(p, start, pending, pendingCount, len);
+            Array.Copy(buffer, start, pending, pendingCount, len);
             pendingCount += len;
         }
 #if NOTNEEDED
-        private void put_byte(byte c)
+        private void put_byte(byte byteValue)
         {
-            pending[pendingCount++] = c;
+            pending[pendingCount++] = byteValue;
         }
-        internal void put_short(int b)
+        internal void put_short(int shortValue)
         {
             unchecked
             {
-                pending[pendingCount++] = (byte)b;
-                pending[pendingCount++] = (byte)(b >> 8);
+                pending[pendingCount++] = (byte)shortValue;
+                pending[pendingCount++] = (byte)(shortValue >> 8);
             }
         }
-        internal void putShortMSB(int b)
+        internal void putShortMSB(int shortValue)
         {
             unchecked
             {
-                pending[pendingCount++] = (byte)(b >> 8);
-                pending[pendingCount++] = (byte)b;
+                pending[pendingCount++] = (byte)(shortValue >> 8);
+                pending[pendingCount++] = (byte)shortValue;
             }
         }
 #endif
-        internal void send_code(int c, short[] tree)
+        internal void send_code(int code, short[] tree)
         {
-            int c2 = c * 2;
+            int c2 = code * 2;
             send_bits((tree[c2] & 0xffff), (tree[c2 + 1] & 0xffff));
         }
         internal void send_bits(int value, int length)
@@ -894,8 +894,8 @@ namespace Ionic.Zlib;
         //    option -- not supported here).
         private void _fillWindow()
         {
-            int n, m;
-            int p;
+            int hashCount, headValue;
+            int hashIndex;
             int more; // Amount of free space at the end of the window.
             do
             {
@@ -924,24 +924,24 @@ namespace Ionic.Zlib;
                     // to keep the hash table consistent if we switch back to level > 0
                     // later. (Using level 0 permanently is not an optimal usage of
                     // zlib, so we don't care about this pathological case.)
-                    n = hash_size;
-                    p = n;
+                    hashCount = hash_size;
+                    hashIndex = hashCount;
                     do
                     {
-                        m = (head[--p] & 0xffff);
-                        head[p] = (short)((m >= w_size) ? (m - w_size) : 0);
+                        headValue = (head[--hashIndex] & 0xffff);
+                        head[hashIndex] = (short)((headValue >= w_size) ? (headValue - w_size) : 0);
                     }
-                    while (--n != 0);
-                    n = w_size;
-                    p = n;
+                    while (--hashCount != 0);
+                    hashCount = w_size;
+                    hashIndex = hashCount;
                     do
                     {
-                        m = (prev[--p] & 0xffff);
-                        prev[p] = (short)((m >= w_size) ? (m - w_size) : 0);
-                        // If n is not on any hash chain, prev[n] is garbage but
+                        headValue = (prev[--hashIndex] & 0xffff);
+                        prev[hashIndex] = (short)((headValue >= w_size) ? (headValue - w_size) : 0);
+                        // If hashCount is not on any hash chain, prev[hashCount] is garbage but
                         // its value will never be used.
                     }
-                    while (--n != 0);
+                    while (--hashCount != 0);
                     more += w_size;
                 }
                 if (_codec.AvailableBytesIn == 0)
@@ -956,8 +956,8 @@ namespace Ionic.Zlib;
                 //   strstart + s->lookahead <= input_size => more >= MIN_LOOKAHEAD.
                 // Otherwise, window_size == 2*WSIZE so more >= 2.
                 // If there was sliding, more >= WSIZE. So in all cases, more >= 2.
-                n = _codec.read_buf(window, strstart + lookahead, more);
-                lookahead += n;
+                int bytesRead = _codec.read_buf(window, strstart + lookahead, more);
+                lookahead += bytesRead;
                 // Initialize the hash value now that we have some input:
                 if (lookahead >= MIN_MATCH)
                 {

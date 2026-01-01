@@ -580,18 +580,18 @@ public class ZlibStream : System.IO.Stream
     /// <seealso cref="ZlibStream.CompressBuffer(byte[])"/>
     /// <seealso cref="GZipStream.CompressString(string)"/>
     ///
-    /// <param name="s">
+    /// <param name="text">
     ///   A string to compress.  The string will first be encoded
     ///   using UTF8, then compressed.
     /// </param>
     ///
     /// <returns>The string in compressed form</returns>
-    public static byte[] CompressString(String s)
+    public static byte[] CompressString(String text)
     {
         using var ms = new MemoryStream();
         Stream compressor =
             new ZlibStream(ms, CompressionMode.Compress, CompressionLevel.BestCompression);
-        ZlibBaseStream.CompressString(s, compressor);
+        ZlibBaseStream.CompressString(text, compressor);
         return ms.ToArray();
     }
     /// <summary>
@@ -605,17 +605,17 @@ public class ZlibStream : System.IO.Stream
     /// <seealso cref="ZlibStream.CompressString(string)"/>
     /// <seealso cref="ZlibStream.UncompressBuffer(byte[])"/>
     ///
-    /// <param name="b">
+    /// <param name="buffer">
     /// A buffer to compress.
     /// </param>
     ///
     /// <returns>The data in compressed form</returns>
-    public static byte[] CompressBuffer(byte[] b)
+    public static byte[] CompressBuffer(byte[] buffer)
     {
         using var ms = new MemoryStream();
         Stream compressor =
             new ZlibStream(ms, CompressionMode.Compress, CompressionLevel.BestCompression);
-        ZlibBaseStream.CompressBuffer(b, compressor);
+        ZlibBaseStream.CompressBuffer(buffer, compressor);
         return ms.ToArray();
     }
     /// <summary>

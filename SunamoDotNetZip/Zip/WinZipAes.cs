@@ -60,14 +60,14 @@ namespace Ionic.Zip;
         }
         public static WinZipAesCrypto Generate(string password, int KeyStrengthInBits)
         {
-            WinZipAesCrypto c = new WinZipAesCrypto(password, KeyStrengthInBits);
-            int saltSizeInBytes = c._KeyStrengthInBytes / 2;
-            c._Salt = new byte[saltSizeInBytes];
+            WinZipAesCrypto crypto = new WinZipAesCrypto(password, KeyStrengthInBits);
+            int saltSizeInBytes = crypto._KeyStrengthInBytes / 2;
+            crypto._Salt = new byte[saltSizeInBytes];
             Random rnd = new Random();
-            rnd.NextBytes(c._Salt);
-            return c;
+            rnd.NextBytes(crypto._Salt);
+            return crypto;
         }
-        public static WinZipAesCrypto ReadFromStream(string password, int KeyStrengthInBits, Stream s)
+        public static WinZipAesCrypto ReadFromStream(string password, int KeyStrengthInBits, Stream stream)
         {
             // from http://www.winzip.com/aes_info.htm
             //
@@ -83,20 +83,20 @@ namespace Ionic.Zip;
             //    128 bit key => 8 bytes salt
             //    192 bits => 12 bytes salt
             //    256 bits => 16 bytes salt
-            WinZipAesCrypto c = new WinZipAesCrypto(password, KeyStrengthInBits);
-            int saltSizeInBytes = c._KeyStrengthInBytes / 2;
-            c._Salt = new byte[saltSizeInBytes];
-            c._providedPv = new byte[2];
-            s.Read(c._Salt, 0, c._Salt.Length);
-            s.Read(c._providedPv, 0, c._providedPv.Length);
-            c.PasswordVerificationStored = (Int16)(c._providedPv[0] + c._providedPv[1] * 256);
+            WinZipAesCrypto crypto = new WinZipAesCrypto(password, KeyStrengthInBits);
+            int saltSizeInBytes = crypto._KeyStrengthInBytes / 2;
+            crypto._Salt = new byte[saltSizeInBytes];
+            crypto._providedPv = new byte[2];
+            stream.Read(crypto._Salt, 0, crypto._Salt.Length);
+            stream.Read(crypto._providedPv, 0, crypto._providedPv.Length);
+            crypto.PasswordVerificationStored = (Int16)(crypto._providedPv[0] + crypto._providedPv[1] * 256);
             if (password != null)
             {
-                c.PasswordVerificationGenerated = (Int16)(c.GeneratedPV[0] + c.GeneratedPV[1] * 256);
-                if (c.PasswordVerificationGenerated != c.PasswordVerificationStored)
+                crypto.PasswordVerificationGenerated = (Int16)(crypto.GeneratedPV[0] + crypto.GeneratedPV[1] * 256);
+                if (crypto.PasswordVerificationGenerated != crypto.PasswordVerificationStored)
                     throw new BadPasswordException("bad password");
             }
-            return c;
+            return crypto;
         }
         public byte[] GeneratedPV
         {
@@ -172,13 +172,13 @@ namespace Ionic.Zip;
             }
         }
         public byte[] CalculatedMac;
-        public void ReadAndVerifyMac(System.IO.Stream s)
+        public void ReadAndVerifyMac(System.IO.Stream stream)
         {
             bool invalid = false;
             // read integrityCheckVector.
             // caller must ensure that the file pointer is in the right spot!
             _StoredMac = new byte[10];  // aka "authentication code"
-            s.Read(_StoredMac, 0, _StoredMac.Length);
+            stream.Read(_StoredMac, 0, _StoredMac.Length);
             if (_StoredMac.Length != CalculatedMac.Length)
                 invalid = true;
             if (!invalid)
@@ -207,7 +207,7 @@ namespace Ionic.Zip;
             int i;
             for (i = 0; i < length; i++)
             {
-                int x = offset+i;
+                int bufferIndex = offset+i;
                 if (i != 0 && i % 16 == 0)
                 {
                     sb1.Append("    ")
@@ -216,9 +216,9 @@ namespace Ionic.Zip;
                         .Append(String.Format("{0:X4}    ", i));
                     sb2.Remove(0,sb2.Length);
                 }
-                sb1.Append(System.String.Format("{0:X2} ", b[x]));
-                if (b[x] >=32 && b[x] <= 126)
-                    sb2.Append((char)b[x]);
+                sb1.Append(System.String.Format("{0:X2} ", b[bufferIndex]));
+                if (b[bufferIndex] >=32 && b[bufferIndex] <= 126)
+                    sb2.Append((char)b[bufferIndex]);
                 else
                     sb2.Append(".");
             }
@@ -452,8 +452,8 @@ namespace Ionic.Zip;
             int last = count + offset;
             while (posn < buffer.Length && posn < last )
             {
-                int n = ReadTransformOneBlock (buffer, posn, last);
-                posn += n;
+                int bytesTransformed = ReadTransformOneBlock (buffer, posn, last);
+                posn += bytesTransformed;
             }
         }
         public override int Read(byte[] buffer, int offset, int count)
@@ -481,7 +481,7 @@ namespace Ionic.Zip;
             }
             long bytesRemaining = _length - _totalBytesXferred;
             if (bytesRemaining < count) bytesToRead = (int)bytesRemaining;
-            int n = _s.Read(buffer, offset, bytesToRead);
+            int bytesRead = _s.Read(buffer, offset, bytesToRead);
 #if WANT_TRACE
                 untransformed.Write(buffer, offset, bytesToRead);
 #endif
@@ -489,8 +489,8 @@ namespace Ionic.Zip;
 #if WANT_TRACE
                 transformed.Write(buffer, offset, bytesToRead);
 #endif
-            _totalBytesXferred += n;
-            return n;
+            _totalBytesXferred += bytesRead;
+            return bytesRead;
         }
         /// <summary>
         /// Returns the final HMAC-SHA1-80 for the data that was encrypted.
@@ -649,17 +649,17 @@ namespace Ionic.Zip;
             {
                 do
                 {
-                    int c = _iobuf.Length;
-                    if (c > bytesRemaining) c = bytesRemaining;
+                    int bytesToCopy = _iobuf.Length;
+                    if (bytesToCopy > bytesRemaining) bytesToCopy = bytesRemaining;
                     Buffer.BlockCopy(buffer,
                                      curOffset,
                                      _iobuf,
                                      0,
-                                     c);
-                    WriteTransformBlocks(_iobuf, 0, c);
-                    _s.Write(_iobuf, 0, c);
-                    bytesRemaining -= c;
-                    curOffset += c;
+                                     bytesToCopy);
+                    WriteTransformBlocks(_iobuf, 0, bytesToCopy);
+                    _s.Write(_iobuf, 0, bytesToCopy);
+                    bytesRemaining -= bytesToCopy;
+                    curOffset += bytesToCopy;
                 } while(bytesRemaining > 0);
             }
         }

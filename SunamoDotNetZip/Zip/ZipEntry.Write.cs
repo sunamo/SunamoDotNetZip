@@ -559,10 +559,10 @@ using RE = System.Text.RegularExpressions;
             else if ((FileName.Length >= 4)
                      && ((SlashFixed[0] == '/') && (SlashFixed[1] == '/')))
             {
-                int n = SlashFixed.IndexOf('/', 2);
-                if (n == -1)
+                int slashIndex = SlashFixed.IndexOf('/', 2);
+                if (slashIndex == -1)
                     throw new ArgumentException("The path for that entry appears to be badly formatted");
-                s1 = SlashFixed[(n + 1)..];
+                s1 = SlashFixed[(slashIndex + 1)..];
             }
             else if ((FileName.Length >= 3)
                      && ((SlashFixed[0] == '.') && (SlashFixed[1] == '/')))
@@ -1272,10 +1272,10 @@ using RE = System.Text.RegularExpressions;
                 {
                     // synchronously copy the input stream to the output stream-chain
                     byte[] buffer = new byte[BufferSize];
-                    int n;
-                    while ((n = SharedUtilities.ReadWithRetry(input, buffer, 0, buffer.Length, FileName)) != 0)
+                    int bytesRead;
+                    while ((bytesRead = SharedUtilities.ReadWithRetry(input, buffer, 0, buffer.Length, FileName)) != 0)
                     {
-                        output.Write(buffer, 0, n);
+                        output.Write(buffer, 0, bytesRead);
                         OnWriteBlock(output.TotalBytesSlurped, fileLength);
                         if (_ioOperationCanceled)
                             break;
@@ -1759,13 +1759,13 @@ using RE = System.Text.RegularExpressions;
                     o1.Reset(s);
                     return o1;
                 }
-                var o = new DeflateStream(s, CompressionMode.Compress,
+                var deflateStream = new DeflateStream(s, CompressionMode.Compress,
                                                      CompressionLevel,
                                                      true);
                 if (_container.CodecBufferSize > 0)
-                    o.BufferSize = _container.CodecBufferSize;
-                o.Strategy = _container.Strategy;
-                return o;
+                    deflateStream.BufferSize = _container.CodecBufferSize;
+                deflateStream.Strategy = _container.Strategy;
+                return deflateStream;
             }
 #if BZIP
             if (_CompressionMethod == 0x0c)
@@ -1777,8 +1777,8 @@ using RE = System.Text.RegularExpressions;
                     var o1 = new ParallelBZip2OutputStream(s, true);
                     return o1;
                 }
-                var o = new BZip2OutputStream(s, true);
-                return o;
+                var bzip2Stream = new BZip2OutputStream(s, true);
+                return bzip2Stream;
             }
 #endif
             return s;
@@ -2102,7 +2102,7 @@ using RE = System.Text.RegularExpressions;
         }
         private void CopyThroughWithRecompute(Stream outstream)
         {
-            int n;
+            int bytesRead;
             byte[] bytes = new byte[BufferSize];
             var input = new CountingStream(this.ArchiveStream);
             long origRelativeOffsetOfHeader = _RelativeOffsetOfLocalHeader;
@@ -2129,11 +2129,11 @@ using RE = System.Text.RegularExpressions;
                 {
                     len = (remaining > bytes.Length) ? bytes.Length : (int)remaining;
                     // read
-                    n = input.Read(bytes, 0, len);
-                    _CheckRead(n);
+                    bytesRead = input.Read(bytes, 0, len);
+                    _CheckRead(bytesRead);
                     // write
-                    outstream.Write(bytes, 0, n);
-                    remaining -= n;
+                    outstream.Write(bytes, 0, bytesRead);
+                    remaining -= bytesRead;
                     OnWriteBlock(input.BytesRead, this._CompressedSize);
                     if (_ioOperationCanceled)
                         break;
@@ -2187,7 +2187,7 @@ using RE = System.Text.RegularExpressions;
         }
         private void CopyThroughWithNoChange(Stream outstream)
         {
-            int n;
+            int bytesRead;
             byte[] bytes = new byte[BufferSize];
             var input = new CountingStream(this.ArchiveStream);
             // seek to the beginning of the entry data in the input stream
@@ -2221,11 +2221,11 @@ using RE = System.Text.RegularExpressions;
             {
                 int len = (remaining > bytes.Length) ? bytes.Length : (int)remaining;
                 // read
-                n = input.Read(bytes, 0, len);
-                _CheckRead(n);
+                bytesRead = input.Read(bytes, 0, len);
+                _CheckRead(bytesRead);
                 // write
-                outstream.Write(bytes, 0, n);
-                remaining -= n;
+                outstream.Write(bytes, 0, bytesRead);
+                remaining -= bytesRead;
                 OnWriteBlock(input.BytesRead, this._TotalEntrySize);
                 if (_ioOperationCanceled)
                     break;
@@ -2247,5 +2247,9 @@ using RE = System.Text.RegularExpressions;
 #endif
             }
         }
+#if NET9_0_OR_GREATER
         private readonly Lock _outputLock = new();
+#else
+        private readonly object _outputLock = new();
+#endif
     }

@@ -1,0 +1,17 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  SunamoDotNetZip -> E:\vs\Projects\PlatformIndependentNuGetPackages\SunamoDotNetZip\SunamoDotNetZip\bin\Debug\net9.0\SunamoDotNetZip.dll
+  SunamoDotNetZip -> E:\vs\Projects\PlatformIndependentNuGetPackages\SunamoDotNetZip\SunamoDotNetZip\bin\Debug\net10.0\SunamoDotNetZip.dll
+  SunamoDotNetZip -> E:\vs\Projects\PlatformIndependentNuGetPackages\SunamoDotNetZip\SunamoDotNetZip\bin\Debug\net8.0\SunamoDotNetZip.dll
+  SunamoDotNetZip.Tests -> E:\vs\Projects\PlatformIndependentNuGetPackages\SunamoDotNetZip\SunamoDotNetZip.Tests\bin\Debug\net8.0\SunamoDotNetZip.Tests.dll
+  SunamoDotNetZip.Tests -> E:\vs\Projects\PlatformIndependentNuGetPackages\SunamoDotNetZip\SunamoDotNetZip.Tests\bin\Debug\net9.0\SunamoDotNetZip.Tests.dll
+  SunamoDotNetZip.Tests -> E:\vs\Projects\PlatformIndependentNuGetPackages\SunamoDotNetZip\SunamoDotNetZip.Tests\bin\Debug\net10.0\SunamoDotNetZip.Tests.dll
+  RunnerDotNetZip -> E:\vs\Projects\PlatformIndependentNuGetPackages\SunamoDotNetZip\RunnerDotNetZip\bin\Debug\net8.0\RunnerDotNetZip.dll
+  RunnerDotNetZip -> E:\vs\Projects\PlatformIndependentNuGetPackages\SunamoDotNetZip\RunnerDotNetZip\bin\Debug\net10.0\RunnerDotNetZip.dll
+  RunnerDotNetZip -> E:\vs\Projects\PlatformIndependentNuGetPackages\SunamoDotNetZip\RunnerDotNetZip\bin\Debug\net9.0\RunnerDotNetZip.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:03.45
