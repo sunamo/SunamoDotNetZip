@@ -1,3 +1,4 @@
+// variables names: ok
 namespace Ionic.Zip;
 
 // ZipEntry.cs
@@ -2207,8 +2208,8 @@ using Interop = System.Runtime.InteropServices;
     // workitem 9073
     internal static ZipEntry CreateFromNothing(String nameInArchive) => Create(nameInArchive, ZipEntrySource.None, null, null);
     internal static ZipEntry CreateFromFile(String filename, string nameInArchive) => Create(nameInArchive, ZipEntrySource.FileSystem, filename, null);
-    internal static ZipEntry CreateForStream(String entryName, Stream s) => Create(entryName, ZipEntrySource.Stream, s, null);
-    internal static ZipEntry CreateForWriter(String entryName, WriteDelegate d) => Create(entryName, ZipEntrySource.WriteDelegate, d, null);
+    internal static ZipEntry CreateForStream(String entryName, Stream stream) => Create(entryName, ZipEntrySource.Stream, stream, null);
+    internal static ZipEntry CreateForWriter(String entryName, WriteDelegate writeDelegate) => Create(entryName, ZipEntrySource.WriteDelegate, writeDelegate, null);
     internal static ZipEntry CreateForJitStreamProvider(string nameInArchive, OpenDelegate opener, CloseDelegate closer) => Create(nameInArchive, ZipEntrySource.JitStream, opener, closer);
     internal static ZipEntry CreateForZipOutputStream(string nameInArchive) => Create(nameInArchive, ZipEntrySource.ZipOutputStream, null, null);
     private static ZipEntry Create(string nameInArchive, ZipEntrySource source, Object arg1, Object arg2)

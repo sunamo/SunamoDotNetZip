@@ -1,3 +1,4 @@
+// variables names: ok
 namespace Ionic.Zip;
 
 // WinZipAes.cs
@@ -228,27 +229,27 @@ namespace Ionic.Zip;
                     .Append(sb2);
             }
         }
-        internal static string FormatByteArray(byte[] b, int limit)
+        internal static string FormatByteArray(byte[] buffer, int limit)
         {
             System.Text.StringBuilder sb1 = new System.Text.StringBuilder();
-            if ((limit * 2 > b.Length) || limit == 0)
+            if ((limit * 2 > buffer.Length) || limit == 0)
             {
-                _Format(sb1, b, 0, b.Length);
+                _Format(sb1, buffer, 0, buffer.Length);
             }
             else
             {
                 // first N bytes of the buffer
-                _Format(sb1, b, 0, limit);
-                if (b.Length > limit * 2)
-                    sb1.Append(String.Format("\n   ...({0} other bytes here)....\n", b.Length - limit * 2));
+                _Format(sb1, buffer, 0, limit);
+                if (buffer.Length > limit * 2)
+                    sb1.Append(String.Format("\n   ...({0} other bytes here)....\n", buffer.Length - limit * 2));
                 // last N bytes of the buffer
-                _Format(sb1, b, b.Length - limit, limit);
+                _Format(sb1, buffer, buffer.Length - limit, limit);
             }
             return sb1.ToString();
         }
-        internal static string FormatByteArray(byte[] b)
+        internal static string FormatByteArray(byte[] buffer)
         {
-            return FormatByteArray(b, 0);
+            return FormatByteArray(buffer, 0);
         }
     }
 #endif
@@ -320,10 +321,10 @@ namespace Ionic.Zip;
         /// <param name="mode">To either encrypt or decrypt.</param>
         /// <param name="cryptoParams">The pre-initialized WinZipAesCrypto object.</param>
         /// <param name="length">The maximum number of bytes to read from the stream.</param>
-        internal WinZipAesCipherStream(Stream s, WinZipAesCrypto cryptoParams, long length, CryptoMode mode)
-            : this(s, cryptoParams, mode)
+        internal WinZipAesCipherStream(Stream stream, WinZipAesCrypto cryptoParams, long length, CryptoMode mode)
+            : this(stream, cryptoParams, mode)
         {
-            if (s == null) throw new ArgumentNullException("s");
+            if (stream == null) throw new ArgumentNullException(nameof(stream));
             // don't read beyond this limit!
             _length = length;
             //Console.WriteLine("max length of AES stream: {0}", _length);
@@ -334,13 +335,13 @@ namespace Ionic.Zip;
         Stream transformed;
         String traceFileTransformed;
 #endif
-        internal WinZipAesCipherStream(System.IO.Stream s, WinZipAesCrypto cryptoParams, CryptoMode mode)
+        internal WinZipAesCipherStream(System.IO.Stream stream, WinZipAesCrypto cryptoParams, CryptoMode mode)
             : base()
         {
             TraceOutput("-------------------------------------------------------");
             TraceOutput("Create {0:X8}", this.GetHashCode());
             _params = cryptoParams;
-            _s = s;
+            _s = stream;
             _mode = mode;
             _nonce = 1;
             if (_params == null)

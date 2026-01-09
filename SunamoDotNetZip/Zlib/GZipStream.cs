@@ -1,3 +1,4 @@
+// variables names: ok
 namespace Ionic.Zlib;
 
 // GZipStream.cs

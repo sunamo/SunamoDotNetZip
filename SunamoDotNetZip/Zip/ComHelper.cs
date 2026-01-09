@@ -1,3 +1,4 @@
+// variables names: ok
 namespace Ionic.Zip;
 
 // EN: Variable names have been checked and replaced with self-descriptive names

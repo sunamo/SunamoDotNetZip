@@ -1,3 +1,4 @@
+// variables names: ok
 namespace Ionic.Zip;
 
 // ZipDirEntry.cs
@@ -161,17 +162,17 @@ namespace Ionic.Zip;
         internal static ZipEntry ReadDirEntry(ZipFile zf,
                                               Dictionary<String,Object> previouslySeen)
         {
-            System.IO.Stream s = zf.ReadStream;
+            System.IO.Stream stream = zf.ReadStream;
             System.Text.Encoding expectedEncoding = (zf.AlternateEncodingUsage == ZipOption.Always)
                 ? zf.AlternateEncoding
                 : ZipFile.DefaultEncoding;
             while (true)
             {
-                int signature = Ionic.Zip.SharedUtilities.ReadSignature(s);
+                int signature = Ionic.Zip.SharedUtilities.ReadSignature(stream);
                 // return null if this is not a local file header signature
                 if (IsNotValidZipDirEntrySig(signature))
                 {
-                    s.Seek(-4, System.IO.SeekOrigin.Current);
+                    stream.Seek(-4, System.IO.SeekOrigin.Current);
                 // Getting "not a ZipDirEntry signature" here is not always wrong or an
                 // error.  This can happen when walking through a zipfile.  After the
                 // last ZipDirEntry, we expect to read an
@@ -180,13 +181,13 @@ namespace Ionic.Zip;
                 return signature != ZipConstants.EndOfCentralDirectorySignature &&
                         signature != ZipConstants.Zip64EndOfCentralDirectoryRecordSignature &&
                         signature != ZipConstants.ZipEntrySignature
-                        ? throw new BadReadException(String.Format("  Bad signature (0x{0:X8}) at position 0x{1:X8}", signature, s.Position))
+                        ? throw new BadReadException(String.Format("  Bad signature (0x{0:X8}) at position 0x{1:X8}", signature, stream.Position))
                         : null;
             }
             int bytesRead = 42 + 4;
                 byte[] block = new byte[42];
-                int n = s.Read(block, 0, block.Length);
-                if (n != block.Length) return null;
+                int bytesReadCount = stream.Read(block, 0, block.Length);
+                if (bytesReadCount != block.Length) return null;
                 int i = 0;
             ZipEntry zde = new()
             {
@@ -219,8 +220,8 @@ namespace Ionic.Zip;
                 // workitem 7801
                 zde.IsText = ((zde._InternalFileAttrs & 0x01) == 0x01);
                 block = new byte[zde._filenameLength];
-                n = s.Read(block, 0, block.Length);
-                bytesRead += n;
+                bytesReadCount = stream.Read(block, 0, block.Length);
+                bytesRead += bytesReadCount;
                 if ((zde._BitField & 0x0800) == 0x0800)
                 {
                     // UTF-8 is in use
@@ -255,7 +256,7 @@ namespace Ionic.Zip;
                           zde._UncompressedSize == 0xFFFFFFFF ||
                           zde._RelativeOffsetOfLocalHeader == 0xFFFFFFFF);
                     // Console.WriteLine("  Input uses Z64?:      {0}", zde._InputUsesZip64);
-                    bytesRead += zde.ProcessExtraField(s, zde._extraFieldLength);
+                    bytesRead += zde.ProcessExtraField(stream, zde._extraFieldLength);
                     zde._CompressedFileDataSize = zde._CompressedSize;
                 }
                 // we've processed the extra field, so we know the encryption method is set now.
@@ -290,8 +291,8 @@ namespace Ionic.Zip;
                 if (zde._commentLength > 0)
                 {
                     block = new byte[zde._commentLength];
-                    n = s.Read(block, 0, block.Length);
-                    bytesRead += n;
+                    bytesReadCount = stream.Read(block, 0, block.Length);
+                    bytesRead += bytesReadCount;
                     if ((zde._BitField & 0x0800) == 0x0800)
                     {
                         // UTF-8 is in use

@@ -1,3 +1,4 @@
+// variables names: ok
 namespace Ionic.Zip;
 
 // ZipFile.Events.cs

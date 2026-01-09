@@ -1,3 +1,4 @@
+// variables names: ok
 namespace Ionic.Zlib;
 
 // Inftree.cs
@@ -98,7 +99,7 @@ sealed class InfTree
     internal int[] r = null; // table entry for structure assignment
     internal int[] u = null; // table stack
     internal int[] x = null; // bit offsets, then code stack
-    private int huft_build(int[] b, int bindex, int n, int s, int[] d, int[] e, int[] t, int[] m, int[] hp, int[] hn, int[] v)
+    private int huft_build(int[] bitLengths, int baseIndex, int codesCount, int simpleCodesCount, int[] baseValues, int[] extraBits, int[] resultTable, int[] maxBits, int[] huftsArray, int[] huftsUsed, int[] workArea)
     {
         // Given a list of code lengths and a maximum table size, make a set of
         // tables to decode that set of codes.  Return Z_OK on success, Z_BUF_ERROR
@@ -121,21 +122,21 @@ sealed class InfTree
         int y; // number of dummy codes added
         int z; // number of entries in current table
                // Generate counts for each bit length
-        p = 0; i = n;
+        p = 0; i = codesCount;
         do
         {
-            c[b[bindex + p]]++; p++; i--; // assume all entries <= BMAX
+            c[bitLengths[baseIndex + p]]++; p++; i--; // assume all entries <= BMAX
         }
         while (i != 0);
-        if (c[0] == n)
+        if (c[0] == codesCount)
         {
             // null input--all zero length codes
-            t[0] = -1;
-            m[0] = 0;
+            resultTable[0] = -1;
+            maxBits[0] = 0;
             return Z_OK;
         }
-        // Find minimum and maximum length, bound *m by those
-        l = m[0];
+        // Find minimum and maximum length, bound *maxBits by those
+        l = maxBits[0];
         for (j = 1; j <= BMAX; j++)
             if (c[j] != 0)
                 break;
@@ -154,7 +155,7 @@ sealed class InfTree
         {
             l = i;
         }
-        m[0] = l;
+        maxBits[0] = l;
         // Adjust last length count to fill out codes, if needed
         for (y = 1 << j; j < i; j++, y <<= 1)
         {
@@ -182,14 +183,14 @@ sealed class InfTree
         i = 0; p = 0;
         do
         {
-            if ((j = b[bindex + p]) != 0)
+            if ((j = bitLengths[baseIndex + p]) != 0)
             {
-                v[x[j]++] = i;
+                workArea[x[j]++] = i;
             }
             p++;
         }
-        while (++i < n);
-        n = x[g]; // set n to length of v
+        while (++i < codesCount);
+        codesCount = x[g]; // set codesCount to length of workArea
                   // Generate the Huffman codes and for each, make the table entries
         x[0] = i = 0; // first Huffman code is zero
         p = 0; // grab values in bit order
@@ -232,13 +233,13 @@ sealed class InfTree
                     }
                     z = 1 << j; // table entries for j-bit table
                                 // allocate new table
-                    if (hn[0] + z > MANY)
+                    if (huftsUsed[0] + z > MANY)
                     {
                         // (note: doesn't matter for fixed)
                         return Z_DATA_ERROR; // overflow of MANY
                     }
-                    u[h] = q = hn[0]; // DEBUG
-                    hn[0] += z;
+                    u[h] = q = huftsUsed[0]; // DEBUG
+                    huftsUsed[0] += z;
                     // connect to last table, if there is one
                     if (h != 0)
                     {
@@ -247,34 +248,34 @@ sealed class InfTree
                         r[1] = (sbyte)l; // bits to dump before this table
                         j = SharedUtils.URShift(i, (w - l));
                         r[2] = (int)(q - u[h - 1] - j); // offset to this table
-                        Array.Copy(r, 0, hp, (u[h - 1] + j) * 3, 3); // connect to last table
+                        Array.Copy(r, 0, huftsArray, (u[h - 1] + j) * 3, 3); // connect to last table
                     }
                     else
                     {
-                        t[0] = q; // first table is returned result
+                        resultTable[0] = q; // first table is returned result
                     }
                 }
                 // set up table entry in r
                 r[1] = (sbyte)(k - w);
-                if (p >= n)
+                if (p >= codesCount)
                 {
                     r[0] = 128 + 64; // out of values--invalid code
                 }
-                else if (v[p] < s)
+                else if (workArea[p] < simpleCodesCount)
                 {
-                    r[0] = (sbyte)(v[p] < 256 ? 0 : 32 + 64); // 256 is end-of-block
-                    r[2] = v[p++]; // simple code is just the value
+                    r[0] = (sbyte)(workArea[p] < 256 ? 0 : 32 + 64); // 256 is end-of-block
+                    r[2] = workArea[p++]; // simple code is just the value
                 }
                 else
                 {
-                    r[0] = (sbyte)(e[v[p] - s] + 16 + 64); // non-simple--look up in lists
-                    r[2] = d[v[p++] - s];
+                    r[0] = (sbyte)(extraBits[workArea[p] - simpleCodesCount] + 16 + 64); // non-simple--look up in lists
+                    r[2] = baseValues[workArea[p++] - simpleCodesCount];
                 }
                 // fill code-like entries with r
                 f = 1 << (k - w);
                 for (j = SharedUtils.URShift(i, w); j < z; j += f)
                 {
-                    Array.Copy(r, 0, hp, (q + j) * 3, 3);
+                    Array.Copy(r, 0, huftsArray, (q + j) * 3, 3);
                 }
                 // backwards increment the k-bit code i
                 for (j = 1 << (k - 1); (i & j) != 0; j = SharedUtils.URShift(j, 1))

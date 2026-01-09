@@ -1,3 +1,4 @@
+// variables names: ok
 namespace Ionic.Zip.Deflate64;
 
     internal sealed class InflaterManaged

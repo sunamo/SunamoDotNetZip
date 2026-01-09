@@ -1,3 +1,4 @@
+// variables names: ok
 namespace Ionic.Zlib;
 
 // CRC32.cs
@@ -140,17 +141,17 @@ using Interop = System.Runtime.InteropServices;
         /// <summary>
         ///   Process one byte in the CRC.
         /// </summary>
-        /// <param name = "b">the byte to include into the CRC .  </param>
-        public void UpdateCRC(byte b)
+        /// <param name = "byteValue">the byte to include into the CRC .  </param>
+        public void UpdateCRC(byte byteValue)
         {
             if (this.reverseBits)
             {
-                UInt32 temp = (_register >> 24) ^ b;
+                UInt32 temp = (_register >> 24) ^ byteValue;
                 _register = (_register << 8) ^ crc32Table[temp];
             }
             else
             {
-                UInt32 temp = (_register & 0x000000FF) ^ b;
+                UInt32 temp = (_register & 0x000000FF) ^ byteValue;
                 _register = (_register >> 8) ^ crc32Table[temp];
             }
         }
@@ -166,22 +167,22 @@ using Interop = System.Runtime.InteropServices;
         ///     the run.
         ///   </para>
         /// </remarks>
-        /// <param name = "b">the byte to include into the CRC.  </param>
-        /// <param name = "n">the number of times that byte should be repeated. </param>
-        public void UpdateCRC(byte b, int n)
+        /// <param name = "byteValue">the byte to include into the CRC.  </param>
+        /// <param name = "repeatCount">the number of times that byte should be repeated. </param>
+        public void UpdateCRC(byte byteValue, int repeatCount)
         {
-            while (n-- > 0)
+            while (repeatCount-- > 0)
             {
                 if (this.reverseBits)
                 {
-                    uint temp = (_register >> 24) ^ b;
+                    uint temp = (_register >> 24) ^ byteValue;
                     _register = (_register << 8) ^ crc32Table[(temp >= 0)
                                                               ? temp
                                                               : (temp + 256)];
                 }
                 else
                 {
-                    UInt32 temp = (_register & 0x000000FF) ^ b;
+                    UInt32 temp = (_register & 0x000000FF) ^ byteValue;
                     _register = (_register >> 8) ^ crc32Table[(temp >= 0)
                                                               ? temp
                                                               : (temp + 256)];

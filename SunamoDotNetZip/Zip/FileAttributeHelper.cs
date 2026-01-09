@@ -1,3 +1,4 @@
+// variables names: ok
 namespace Ionic.Zip;
 
 using Interop = System.Runtime.InteropServices;

@@ -1,3 +1,4 @@
+// variables names: ok
 ﻿namespace SunamoDotNetZip.Tests;
 
 public class UnitTest1

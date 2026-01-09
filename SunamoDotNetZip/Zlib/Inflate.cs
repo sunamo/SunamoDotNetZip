@@ -1,3 +1,4 @@
+// variables names: ok
 namespace Ionic.Zlib;
 
 // Inflate.cs
@@ -101,12 +102,12 @@ sealed class InflateBlocks
     internal System.Object checkfn;                   // check function
     internal uint check;                              // check on output
     internal InfTree inftree = new();
-    internal InflateBlocks(ZlibCodec codec, System.Object checkfn, int w)
+    internal InflateBlocks(ZlibCodec codec, System.Object checkfn, int windowSize)
     {
         _codec = codec;
         hufts = new int[MANY * 3];
-        window = new byte[w];
-        end = w;
+        window = new byte[windowSize];
+        end = windowSize;
         this.checkfn = checkfn;
         mode = InflateBlockMode.TYPE;
         Reset();
@@ -574,10 +575,10 @@ sealed class InflateBlocks
         window = null;
         hufts = null;
     }
-    internal void SetDictionary(byte[] d, int start, int n)
+    internal void SetDictionary(byte[] dictionary, int start, int length)
     {
-        Array.Copy(d, start, window, 0, n);
-        readAt = writeAt = n;
+        Array.Copy(dictionary, start, window, 0, length);
+        readAt = writeAt = length;
     }
     // Returns true if inflate is currently at the end of a block generated
     // by Z_SYNC_FLUSH or Z_FULL_FLUSH.
@@ -1262,29 +1263,29 @@ internal sealed class InflateManager
         blocks = null;
         return ZlibConstants.Z_OK;
     }
-    internal int Initialize(ZlibCodec codec, int w)
+    internal int Initialize(ZlibCodec codec, int windowBits)
     {
         _codec = codec;
         _codec.Message = null;
         blocks = null;
         // handle undocumented nowrap option (no zlib header or check)
         //nowrap = 0;
-        //if (w < 0)
+        //if (windowBits < 0)
         //{
-        //    w = - w;
+        //    windowBits = - windowBits;
         //    nowrap = 1;
         //}
         // set window size
-        if (w < 8 || w > 15)
+        if (windowBits < 8 || windowBits > 15)
         {
             End();
             throw new ZlibException("Bad window size.");
             //return ZlibConstants.Z_STREAM_ERROR;
         }
-        wbits = w;
+        wbits = windowBits;
         blocks = new InflateBlocks(codec,
             HandleRfc1950HeaderBytes ? this : null,
-            1 << w);
+            1 << windowBits);
         // reset state
         Reset();
         return ZlibConstants.Z_OK;

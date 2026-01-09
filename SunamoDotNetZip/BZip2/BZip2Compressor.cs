@@ -1,3 +1,4 @@
+// variables names: ok
 namespace Ionic.BZip2;
 
 // BZip2Compressor.cs

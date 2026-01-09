@@ -1,3 +1,4 @@
+// variables names: ok
 namespace Ionic.Zip;
 
 // OffsetStream.cs
@@ -30,11 +31,11 @@ namespace Ionic.Zip;
     {
         private readonly Int64 _originalPosition;
         private readonly Stream _innerStream;
-        public OffsetStream(Stream s)
+        public OffsetStream(Stream stream)
             : base()
         {
-            _originalPosition = s.Position;
-            _innerStream = s;
+            _originalPosition = stream.Position;
+            _innerStream = stream;
         }
     public override int Read(byte[] buffer, int offset, int count) => _innerStream.Read(buffer, offset, count);
     public override void Write(byte[] buffer, int offset, int count) => throw new NotImplementedException();

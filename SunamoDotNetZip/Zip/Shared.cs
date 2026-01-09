@@ -1,3 +1,4 @@
+// variables names: ok
 namespace Ionic.Zip;
 
 // Shared.cs
@@ -29,16 +30,22 @@ namespace Ionic.Zip;
 /// </summary>
 internal static class SharedUtilities
 {
-    /// private null constructor
+    // private null constructor
     //private SharedUtilities() { }
     // workitem 8423
+    /// <summary>
+    /// Gets the length of a file in bytes.
+    /// </summary>
+    /// <param name="fileName">The path to the file.</param>
+    /// <returns>The length of the file in bytes.</returns>
+    /// <exception cref="FileNotFoundException">Thrown when the specified file does not exist.</exception>
     public static Int64 GetFileLength(string fileName)
     {
         if (!File.Exists(fileName))
             throw new FileNotFoundException(String.Format("Could not find file '{0}'.", fileName), fileName);
         long fileLength;
-        FileShare fs = FileShare.ReadWrite | FileShare.Delete;
-        using (var fileStream = File.Open(fileName, FileMode.Open, FileAccess.Read, fs))
+        FileShare fileShare = FileShare.ReadWrite | FileShare.Delete;
+        using (var fileStream = File.Open(fileName, FileMode.Open, FileAccess.Read, fileShare))
         {
             fileLength = fileStream.Length;
         }
