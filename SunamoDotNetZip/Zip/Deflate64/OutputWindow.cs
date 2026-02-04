@@ -1,7 +1,5 @@
-// variables names: ok
 namespace Ionic.Zip.Deflate64;
 
-    /// <summary>
     /// This class maintains a window for decompressed output.
     /// We need to keep this because the decompressed information can be
     /// a literal or a length/distance pair. For length/distance pair,

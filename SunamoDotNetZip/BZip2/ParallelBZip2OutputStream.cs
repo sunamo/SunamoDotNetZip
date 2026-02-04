@@ -1,4 +1,3 @@
-// variables names: ok
 namespace Ionic.BZip2;
 
 // ParallelBZip2OutputStream.cs

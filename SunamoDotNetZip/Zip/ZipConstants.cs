@@ -1,4 +1,3 @@
-// variables names: ok
 namespace Ionic.Zip;
 
 // ZipConstants.cs

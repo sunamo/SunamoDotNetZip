@@ -1,9 +1,7 @@
-// variables names: ok
 namespace Ionic.Zip;
 
 using Interop = System.Runtime.InteropServices;
 
-    /// <summary>
     /// Helper class for file attribute operations.
     /// </summary>
     /// <example>

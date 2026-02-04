@@ -1,4 +1,3 @@
-// variables names: ok
 namespace Ionic.Zip.Deflate64;
 
 internal enum MatchState

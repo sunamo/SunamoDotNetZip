@@ -1,4 +1,3 @@
-// variables names: ok
 namespace Ionic.Zip.Deflate64;
 
     // This class can be used to read bits from an byte array quickly.

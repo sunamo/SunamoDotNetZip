@@ -1,4 +1,3 @@
-// variables names: ok
 global using Ionic.BZip2;
 global using Ionic.Zip;
 global using Ionic.Zlib;

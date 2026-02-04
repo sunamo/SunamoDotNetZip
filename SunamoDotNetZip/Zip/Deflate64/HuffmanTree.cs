@@ -1,4 +1,3 @@
-// variables names: ok
 namespace Ionic.Zip.Deflate64;
 
     // Strictly speaking this class is not a HuffmanTree, this class is

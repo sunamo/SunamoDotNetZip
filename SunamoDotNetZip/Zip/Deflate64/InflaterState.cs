@@ -1,4 +1,3 @@
-// variables names: ok
 namespace Ionic.Zip.Deflate64;
 
 // Do not rearrange the enum values.

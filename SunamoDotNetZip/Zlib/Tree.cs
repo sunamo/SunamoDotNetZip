@@ -1,4 +1,3 @@
-// variables names: ok
 namespace Ionic.Zlib;
 
 // Tree.cs
