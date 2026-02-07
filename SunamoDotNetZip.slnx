@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="SunamoDotNetZip.Tests\\SunamoDotNetZip.Tests.csproj" />
+  <Project Path="RunnerDotNetZip\\RunnerDotNetZip.csproj" />
+  <Project Path="SunamoDotNetZip\SunamoDotNetZip.csproj" />
+</Solution>
