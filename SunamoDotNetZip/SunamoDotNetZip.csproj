@@ -4,8 +4,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <Description>.NET 9 fork for DotNetZip because have high security vulnerability</Description>
-    <Version>26.2.7.2</Version>
-    <PackageReleaseNotes>feat: Enable debug symbols</PackageReleaseNotes>
+    <Version>26.2.23.3</Version>
+    <PackageReleaseNotes>feat: fixing variables names</PackageReleaseNotes>
     <Authors>www.sunamo.cz</Authors>
     <Copyright>www.sunamo.cz</Copyright>
     <PackageProjectUrl>https://sunamo.cz/</PackageProjectUrl>
