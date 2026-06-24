@@ -369,7 +369,7 @@ internal class ZlibBaseStream : System.IO.Stream
             throw new ZlibException("Cannot Read after Writing.");
         if (count == 0) return 0;
         if (nomoreinput && _wantCompress) return 0;  // workitem 8557
-        ArgumentNullException.ThrowIfNull(buffer);
+        if (buffer == null) throw new ArgumentNullException(nameof(buffer));
         if (count < 0) throw new ArgumentOutOfRangeException(nameof(count));
         if (offset < buffer.GetLowerBound(0)) throw new ArgumentOutOfRangeException(nameof(offset));
         if ((offset + count) > buffer.GetLength(0)) throw new ArgumentOutOfRangeException(nameof(count));

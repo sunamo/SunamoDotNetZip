@@ -75,10 +75,6 @@ namespace Ionic.BZip2;
 // in here. Most of the Apache commons compressor magic has been ported
 // into the BZip2Compressor class.
 //
-    /// <summary>
-    ///   A write-only decorator stream that compresses data as it is
-    ///   written using the BZip2 algorithm.
-    /// </summary>
     public class BZip2OutputStream : System.IO.Stream
     {
         int totalBytesWrittenIn;
@@ -89,80 +85,18 @@ namespace Ionic.BZip2;
         BitWriter bw;
     readonly int blockSize100k;  // 0...9
         private readonly TraceBits desiredTrace = TraceBits.Crc | TraceBits.Write;
-        /// <summary>
-        ///   Constructs a new <c>BZip2OutputStream</c>, that sends its
-        ///   compressed output to the given output stream.
-        /// </summary>
-        ///
-        /// <param name='output'>
-        ///   The destination stream, to which compressed output will be sent.
-        /// </param>
-        ///
-        /// <example>
-        ///
-        ///   This example reads a file, then compresses it with bzip2 file,
-        ///   and writes the compressed data into a newly created file.
-        ///
-        ///   <code>
-        ///   var fname = "logfile.log";
-        ///   using (var fs = File.OpenRead(fname))
-        ///   {
-        ///       var outFname = fname + ".bz2";
-        ///       using (var output = File.Create(outFname))
-        ///       {
-        ///           using (var compressor = new BZip2OutputStream(output))
-        ///           {
-        ///               byte[] buffer = new byte[2048];
-        ///               int n;
-        ///               while ((n = fs.Read(buffer, 0, buffer.Length)) > 0)
-        ///               {
-        ///                   compressor.Write(buffer, 0, n);
-        ///               }
-        ///           }
-        ///       }
-        ///   }
-        ///   </code>
-        /// </example>
         public BZip2OutputStream(Stream output)
             : this(output, BZip2.MaxBlockSize, false)
         {
         }
-        /// <summary>
-        ///   Constructs a new <c>BZip2OutputStream</c> with specified blocksize.
-        /// </summary>
-        /// <param name = "output">the destination stream.</param>
-        /// <param name = "blockSize">
-        ///   The blockSize in units of 100000 bytes.
-        ///   The valid range is 1..9.
-        /// </param>
         public BZip2OutputStream(Stream output, int blockSize)
             : this(output, blockSize, false)
         {
         }
-        /// <summary>
-        ///   Constructs a new <c>BZip2OutputStream</c>.
-        /// </summary>
-        ///   <param name = "output">the destination stream.</param>
-        /// <param name = "leaveOpen">
-        ///   whether to leave the captive stream open upon closing this stream.
-        /// </param>
         public BZip2OutputStream(Stream output, bool leaveOpen)
             : this(output, BZip2.MaxBlockSize, leaveOpen)
         {
         }
-        /// <summary>
-        ///   Constructs a new <c>BZip2OutputStream</c> with specified blocksize,
-        ///   and explicitly specifies whether to leave the wrapped stream open.
-        /// </summary>
-        ///
-        /// <param name = "output">the destination stream.</param>
-        /// <param name = "blockSize">
-        ///   The blockSize in units of 100000 bytes.
-        ///   The valid range is 1..9.
-        /// </param>
-        /// <param name = "leaveOpen">
-        ///   whether to leave the captive stream open upon closing this stream.
-        /// </param>
         public BZip2OutputStream(Stream output, int blockSize, bool leaveOpen)
         {
             if (blockSize < BZip2.MinBlockSize ||
@@ -183,15 +117,6 @@ namespace Ionic.BZip2;
             this.combinedCRC = 0;
             EmitHeader();
         }
-        /// <summary>
-        ///   Close the stream.
-        /// </summary>
-        /// <remarks>
-        ///   <para>
-        ///     This may or may not close the underlying stream.  Check the
-        ///     constructors that accept a bool value.
-        ///   </para>
-        /// </remarks>
         public override void Close()
         {
             if (output != null)
@@ -202,9 +127,6 @@ namespace Ionic.BZip2;
                     outputStream.Close();
             }
         }
-        /// <summary>
-        ///   Flush the stream.
-        /// </summary>
         public override void Flush()
         {
             if (this.output != null)
@@ -267,35 +189,10 @@ namespace Ionic.BZip2;
                 this.bw = null;
             }
         }
-        /// <summary>
-        ///   The blocksize parameter specified at construction time.
-        /// </summary>
         public int BlockSize
         {
             get { return this.blockSize100k; }
         }
-        /// <summary>
-        ///   Write data to the stream.
-        /// </summary>
-        /// <remarks>
-        ///
-        /// <para>
-        ///   Use the <c>BZip2OutputStream</c> to compress data while writing:
-        ///   create a <c>BZip2OutputStream</c> with a writable output stream.
-        ///   Then call <c>Write()</c> on that <c>BZip2OutputStream</c>, providing
-        ///   uncompressed data as input.  The data sent to the output stream will
-        ///   be the compressed form of the input data.
-        /// </para>
-        ///
-        /// <para>
-        ///   A <c>BZip2OutputStream</c> can be used only for <c>Write()</c> not for <c>Read()</c>.
-        /// </para>
-        ///
-        /// </remarks>
-        ///
-        /// <param name="buffer">The buffer holding data to write to the stream.</param>
-        /// <param name="offset">the offset within that data array to find the first byte to write.</param>
-        /// <param name="count">the number of bytes to write.</param>
         public override void Write(byte[] buffer, int offset, int count)
         {
             if (offset < 0)
@@ -342,33 +239,14 @@ namespace Ionic.BZip2;
             } while (bytesRemaining > 0);
             totalBytesWrittenIn += bytesWritten;
         }
-        /// <summary>
-        /// Indicates whether the stream can be read.
-        /// </summary>
-        /// <remarks>
-        /// The return value is always false.
-        /// </remarks>
         public override bool CanRead
         {
             get { return false; }
         }
-        /// <summary>
-        /// Indicates whether the stream supports Seek operations.
-        /// </summary>
-        /// <remarks>
-        /// Always returns false.
-        /// </remarks>
         public override bool CanSeek
         {
             get { return false; }
         }
-        /// <summary>
-        /// Indicates whether the stream can be written.
-        /// </summary>
-        /// <remarks>
-        /// The return value should always be true, unless and until the
-        /// object is disposed and closed.
-        /// </remarks>
         public override bool CanWrite
         {
             get
@@ -376,22 +254,10 @@ namespace Ionic.BZip2;
             return this.output == null ? throw new ObjectDisposedException("BZip2Stream") : output.CanWrite;
         }
     }
-        /// <summary>
-        /// Reading this property always throws a <see cref="NotImplementedException"/>.
-        /// </summary>
         public override long Length
         {
             get { throw new NotImplementedException(); }
         }
-        /// <summary>
-        /// The position of the stream pointer.
-        /// </summary>
-        ///
-        /// <remarks>
-        ///   Setting this property always throws a <see
-        ///   cref="NotImplementedException"/>. Reading will return the
-        ///   total number of uncompressed bytes written through.
-        /// </remarks>
         public override long Position
         {
             get
@@ -400,25 +266,8 @@ namespace Ionic.BZip2;
             }
             set { throw new NotImplementedException(); }
         }
-    /// <summary>
-    /// Calling this method always throws a <see cref="NotImplementedException"/>.
-    /// </summary>
-    /// <param name="offset">this is irrelevant, since it will always throw!</param>
-    /// <param name="origin">this is irrelevant, since it will always throw!</param>
-    /// <returns>irrelevant!</returns>
     public override long Seek(long offset, System.IO.SeekOrigin origin) => throw new NotImplementedException();
-    /// <summary>
-    /// Calling this method always throws a <see cref="NotImplementedException"/>.
-    /// </summary>
-    /// <param name="value">this is irrelevant, since it will always throw!</param>
     public override void SetLength(long value) => throw new NotImplementedException();
-    /// <summary>
-    ///   Calling this method always throws a <see cref="NotImplementedException"/>.
-    /// </summary>
-    /// <param name='buffer'>this parameter is never used</param>
-    /// <param name='offset'>this parameter is never used</param>
-    /// <param name='count'>this parameter is never used</param>
-    /// <returns>never returns anything; always throws</returns>
     public override int Read(byte[] buffer, int offset, int count) => throw new NotImplementedException();
     // used only when Trace is defined
     [Flags]

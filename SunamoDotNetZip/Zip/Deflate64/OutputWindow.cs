@@ -1,11 +1,10 @@
 namespace Ionic.Zip.Deflate64;
 
-    /// This class maintains a window for decompressed output.
-    /// We need to keep this because the decompressed information can be
-    /// a literal or a length/distance pair. For length/distance pair,
-    /// we need to look back in the output window and copy bytes from there.
-    /// We use a byte array of WindowSize circularly.
-    /// </summary>
+    // This class maintains a window for decompressed output.
+    // We need to keep this because the decompressed information can be
+    // a literal or a length/distance pair. For length/distance pair,
+    // we need to look back in the output window and copy bytes from there.
+    // We use a byte array of WindowSize circularly.
     internal sealed class OutputWindow
     {
         // With Deflate64 we can have up to a 65536 length as well as up to a 65538 distance. This means we need a Window that is at
@@ -17,7 +16,7 @@ namespace Ionic.Zip.Deflate64;
         private int _end;       // this is the position to where we should write next byte
         private int _bytesUsed; // The number of bytes in the output window which is not consumed.
     internal void ClearBytesUsed() => _bytesUsed = 0;
-    /// <summary>Add a byte to output window.</summary>
+    // Add a byte to output window.
     public void Write(byte byteValue)
         {
             Debug.Assert(_bytesUsed < WindowSize, "Can't add byte when window is full!");
@@ -63,10 +62,8 @@ namespace Ionic.Zip.Deflate64;
                 }
             }
         }
-        /// <summary>
-        /// Copy up to length of bytes from input directly.
-        /// This is used for uncompressed block.
-        /// </summary>
+        // Copy up to length of bytes from input directly.
+        // This is used for uncompressed block.
         public int CopyFrom(InputBuffer input, int length)
         {
             length = Math.Min(Math.Min(length, WindowSize - _bytesUsed), input.AvailableBytes);
@@ -92,11 +89,11 @@ namespace Ionic.Zip.Deflate64;
             _bytesUsed += copied;
             return copied;
         }
-        /// <summary>Free space in output window.</summary>
+        // Free space in output window.
         public int FreeBytes => WindowSize - _bytesUsed;
-        /// <summary>Bytes not consumed in output window.</summary>
+        // Bytes not consumed in output window.
         public int AvailableBytes => _bytesUsed;
-        /// <summary>Copy the decompressed bytes to output array.</summary>
+        // Copy the decompressed bytes to output array.
         public int CopyTo(byte[] output, int offset, int length)
         {
             int copy_end;
