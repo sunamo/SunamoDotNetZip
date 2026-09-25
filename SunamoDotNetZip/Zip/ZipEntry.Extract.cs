@@ -26,83 +26,475 @@ namespace Ionic.Zip;
 // ------------------------------------------------------------------
 public partial class ZipEntry
 {
+    /// <summary>
+    ///   Extract the entry to the filesystem, starting at the current
+    ///   working directory.
+    /// </summary>
     ///
+    /// <overloads>
+    ///   This method has a bunch of overloads! One of them is sure to
+    ///   be the right one for you... If you don't like these, check
+    ///   out the <c>ExtractWithPassword()</c> methods.
+    /// </overloads>
     ///
+    /// <seealso cref="Ionic.Zip.ZipEntry.ExtractExistingFile"/>
+    /// <seealso cref="ZipEntry.Extract(ExtractExistingFileAction)"/>
     ///
+    /// <remarks>
     ///
+    /// <para>
+    ///   This method extracts an entry from a zip file into the current
+    ///   working directory.  The path of the entry as extracted is the full
+    ///   path as specified in the zip archive, relative to the current
+    ///   working directory.  After the file is extracted successfully, the
+    ///   file attributes and timestamps are set.
+    /// </para>
     ///
+    /// <para>
+    ///   The action taken when extraction an entry would overwrite an
+    ///   existing file is determined by the <see cref="ExtractExistingFile"
+    ///   /> property.
+    /// </para>
     ///
+    /// <para>
+    ///   Within the call to <c>Extract()</c>, the content for the entry is
+    ///   written into a filesystem file, and then the last modified time of the
+    ///   file is set according to the <see cref="LastModified"/> property on
+    ///   the entry. See the remarks the <see cref="LastModified"/> property for
+    ///   some details about the last modified time.
+    /// </para>
     ///
+    /// </remarks>
     public void Extract() => InternalExtractToBaseDir(".", null, _container, _Source, FileName);
+    /// <summary>
+    ///   Extract the entry to a file in the filesystem, using the specified
+    ///   behavior when extraction would overwrite an existing file.
+    /// </summary>
     ///
+    /// <remarks>
+    /// <para>
+    ///   See the remarks on the <see cref="LastModified"/> property, for some
+    ///   details about how the last modified time of the file is set after
+    ///   extraction.
+    /// </para>
+    /// </remarks>
     ///
+    /// <param name="extractExistingFile">
+    ///   The action to take if extraction would overwrite an existing file.
+    /// </param>
     public void Extract(ExtractExistingFileAction extractExistingFile)
     {
         ExtractExistingFile = extractExistingFile;
         InternalExtractToBaseDir(".", null, _container, _Source, FileName);
     }
+    /// <summary>
+    ///   Extracts the entry to the specified stream.
+    /// </summary>
     ///
+    /// <remarks>
+    /// <para>
+    ///   The caller can specify any write-able stream, for example a <see
+    ///   cref="System.IO.FileStream"/>, a <see
+    ///   cref="System.IO.MemoryStream"/>, or ASP.NET's
+    ///   <c>Response.OutputStream</c>.  The content will be decrypted and
+    ///   decompressed as necessary. If the entry is encrypted and no password
+    ///   is provided, this method will throw.
+    /// </para>
+    /// <para>
+    ///   The position on the stream is not reset by this method before it extracts.
+    ///   You may want to call stream.Seek() before calling ZipEntry.Extract().
+    /// </para>
+    /// </remarks>
     ///
+    /// <param name="stream">
+    ///   the stream to which the entry should be extracted.
+    /// </param>
     ///
     public void Extract(Stream stream) => InternalExtractToStream(stream, null, _container, _Source, FileName);
+    /// <summary>
+    ///   Extract the entry to the filesystem, starting at the specified base
+    ///   directory.
+    /// </summary>
     ///
+    /// <param name="baseDirectory">the pathname of the base directory</param>
     ///
+    /// <seealso cref="Ionic.Zip.ZipEntry.ExtractExistingFile"/>
+    /// <seealso cref="Ionic.Zip.ZipEntry.Extract(string, ExtractExistingFileAction)"/>
     ///
+    /// <example>
+    /// This example extracts only the entries in a zip file that are .txt files,
+    /// into a directory called "textfiles".
+    /// <code lang="C#">
+    /// using (ZipFile zip = ZipFile.Read("PackedDocuments.zip"))
+    /// {
+    ///   foreach (string s1 in zip.EntryFilenames)
+    ///   {
+    ///     if (s1.EndsWith(".txt"))
+    ///     {
+    ///       zip[s1].Extract("textfiles");
+    ///     }
+    ///   }
+    /// }
+    /// </code>
+    /// <code lang="VB">
+    ///   Using zip As ZipFile = ZipFile.Read("PackedDocuments.zip")
+    ///       Dim s1 As String
+    ///       For Each s1 In zip.EntryFilenames
+    ///           If s1.EndsWith(".txt") Then
+    ///               zip(s1).Extract("textfiles")
+    ///           End If
+    ///       Next
+    ///   End Using
+    /// </code>
+    /// </example>
     ///
+    /// <remarks>
     ///
+    /// <para>
+    ///   Using this method, existing entries in the filesystem will not be
+    ///   overwritten. If you would like to force the overwrite of existing
+    ///   files, see the <see cref="ExtractExistingFile"/> property, or call
+    ///   <see cref="Extract(string, ExtractExistingFileAction)"/>.
+    /// </para>
     ///
+    /// <para>
+    ///   See the remarks on the <see cref="LastModified"/> property, for some
+    ///   details about how the last modified time of the created file is set.
+    /// </para>
+    /// </remarks>
     public void Extract(string baseDirectory) => InternalExtractToBaseDir(baseDirectory, null, _container, _Source, FileName);
+    /// <summary>
+    ///   Extract the entry to the filesystem, starting at the specified base
+    ///   directory, and using the specified behavior when extraction would
+    ///   overwrite an existing file.
+    /// </summary>
     ///
+    /// <remarks>
+    /// <para>
+    ///   See the remarks on the <see cref="LastModified"/> property, for some
+    ///   details about how the last modified time of the created file is set.
+    /// </para>
+    /// </remarks>
     ///
+    /// <example>
+    /// <code lang="C#">
+    /// String sZipPath = "Airborne.zip";
+    /// String sFilePath = "Readme.txt";
+    /// String sRootFolder = "Digado";
+    /// using (ZipFile zip = ZipFile.Read(sZipPath))
+    /// {
+    ///   if (zip.EntryFileNames.Contains(sFilePath))
+    ///   {
+    ///     // use the string indexer on the zip file
+    ///     zip[sFileName].Extract(sRootFolder,
+    ///                            ExtractExistingFileAction.OverwriteSilently);
+    ///   }
+    /// }
+    /// </code>
     ///
+    /// <code lang="VB">
+    /// Dim sZipPath as String = "Airborne.zip"
+    /// Dim sFilePath As String = "Readme.txt"
+    /// Dim sRootFolder As String = "Digado"
+    /// Using zip As ZipFile = ZipFile.Read(sZipPath)
+    ///   If zip.EntryFileNames.Contains(sFilePath)
+    ///     ' use the string indexer on the zip file
+    ///     zip(sFilePath).Extract(sRootFolder, _
+    ///                            ExtractExistingFileAction.OverwriteSilently)
+    ///   End If
+    /// End Using
+    /// </code>
+    /// </example>
     ///
+    /// <param name="baseDirectory">the pathname of the base directory</param>
+    /// <param name="extractExistingFile">
+    /// The action to take if extraction would overwrite an existing file.
+    /// </param>
     public void Extract(string baseDirectory, ExtractExistingFileAction extractExistingFile)
     {
         ExtractExistingFile = extractExistingFile;
         InternalExtractToBaseDir(baseDirectory, null, _container, _Source, FileName);
     }
+    /// <summary>
+    ///   Extract the entry to the filesystem, using the current working directory
+    ///   and the specified password.
+    /// </summary>
     ///
+    /// <overloads>
+    ///   This method has a bunch of overloads! One of them is sure to be
+    ///   the right one for you...
+    /// </overloads>
     ///
+    /// <seealso cref="Ionic.Zip.ZipEntry.ExtractExistingFile"/>
+    /// <seealso cref="Ionic.Zip.ZipEntry.ExtractWithPassword(ExtractExistingFileAction, string)"/>
     ///
+    /// <remarks>
     ///
+    /// <para>
+    ///   Existing entries in the filesystem will not be overwritten. If you
+    ///   would like to force the overwrite of existing files, see the <see
+    ///   cref="Ionic.Zip.ZipEntry.ExtractExistingFile"/>property, or call
+    ///   <see
+    ///   cref="ExtractWithPassword(ExtractExistingFileAction,string)"/>.
+    /// </para>
     ///
+    /// <para>
+    ///   See the remarks on the <see cref="LastModified"/> property for some
+    ///   details about how the "last modified" time of the created file is
+    ///   set.
+    /// </para>
+    /// </remarks>
     ///
+    /// <example>
+    ///   In this example, entries that use encryption are extracted using a
+    ///   particular password.
+    /// <code>
+    /// using (var zip = ZipFile.Read(FilePath))
+    /// {
+    ///     foreach (ZipEntry e in zip)
+    ///     {
+    ///         if (e.UsesEncryption)
+    ///             e.ExtractWithPassword("Secret!");
+    ///         else
+    ///             e.Extract();
+    ///     }
+    /// }
+    /// </code>
+    /// <code lang="VB">
+    /// Using zip As ZipFile = ZipFile.Read(FilePath)
+    ///     Dim e As ZipEntry
+    ///     For Each e In zip
+    ///         If (e.UsesEncryption)
+    ///           e.ExtractWithPassword("Secret!")
+    ///         Else
+    ///           e.Extract
+    ///         End If
+    ///     Next
+    /// End Using
+    /// </code>
+    /// </example>
+    /// <param name="password">The Password to use for decrypting the entry.</param>
     public void ExtractWithPassword(string password) => InternalExtractToBaseDir(".", password, _container, _Source, FileName);
+    /// <summary>
+    ///   Extract the entry to the filesystem, starting at the specified base
+    ///   directory, and using the specified password.
+    /// </summary>
     ///
+    /// <seealso cref="Ionic.Zip.ZipEntry.ExtractExistingFile"/>
+    /// <seealso cref="Ionic.Zip.ZipEntry.ExtractWithPassword(string, ExtractExistingFileAction, string)"/>
     ///
+    /// <remarks>
+    /// <para>
+    ///   Existing entries in the filesystem will not be overwritten. If you
+    ///   would like to force the overwrite of existing files, see the <see
+    ///   cref="Ionic.Zip.ZipEntry.ExtractExistingFile"/>property, or call
+    ///   <see
+    ///   cref="ExtractWithPassword(ExtractExistingFileAction,string)"/>.
+    /// </para>
     ///
+    /// <para>
+    ///   See the remarks on the <see cref="LastModified"/> property, for some
+    ///   details about how the last modified time of the created file is set.
+    /// </para>
+    /// </remarks>
     ///
+    /// <param name="baseDirectory">The pathname of the base directory.</param>
+    /// <param name="password">The Password to use for decrypting the entry.</param>
     public void ExtractWithPassword(string baseDirectory, string password) => InternalExtractToBaseDir(baseDirectory, password, _container, _Source, FileName);
+    /// <summary>
+    ///   Extract the entry to a file in the filesystem, relative to the
+    ///   current directory, using the specified behavior when extraction
+    ///   would overwrite an existing file.
+    /// </summary>
     ///
+    /// <remarks>
+    /// <para>
+    ///   See the remarks on the <see cref="LastModified"/> property, for some
+    ///   details about how the last modified time of the created file is set.
+    /// </para>
+    /// </remarks>
     ///
+    /// <param name="password">The Password to use for decrypting the entry.</param>
     ///
+    /// <param name="extractExistingFile">
+    /// The action to take if extraction would overwrite an existing file.
+    /// </param>
     public void ExtractWithPassword(ExtractExistingFileAction extractExistingFile, string password)
     {
         ExtractExistingFile = extractExistingFile;
         InternalExtractToBaseDir(".", password, _container, _Source, FileName);
     }
+    /// <summary>
+    ///   Extract the entry to the filesystem, starting at the specified base
+    ///   directory, and using the specified behavior when extraction would
+    ///   overwrite an existing file.
+    /// </summary>
     ///
+    /// <remarks>
+    ///   See the remarks on the <see cref="LastModified"/> property, for some
+    ///   details about how the last modified time of the created file is set.
+    /// </remarks>
     ///
+    /// <param name="baseDirectory">the pathname of the base directory</param>
     ///
+    /// <param name="extractExistingFile">The action to take if extraction would
+    /// overwrite an existing file.</param>
     ///
+    /// <param name="password">The Password to use for decrypting the entry.</param>
     public void ExtractWithPassword(string baseDirectory, ExtractExistingFileAction extractExistingFile, string password)
     {
         ExtractExistingFile = extractExistingFile;
         InternalExtractToBaseDir(baseDirectory, password, _container, _Source, FileName);
     }
+    /// <summary>
+    ///   Extracts the entry to the specified stream, using the specified
+    ///   Password.  For example, the caller could extract to Console.Out, or
+    ///   to a MemoryStream.
+    /// </summary>
+    ///
+    /// <remarks>
+    /// <para>
+    ///   The caller can specify any write-able stream, for example a <see
+    ///   cref="System.IO.FileStream"/>, a <see
+    ///   cref="System.IO.MemoryStream"/>, or ASP.NET's
+    ///   <c>Response.OutputStream</c>.  The content will be decrypted and
+    ///   decompressed as necessary. If the entry is encrypted and no password
+    ///   is provided, this method will throw.
+    /// </para>
+    /// <para>
+    ///   The position on the stream is not reset by this method before it extracts.
+    ///   You may want to call stream.Seek() before calling ZipEntry.Extract().
+    /// </para>
+    /// </remarks>
     ///
     ///
-    ///
+    /// <param name="stream">
+    ///   the stream to which the entry should be extracted.
+    /// </param>
+    /// <param name="password">
+    ///   The password to use for decrypting the entry.
+    /// </param>
     public void ExtractWithPassword(Stream stream, string password) => InternalExtractToStream(stream, password, _container, _Source, FileName);
+    /// <summary>
+    ///   Opens a readable stream corresponding to the zip entry in the
+    ///   archive.  The stream decompresses and decrypts as necessary, as it
+    ///   is read.
+    /// </summary>
     ///
+    /// <remarks>
     ///
+    /// <para>
+    ///   DotNetZip offers a variety of ways to extract entries from a zip
+    ///   file.  This method allows an application to extract an entry by
+    ///   reading a <see cref="System.IO.Stream"/>.
+    /// </para>
     ///
+    /// <para>
+    ///   The return value is of type <see
+    ///   cref="Ionic.Zlib.CrcCalculatorStream"/>.  Use it as you would any
+    ///   stream for reading.  When an application calls <see
+    ///   cref="Stream.Read(byte[], int, int)"/> on that stream, it will
+    ///   receive data from the zip entry that is decrypted and decompressed
+    ///   as necessary.
+    /// </para>
     ///
+    /// <para>
+    ///   <c>CrcCalculatorStream</c> adds one additional feature: it keeps a
+    ///   CRC32 checksum on the bytes of the stream as it is read.  The CRC
+    ///   value is available in the <see
+    ///   cref="Ionic.Zlib.CrcCalculatorStream.Crc"/> property on the
+    ///   <c>CrcCalculatorStream</c>.  When the read is complete, your
+    ///   application
+    ///   <em>should</em> check this CRC against the <see cref="ZipEntry.Crc"/>
+    ///   property on the <c>ZipEntry</c> to validate the content of the
+    ///   ZipEntry. You don't have to validate the entry using the CRC, but
+    ///   you should, to verify integrity. Check the example for how to do
+    ///   this.
+    /// </para>
     ///
+    /// <para>
+    ///   If the entry is protected with a password, then you need to provide
+    ///   a password prior to calling <see cref="OpenReader()"/>, either by
+    ///   setting the <see cref="Password"/> property on the entry, or the
+    ///   <see cref="ZipFile.Password"/> property on the <c>ZipFile</c>
+    ///   itself. Or, you can use <see cref="OpenReader(String)" />, the
+    ///   overload of OpenReader that accepts a password parameter.
+    /// </para>
     ///
+    /// <para>
+    ///   If you want to extract entry data into a write-able stream that is
+    ///   already opened, like a <see cref="System.IO.FileStream"/>, do not
+    ///   use this method. Instead, use <see cref="Extract(Stream)"/>.
+    /// </para>
     ///
+    /// <para>
+    ///   Your application may use only one stream created by OpenReader() at
+    ///   a time, and you should not call other Extract methods before
+    ///   completing your reads on a stream obtained from OpenReader().  This
+    ///   is because there is really only one source stream for the compressed
+    ///   content.  A call to OpenReader() seeks in the source stream, to the
+    ///   beginning of the compressed content.  A subsequent call to
+    ///   OpenReader() on a different entry will seek to a different position
+    ///   in the source stream, as will a call to Extract() or one of its
+    ///   overloads.  This will corrupt the state for the decompressing stream
+    ///   from the original call to OpenReader().
+    /// </para>
     ///
+    /// <para>
+    ///    The <c>OpenReader()</c> method works only when the ZipEntry is
+    ///    obtained from an instance of <c>ZipFile</c>. This method will throw
+    ///    an exception if the ZipEntry is obtained from a <see
+    ///    cref="ZipInputStream"/>.
+    /// </para>
+    /// </remarks>
     ///
+    /// <example>
+    ///   This example shows how to open a zip archive, then read in a named
+    ///   entry via a stream. After the read loop is complete, the code
+    ///   compares the calculated during the read loop with the expected CRC
+    ///   on the <c>ZipEntry</c>, to verify the extraction.
+    /// <code>
+    /// using (ZipFile zip = new ZipFile(ZipFileToRead))
+    /// {
+    ///   ZipEntry e1= zip["Elevation.mp3"];
+    ///   using (CrcCalculatorStream s = e1.OpenReader())
+    ///   {
+    ///     byte[] buffer = new byte[4096];
+    ///     int n, totalBytesRead= 0;
+    ///     do {
+    ///       n = s.Read(buffer,0, buffer.Length);
+    ///       totalBytesRead+=n;
+    ///     } while (n&gt;0);
+    ///      if (s.Crc32 != e1.Crc32)
+    ///       throw new Exception(string.Format("The Zip Entry failed the CRC Check. (0x{0:X8}!=0x{1:X8})", s.Crc32, e1.Crc32));
+    ///      if (totalBytesRead != e1.UncompressedSize)
+    ///       throw new Exception(string.Format("We read an unexpected number of bytes. ({0}!={1})", totalBytesRead, e1.UncompressedSize));
+    ///   }
+    /// }
+    /// </code>
+    /// <code lang="VB">
+    ///   Using zip As New ZipFile(ZipFileToRead)
+    ///       Dim e1 As ZipEntry = zip.Item("Elevation.mp3")
+    ///       Using s As CrcCalculatorStream = e1.OpenReader
+    ///           Dim n As Integer
+    ///           Dim buffer As Byte() = New Byte(4096) {}
+    ///           Dim totalBytesRead As Integer = 0
+    ///           Do
+    ///               n = s.Read(buffer, 0, buffer.Length)
+    ///               totalBytesRead = (totalBytesRead + n)
+    ///           Loop While (n &gt; 0)
+    ///           If (s.Crc32 &lt;&gt; e1.Crc32) Then
+    ///               Throw New Exception(String.Format("The Zip Entry failed the CRC Check. (0x{0:X8}!=0x{1:X8})", s.Crc32, e1.Crc32))
+    ///           End If
+    ///           If (totalBytesRead &lt;&gt; e1.UncompressedSize) Then
+    ///               Throw New Exception(String.Format("We read an unexpected number of bytes. ({0}!={1})", totalBytesRead, e1.UncompressedSize))
+    ///           End If
+    ///       End Using
+    ///   End Using
+    /// </code>
+    /// </example>
+    /// <seealso cref="Ionic.Zip.ZipEntry.Extract(System.IO.Stream)"/>
+    /// <returns>The Stream for reading.</returns>
     public CrcCalculatorStream OpenReader()
     {
         // workitem 10923
@@ -112,8 +504,21 @@ public partial class ZipEntry
         // else use the zipfile password, which is possibly null
         return InternalOpenReader(_Password ?? _container.Password);
     }
+    /// <summary>
+    ///   Opens a readable stream for an encrypted zip entry in the archive.
+    ///   The stream decompresses and decrypts as necessary, as it is read.
+    /// </summary>
     ///
+    /// <remarks>
+    /// <para>
+    ///   See the documentation on the <see cref="OpenReader()"/> method for
+    ///   full details. This overload allows the application to specify a
+    ///   password for the <c>ZipEntry</c> to be read.
+    /// </para>
+    /// </remarks>
     ///
+    /// <param name="password">The password to use for decrypting the entry.</param>
+    /// <returns>The Stream for reading.</returns>
     public Ionic.Zlib.CrcCalculatorStream OpenReader(string password) =>
         // workitem 10923
         _container.ZipFile == null
@@ -181,6 +586,11 @@ public partial class ZipEntry
         if (_container.ZipFile != null && _container.ZipFile.Verbose)
             _container.ZipFile.StatusMessageTextWriter.WriteLine(format, args);
     }
+    /// <summary>
+    /// Pass in either basedir or s, but not both.
+    /// In other words, you can extract to a stream or to a directory (filesystem), but not both!
+    /// The Password param is required for encrypted entries.
+    /// </summary>
     void InternalExtractToBaseDir(string baseDir, string password, ZipContainer zipContainer, ZipEntrySource zipEntrySource, string fileName)
     {
         if (baseDir == null) throw new ArgumentNullException(nameof(baseDir));
@@ -269,6 +679,11 @@ public partial class ZipEntry
             }
         }
     }
+    /// <summary>
+    /// Extract to a stream
+    /// In other words, you can extract to a stream or to a directory (filesystem), but not both!
+    /// The Password param is required for encrypted entries.
+    /// </summary>
     void InternalExtractToStream(Stream outStream, string password, ZipContainer zipContainer, ZipEntrySource zipEntrySource, string fileName)
     {
         // workitem 7958
@@ -750,6 +1165,10 @@ public partial class ZipEntry
             }
 #endif
     }
+    /// <summary>
+    /// Validates that the args are consistent; returning whether the caller can return
+    /// because it's done, or not (caller should continue)
+    /// </summary>
     bool IsDoneWithOutputToBaseDir(string baseDir, out string outFileName)
     {
         if (baseDir == null) throw new ArgumentNullException(nameof(baseDir));
@@ -795,6 +1214,10 @@ public partial class ZipEntry
         }
         return false;  // false == work to do by caller.
     }
+    /// <summary>
+    /// Validates that the args are consistent; returning whether the caller can return
+    /// because it's done, or not (caller should continue)
+    /// </summary>
     bool IsDoneWithOutputToStream() => IsDirectory || FileName.EndsWith("/");
     #endregion
 }

@@ -29,6 +29,9 @@ namespace Ionic.Zip;
 // ------------------------------------------------------------------
     partial class ZipEntry
     {
+        /// <summary>
+        /// True if the referenced entry is a directory.
+        /// </summary>
         internal bool AttributesIndicateDirectory
         {
             get { return ((_InternalFileAttrs == 0) && ((_ExternalFileAttrs & 0x0010) == 0x0010)); }
@@ -48,6 +51,9 @@ namespace Ionic.Zip;
             // reset the copy counter because we've got a good entry now
             CopyHelper.Reset();
         }
+        /// <summary>
+        /// Provides a human-readable string with information about the ZipEntry.
+        /// </summary>
         public string Info
         {
             get
@@ -136,6 +142,22 @@ namespace Ionic.Zip;
                 return fileName;
             }
         }
+        /// <summary>
+        ///   Reads one entry from the zip directory structure in the zip file.
+        /// </summary>
+        ///
+        /// <param name="zf">
+        ///   The zipfile for which a directory entry will be read.  From this param, the
+        ///   method gets the ReadStream and the expected text encoding
+        ///   (ProvisionalAlternateEncoding) which is used if the entry is not marked
+        ///   UTF-8.
+        /// </param>
+        ///
+        /// <param name="previouslySeen">
+        ///   a list of previously seen entry names; used to prevent duplicates.
+        /// </param>
+        ///
+        /// <returns>the entry read from the archive.</returns>
         internal static ZipEntry ReadDirEntry(ZipFile zf,
                                               Dictionary<String,Object> previouslySeen)
         {
@@ -288,6 +310,11 @@ namespace Ionic.Zip;
                 return zde;
             }
         }
+    /// <summary>
+    /// Returns true if the passed-in value is a valid signature for a ZipDirEntry.
+    /// </summary>
+    /// <param name="signature">the candidate 4-byte signature value.</param>
+    /// <returns>true, if the signature is valid according to the PKWare spec.</returns>
     internal static bool IsNotValidZipDirEntrySig(int signature) => (signature != ZipConstants.ZipDirEntrySignature);
     private Int16 _VersionMadeBy;
         private Int16 _InternalFileAttrs;

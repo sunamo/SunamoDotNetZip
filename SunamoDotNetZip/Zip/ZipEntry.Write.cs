@@ -576,6 +576,19 @@ using RE = System.Text.RegularExpressions;
             }
             return s1;
         }
+        /// <summary>
+        ///   generate and return a byte array that encodes the filename
+        ///   for the entry.
+        /// </summary>
+        /// <remarks>
+        ///   <para>
+        ///     side effects: generate and store into _CommentBytes the
+        ///     byte array for any comment attached to the entry. Also
+        ///     sets _actualEncoding to indicate the actual encoding
+        ///     used. The same encoding is used for both filename and
+        ///     comment.
+        ///   </para>
+        /// </remarks>
         private byte[] GetEncodedFileNameBytes()
         {
             // workitem 6513
@@ -1094,8 +1107,27 @@ using RE = System.Text.RegularExpressions;
             }
             return _Crc32;
         }
+        /// <summary>
+        ///   Stores the position of the entry source stream, or, if the position is
+        ///   already stored, seeks to that position.
+        /// </summary>
         ///
+        /// <remarks>
+        /// <para>
+        ///   This method is called in prep for reading the source stream.  If PKZIP
+        ///   encryption is used, then we need to calc the CRC32 before doing the
+        ///   encryption, because the CRC is used in the 12th byte of the PKZIP
+        ///   encryption header.  So, we need to be able to seek backward in the source
+        ///   when saving the ZipEntry. This method is called from the place that
+        ///   calculates the CRC, and also from the method that does the encryption of
+        ///   the file data.
+        /// </para>
         ///
+        /// <para>
+        ///   The first time through, this method sets the _sourceStreamOriginalPosition
+        ///   field. Subsequent calls to this method seek to that position.
+        /// </para>
+        /// </remarks>
         private void PrepSourceStream()
         {
             if (_sourceStream == null)
@@ -1145,6 +1177,12 @@ using RE = System.Text.RegularExpressions;
                     throw new ZipException("It is not possible to use PKZIP encryption on a non-seekable input stream");
             }
         }
+        /// <summary>
+        /// Copy metadata that may have been changed by the app.  We do this when
+        /// resetting the zipFile instance.  If the app calls Save() on a ZipFile, then
+        /// tries to party on that file some more, we may need to Reset() it , which
+        /// means re-reading the entries and then copying the metadata.  I think.
+        /// </summary>
         internal void CopyMetaData(ZipEntry source)
         {
             this.__FileDataPosition = source.__FileDataPosition;
@@ -1265,6 +1303,12 @@ using RE = System.Text.RegularExpressions;
             this.__FileDataPosition = fdp;
             PostProcessOutput(s);
         }
+        /// <summary>
+        ///   Set the input stream and get its length, if possible.  The length is
+        ///   used for progress updates, AND, to allow an optimization in case of
+        ///   a stream/file of zero length. In that case we skip the Encrypt and
+        ///   compression Stream. (like DeflateStream or BZip2OutputStream)
+        /// </summary>
         private long SetInputAndFigureFileLength(ref Stream input)
         {
             long fileLength = -1L;
@@ -1619,6 +1663,17 @@ using RE = System.Text.RegularExpressions;
                 throw new ZipException("Compressed or Uncompressed size, or offset exceeds the maximum value. Consider setting the UseZip64WhenSaving property on the ZipFile instance.");
             _OutputUsesZip64 = new Nullable<bool>(_container.Zip64 == Zip64Option.Always || _entryRequiresZip64.Value);
         }
+        /// <summary>
+        ///   Prepare the given stream for output - wrap it in a CountingStream, and
+        ///   then in a CRC stream, and an encryptor and deflator as appropriate.
+        /// </summary>
+        /// <remarks>
+        ///   <para>
+        ///     Previously this was used in ZipEntry.Write(), but in an effort to
+        ///     introduce some efficiencies in that method I've refactored to put the
+        ///     code inline.  This method still gets called by ZipOutputStream.
+        ///   </para>
+        /// </remarks>
         internal void PrepOutputStream(Stream s,
                                        long streamLength,
                                        out CountingStream outputCounter,

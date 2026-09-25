@@ -255,6 +255,16 @@ public partial class ZipEntry
             : additionalBytesRead;
     }
     private static bool IsNotValidSig(int signature) => (signature != ZipConstants.ZipEntrySignature);
+    /// <summary>
+    ///   Reads one <c>ZipEntry</c> from the given stream.  The content for
+    ///   the entry does not get decompressed or decrypted.  This method
+    ///   basically reads metadata, and seeks.
+    /// </summary>
+    /// <param name="zc">the ZipContainer this entry belongs to.</param>
+    /// <param name="first">
+    ///   true of this is the first entry being read from the stream.
+    /// </param>
+    /// <returns>the <c>ZipEntry</c> read from the stream.</returns>
     internal static ZipEntry ReadEntry(ZipContainer zc, bool first)
     {
         ZipFile zf = zc.ZipFile;
@@ -335,6 +345,12 @@ public partial class ZipEntry
             s.Seek(-4, SeekOrigin.Current); // unread the block
         }
     }
+    /// <summary>
+    ///   Finds a particular segment in the given extra field.
+    ///   This is used when modifying a previously-generated
+    ///   extra field, in particular when removing the AES crypto
+    ///   segment in the extra field.
+    /// </summary>
     static internal int FindExtraFieldSegment(byte[] extra, int offx, UInt16 targetHeaderId)
     {
         int index = offx;
@@ -348,6 +364,13 @@ public partial class ZipEntry
         }
         return -1;
     }
+    /// <summary>
+    ///   At current cursor position in the stream, read the extra
+    ///   field, and set the properties on the ZipEntry instance
+    ///   appropriately.  This can be called when processing the
+    ///   Extra field in the Central Directory, or in the local
+    ///   header.
+    /// </summary>
     internal int ProcessExtraField(Stream stream, Int16 extraFieldLength)
     {
         int additionalBytesRead = 0;

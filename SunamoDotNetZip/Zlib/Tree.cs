@@ -149,6 +149,12 @@ namespace Ionic.Zlib;
             0, 1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 48, 64, 96, 128, 192,
             256, 384, 512, 768, 1024, 1536, 2048, 3072, 4096, 6144, 8192, 12288, 16384, 24576
         ];
+    /// <summary>
+    /// Map from a distance to a distance code.
+    /// </summary>
+    /// <remarks> 
+    /// No side effects. _dist_code[256] and _dist_code[257] are never used.
+    /// </remarks>
     internal static int DistanceCode(int dist) => (dist < 256)
             ? _dist_code[dist]
             : _dist_code[256 + SharedUtils.URShift(dist, 7)];

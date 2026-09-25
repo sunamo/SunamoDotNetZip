@@ -85,5 +85,10 @@ namespace Ionic.BZip2;
         ];
 
 
+    /// <summary>
+    ///   Returns the "random" number at a specific index.
+    /// </summary>
+    /// <param name='index'>the index</param>
+    /// <returns>the random number</returns>
     internal static int Rnums(int index) => randomNumbers[index];
 }

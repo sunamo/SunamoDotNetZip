@@ -24,11 +24,20 @@ namespace Ionic.Zip;
 //
 // Created: Tue, 27 Mar 2007  15:30
 //
+/// <summary>
+/// Collects general purpose utility methods.
+/// </summary>
 internal static class SharedUtilities
 {
     // private null constructor
     //private SharedUtilities() { }
     // workitem 8423
+    /// <summary>
+    /// Gets the length of a file in bytes.
+    /// </summary>
+    /// <param name="fileName">The path to the file.</param>
+    /// <returns>The length of the file in bytes.</returns>
+    /// <exception cref="FileNotFoundException">Thrown when the specified file does not exist.</exception>
     public static Int64 GetFileLength(string fileName)
     {
         if (!File.Exists(fileName))
@@ -42,6 +51,29 @@ internal static class SharedUtilities
         return fileLength;
     }
 #if LEGACY
+        /// <summary>
+        /// Round the given DateTime value to an even second value.
+        /// </summary>
+        ///
+        /// <remarks>
+        /// <para>
+        /// Round up in the case of an odd second value.  The rounding does not consider
+        /// fractional seconds.
+        /// </para>
+        /// <para>
+        /// This is useful because the Zip spec allows storage of time only to the nearest
+        /// even second.  So if you want to compare the time of an entry in the archive with
+        /// it's actual time in the filesystem, you need to round the actual filesystem
+        /// time, or use a 2-second threshold for the comparison.
+        /// </para>
+        /// <para>
+        /// This is most nautrally an extension method for the DateTime class but this
+        /// library used to be built for .NET 2.0; This meant extension methods were
+        /// a no-no.
+        /// </para>
+        /// </remarks>
+        /// <param name="source">The DateTime value to round</param>
+        /// <returns>The ruonded DateTime value</returns>
         public static DateTime RoundToEvenSecond(DateTime source)
         {
             // round to nearest second:
@@ -75,6 +107,13 @@ internal static class SharedUtilities
         path = doubleDotRegex1.Replace(path, "$1$3");
         return path;
     }
+    /// <summary>
+    /// Utility routine for transforming path names from filesystem format (on Windows that means backslashes) to
+    /// a format suitable for use within zipfiles. This means trimming the volume letter and colon (if any) And
+    /// swapping backslashes for forward slashes.
+    /// </summary>
+    /// <param name="pathName">source path.</param>
+    /// <returns>transformed path</returns>
     public static string NormalizePathForUseInZipFile(string pathName)
     {
         // boundary case
@@ -88,6 +127,13 @@ internal static class SharedUtilities
         while (pathName.StartsWith("/")) pathName = pathName[1..];
         return SimplifyFwdSlashPath(pathName);
     }
+    /// <summary>
+    /// Sanitize paths in zip files. This means making sure that relative paths in a zip file don't go outside
+    /// the top directory. Entries like something/../../../../Temp/evil.txt get sanitized to Temp/evil.txt
+    /// when extracting
+    /// </summary>
+    /// <param name="path">A path with forward slashes as directory separator</param>
+    /// <returns>sanitized path</returns>
     public static string SanitizePath(string path)
     {
         System.Collections.Generic.List<string> dirs = [];
@@ -221,6 +267,27 @@ internal static class SharedUtilities
         int data = unchecked((((block[3] * 256 + block[2]) * 256) + block[1]) * 256 + block[0]);
         return data;
     }
+    /// <summary>
+    ///   Finds a signature in the zip stream. This is useful for finding
+    ///   the end of a zip entry, for example, or the beginning of the next ZipEntry.
+    /// </summary>
+    ///
+    /// <remarks>
+    ///   <para>
+    ///     Scans through 64k at a time.
+    ///   </para>
+    ///
+    ///   <para>
+    ///     If the method fails to find the requested signature, the stream Position
+    ///     after completion of this method is unchanged. If the method succeeds in
+    ///     finding the requested signature, the stream position after completion is
+    ///     direct AFTER the signature found in the stream.
+    ///   </para>
+    /// </remarks>
+    ///
+    /// <param name="stream">The stream to search</param>
+    /// <param name="signatureToFind">The 4-byte signature to find</param>
+    /// <returns>The number of bytes read</returns>
     internal static long FindSignature(System.IO.Stream stream, int signatureToFind)
     {
         long startingPosition = stream.Position;
@@ -385,6 +452,17 @@ internal static class SharedUtilities
         Int32 result = (Int32)(((UInt32)(packedDate << 16)) | packedTime);
         return result;
     }
+    /// <summary>
+    ///   Create a pseudo-random filename, suitable for use as a temporary
+    ///   file, and open it.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    ///   This method produces a filename of the form
+    ///   DotNetZip-xxxxxxxx.tmp, where xxxxxxxx is replaced by randomly
+    ///   chosen characters, and creates that file.
+    /// </para>
+    /// </remarks>
     public static void CreateAndOpenUniqueTempFile(string dir,
                                                    out Stream fs,
                                                    out string filename)
@@ -408,6 +486,14 @@ internal static class SharedUtilities
         throw new IOException();
     }
     public static string InternalGetTempFileName() => "DotNetZip-" + Path.GetRandomFileName()[..8] + ".tmp";
+    /// <summary>
+    /// Workitem 7889: handle ERROR_LOCK_VIOLATION during read
+    /// </summary>
+    /// <remarks>
+    /// This could be gracefully handled with an extension attribute, but
+    /// This assembly used to be built for .NET 2.0, so could not use
+    /// extension methods.
+    /// </remarks>
     internal static int ReadWithRetry(System.IO.Stream stream, byte[] buffer, int offset, int count, string fileName)
     {
         int bytesRead = 0;
@@ -477,6 +563,44 @@ internal static class SharedUtilities
         unchecked((uint)System.Runtime.InteropServices.Marshal.GetHRForException(exception));
 #endif
 }
+/// <summary>
+///   A decorator stream. It wraps another stream, and performs bookkeeping
+///   to keep track of the stream Position.
+/// </summary>
+/// <remarks>
+///   <para>
+///     In some cases, it is not possible to get the Position of a stream, let's
+///     say, on a write-only output stream like ASP.NET's
+///     <c>Response.OutputStream</c>, or on a different write-only stream
+///     provided as the destination for the zip by the application.  In this
+///     case, programmers can use this counting stream to count the bytes read
+///     or written.
+///   </para>
+///   <para>
+///     Consider the scenario of an application that saves a self-extracting
+///     archive (SFX), that uses a custom SFX stub.
+///   </para>
+///   <para>
+///     Saving to a filesystem file, the application would open the
+///     filesystem file (getting a <c>FileStream</c>), save the custom sfx stub
+///     into it, and then call <c>ZipFile.Save()</c>, specifying the same
+///     FileStream. <c>ZipFile.Save()</c> does the right thing for the zipentry
+///     offsets, by inquiring the Position of the <c>FileStream</c> before writing
+///     any data, and then adding that initial offset into any ZipEntry
+///     offsets in the zip directory. Everything works fine.
+///   </para>
+///   <para>
+///     Now suppose the application is an ASPNET application and it saves
+///     directly to <c>Response.OutputStream</c>. It's not possible for DotNetZip to
+///     inquire the <c>Position</c>, so the offsets for the SFX will be wrong.
+///   </para>
+///   <para>
+///     The workaround is for the application to use this class to wrap
+///     <c>HttpResponse.OutputStream</c>, then write the SFX stub and the ZipFile
+///     into that wrapper stream. Because <c>ZipFile.Save()</c> can inquire the
+///     <c>Position</c>, it will then do the right thing with the offsets.
+///   </para>
+/// </remarks>
 public class CountingStream : System.IO.Stream
 {
     // workitem 12374: this class is now public
@@ -484,6 +608,10 @@ public class CountingStream : System.IO.Stream
     private Int64 _bytesWritten;
     private Int64 _bytesRead;
     private readonly Int64 _initialOffset;
+    /// <summary>
+    /// The constructor.
+    /// </summary>
+    /// <param name="stream">The underlying stream</param>
     public CountingStream(System.IO.Stream stream)
         : base()
     {
@@ -497,6 +625,9 @@ public class CountingStream : System.IO.Stream
             _initialOffset = 0L;
         }
     }
+    /// <summary>
+    ///   Gets the wrapped stream.
+    /// </summary>
     public Stream WrappedStream
     {
         get
@@ -504,14 +635,35 @@ public class CountingStream : System.IO.Stream
             return _s;
         }
     }
+    /// <summary>
+    ///   The count of bytes written out to the stream.
+    /// </summary>
     public Int64 BytesWritten
     {
         get { return _bytesWritten; }
     }
+    /// <summary>
+    ///   the count of bytes that have been read from the stream.
+    /// </summary>
     public Int64 BytesRead
     {
         get { return _bytesRead; }
     }
+    /// <summary>
+    ///    Adjust the byte count on the stream.
+    /// </summary>
+    ///
+    /// <param name='delta'>
+    ///   the number of bytes to subtract from the count.
+    /// </param>
+    ///
+    /// <remarks>
+    ///   <para>
+    ///     Subtract delta from the count of bytes written to the stream.
+    ///     This is necessary when seeking back, and writing additional data,
+    ///     as happens in some cases when saving Zip files.
+    ///   </para>
+    /// </remarks>
     public void Adjust(Int64 delta)
     {
         _bytesWritten -= delta;
@@ -520,39 +672,74 @@ public class CountingStream : System.IO.Stream
         if (_s as CountingStream != null)
             ((CountingStream)_s).Adjust(delta);
     }
+    /// <summary>
+    ///   The read method.
+    /// </summary>
+    /// <param name="buffer">The buffer to hold the data read from the stream.</param>
+    /// <param name="offset">the offset within the buffer to copy the first byte read.</param>
+    /// <param name="count">the number of bytes to read.</param>
+    /// <returns>the number of bytes read, after decryption and decompression.</returns>
     public override int Read(byte[] buffer, int offset, int count)
     {
         int bytesRead = _s.Read(buffer, offset, count);
         _bytesRead += bytesRead;
         return bytesRead;
     }
+    /// <summary>
+    ///   Write data into the stream.
+    /// </summary>
+    /// <param name="buffer">The buffer holding data to write to the stream.</param>
+    /// <param name="offset">the offset within that data array to find the first byte to write.</param>
+    /// <param name="count">the number of bytes to write.</param>
     public override void Write(byte[] buffer, int offset, int count)
     {
         if (count == 0) return;
         _s.Write(buffer, offset, count);
         _bytesWritten += count;
     }
+    /// <summary>
+    ///   Whether the stream can be read.
+    /// </summary>
     public override bool CanRead
     {
         get { return _s.CanRead; }
     }
+    /// <summary>
+    ///   Whether it is possible to call Seek() on the stream.
+    /// </summary>
     public override bool CanSeek
     {
         get { return _s.CanSeek; }
     }
+    /// <summary>
+    ///   Whether it is possible to call Write() on the stream.
+    /// </summary>
     public override bool CanWrite
     {
         get { return _s.CanWrite; }
     }
+    /// <summary>
+    ///   Flushes the underlying stream.
+    /// </summary>
     public override void Flush() => _s.Flush();
+    /// <summary>
+    ///   The length of the underlying stream.
+    /// </summary>
     public override long Length
     {
         get { return _s.Length; }   // bytesWritten??
     }
+    /// <summary>
+    ///   Returns the sum of number of bytes written, plus the initial
+    ///   offset before writing.
+    /// </summary>
     public long ComputedPosition
     {
         get { return _initialOffset + _bytesWritten; }
     }
+    /// <summary>
+    ///   The Position of the stream.
+    /// </summary>
     public override long Position
     {
         get { return _s.Position; }
@@ -561,6 +748,17 @@ public class CountingStream : System.IO.Stream
             _s.Seek(value, System.IO.SeekOrigin.Begin);
         }
     }
+    /// <summary>
+    ///   Seek in the stream.
+    /// </summary>
+    /// <param name="offset">the offset point to seek to</param>
+    /// <param name="origin">the reference point from which to seek</param>
+    /// <returns>The new position</returns>
     public override long Seek(long offset, System.IO.SeekOrigin origin) => _s.Seek(offset, origin);
+    /// <summary>
+    ///   Set the length of the underlying stream.  Be careful with this!
+    /// </summary>
+    ///
+    /// <param name='value'>the length to set on the underlying stream.</param>
     public override void SetLength(long value) => _s.SetLength(value);
 }

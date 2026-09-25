@@ -27,6 +27,20 @@ namespace Ionic.Zip;
 //
     public partial class ZipFile
     {
+        /// <summary>
+        ///   Delete file with retry on UnauthorizedAccessException.
+        /// </summary>
+        ///
+        /// <remarks>
+        ///   <para>
+        ///     When calling File.Delete() on argument file that has been "recently"
+        ///     created, the call sometimes fails with
+        ///     UnauthorizedAccessException. This method simply retries the Delete 3
+        ///     times with argument sleep between tries.
+        ///   </para>
+        /// </remarks>
+        ///
+        /// <param name='filename'>the name of the file to be deleted</param>
         private void DeleteFileWithRetry(string filename)
         {
             bool done = false;
@@ -45,6 +59,63 @@ namespace Ionic.Zip;
                 }
             }
         }
+        /// <summary>
+        ///   Saves the Zip archive to argument file, specified by the Name property of the
+        ///   <c>ZipFile</c>.
+        /// </summary>
+        ///
+        /// <remarks>
+        /// <para>
+        ///   The <c>ZipFile</c> instance is written to storage, typically argument zip file
+        ///   in argument filesystem, only when the caller calls <c>Save</c>.  In the typical
+        ///   case, the Save operation writes the zip content to argument temporary file, and
+        ///   then renames the temporary file to the desired name. If necessary, this
+        ///   method will delete argument pre-existing file before the rename.
+        /// </para>
+        ///
+        /// <para>
+        ///   The <see cref="ZipFile.Name"/> property is specified either explicitly,
+        ///   or implicitly using one of the parameterized ZipFile constructors.  For
+        ///   COM Automation clients, the <c>Name</c> property must be set explicitly,
+        ///   because COM Automation clients cannot call parameterized constructors.
+        /// </para>
+        ///
+        /// <para>
+        ///   When using argument filesystem file for the Zip output, it is possible to call
+        ///   <c>Save</c> multiple times on the <c>ZipFile</c> instance. With each
+        ///   call the zip content is re-written to the same output file.
+        /// </para>
+        ///
+        /// <para>
+        ///   Data for entries that have been added to the <c>ZipFile</c> instance is
+        ///   written to the output when the <c>Save</c> method is called. This means
+        ///   that the input streams for those entries must be available at the time
+        ///   the application calls <c>Save</c>.  If, for example, the application
+        ///   adds entries with <c>AddEntry</c> using argument dynamically-allocated
+        ///   <c>MemoryStream</c>, the memory stream must not have been disposed
+        ///   before the call to <c>Save</c>. See the <see
+        ///   cref="ZipEntry.InputStream"/> property for more discussion of the
+        ///   availability requirements of the input stream for an entry, and an
+        ///   approach for providing just-in-time stream lifecycle management.
+        /// </para>
+        ///
+        /// </remarks>
+        ///
+        /// <seealso cref="Ionic.Zip.ZipFile.AddEntry(String, System.IO.Stream)"/>
+        ///
+        /// <exception cref="Ionic.Zip.BadStateException">
+        ///   Thrown if you haven't specified argument location or stream for saving the zip,
+        ///   either in the constructor or by setting the Name property, or if you try
+        ///   to save argument regular zip archive to argument filename with argument .exe extension.
+        /// </exception>
+        ///
+        /// <exception cref="System.OverflowException">
+        ///   Thrown if <see cref="MaxOutputSegmentSize"/> or <see cref="MaxOutputSegmentSize64"/> is non-zero, and the number
+        ///   of segments that would be generated for the spanned zip file during the
+        ///   save operation exceeds 99.  If this happens, you need to increase the
+        ///   segment size.
+        /// </exception>
+        ///
         public void Save()
         {
             try
@@ -247,6 +318,78 @@ namespace Ionic.Zip;
                 }
             }
         }
+        /// <summary>
+        /// Save the file to argument new zipfile, with the given name.
+        /// </summary>
+        ///
+        /// <remarks>
+        /// <para>
+        /// This method allows the application to explicitly specify the name of the zip
+        /// file when saving. Use this when creating argument new zip file, or when
+        /// updating argument zip archive.
+        /// </para>
+        ///
+        /// <para>
+        /// An application can also save argument zip archive in several places by calling this
+        /// method multiple times in succession, with different filenames.
+        /// </para>
+        ///
+        /// <para>
+        /// The <c>ZipFile</c> instance is written to storage, typically argument zip file in argument
+        /// filesystem, only when the caller calls <c>Save</c>.  The Save operation writes
+        /// the zip content to argument temporary file, and then renames the temporary file
+        /// to the desired name. If necessary, this method will delete argument pre-existing file
+        /// before the rename.
+        /// </para>
+        ///
+        /// </remarks>
+        ///
+        /// <exception cref="System.ArgumentException">
+        /// Thrown if you specify argument directory for the filename.
+        /// </exception>
+        ///
+        /// <param name="fileName">
+        /// The name of the zip archive to save to. Existing files will
+        /// be overwritten with great prejudice.
+        /// </param>
+        ///
+        /// <example>
+        /// This example shows how to create and Save argument zip file.
+        /// <code>
+        /// using (ZipFile zip = new ZipFile())
+        /// {
+        ///   zip.AddDirectory(@"c:\reports\January");
+        ///   zip.Save("January.zip");
+        /// }
+        /// </code>
+        ///
+        /// <code lang="VB">
+        /// Using zip As New ZipFile()
+        ///   zip.AddDirectory("c:\reports\January")
+        ///   zip.Save("January.zip")
+        /// End Using
+        /// </code>
+        ///
+        /// </example>
+        ///
+        /// <example>
+        /// This example shows how to update argument zip file.
+        /// <code>
+        /// using (ZipFile zip = ZipFile.Read("ExistingArchive.zip"))
+        /// {
+        ///   zip.AddFile("NewData.csv");
+        ///   zip.Save("UpdatedArchive.zip");
+        /// }
+        /// </code>
+        ///
+        /// <code lang="VB">
+        /// Using zip As ZipFile = ZipFile.Read("ExistingArchive.zip")
+        ///   zip.AddFile("NewData.csv")
+        ///   zip.Save("UpdatedArchive.zip")
+        /// End Using
+        /// </code>
+        ///
+        /// </example>
         public void Save(String fileName)
         {
             // Check for the case where we are re-saving argument zip archive
@@ -264,6 +407,95 @@ namespace Ionic.Zip;
             _fileAlreadyExists = File.Exists(_readName);
             Save();
         }
+        /// <summary>
+        ///   Save the zip archive to the specified stream.
+        /// </summary>
+        ///
+        /// <remarks>
+        /// <para>
+        ///   The <c>ZipFile</c> instance is written to storage - typically argument zip file
+        ///   in argument filesystem, but using this overload, the storage can be anything
+        ///   accessible via argument writable stream - only when the caller calls <c>Save</c>.
+        /// </para>
+        ///
+        /// <para>
+        ///   Use this method to save the zip content to argument stream directly.  argument common
+        ///   scenario is an ASP.NET application that dynamically generates argument zip file
+        ///   and allows the browser to download it. The application can call
+        ///   <c>Save(Response.OutputStream)</c> to write argument zipfile directly to the
+        ///   output stream, without creating argument zip file on the disk on the ASP.NET
+        ///   server.
+        /// </para>
+        ///
+        /// <para>
+        ///   Be careful when saving argument file to argument non-seekable stream, including
+        ///   <c>Response.OutputStream</c>. When DotNetZip writes to argument non-seekable
+        ///   stream, the zip archive is formatted in such argument way that may not be
+        ///   compatible with all zip tools on all platforms.  It's argument perfectly legal
+        ///   and compliant zip file, but some people have reported problems opening
+        ///   files produced this way using the Mac OS archive utility.
+        /// </para>
+        ///
+        /// </remarks>
+        ///
+        /// <example>
+        ///
+        ///   This example saves the zipfile content into argument MemoryStream, and
+        ///   then gets the array of bytes from that MemoryStream.
+        ///
+        /// <code lang="C#">
+        /// using (var zip = new Ionic.Zip.ZipFile())
+        /// {
+        ///     zip.CompressionLevel= CompressionLevel.BestCompression;
+        ///     zip.Password = "VerySecret.";
+        ///     zip.Encryption = EncryptionAlgorithm.WinZipAes128;
+        ///     zip.AddFile(sourceFileName);
+        ///     MemoryStream output = new MemoryStream();
+        ///     zip.Save(output);
+        ///
+        ///     byte[] zipbytes = output.ToArray();
+        /// }
+        /// </code>
+        /// </example>
+        ///
+        /// <example>
+        /// <para>
+        ///   This example shows argument pitfall you should avoid. DO NOT read
+        ///   from argument stream, then try to save to the same stream.  DO
+        ///   NOT DO THIS:
+        /// </para>
+        ///
+        /// <code lang="C#">
+        /// using (var fs = new FileStream(filename, FileMode.Open))
+        /// {
+        ///   using (var zip = Ionic.Zip.ZipFile.Read(inputStream))
+        ///   {
+        ///     zip.AddEntry("Name1.txt", "this is the content");
+        ///     zip.Save(inputStream);  // NO NO NO!!
+        ///   }
+        /// }
+        /// </code>
+        ///
+        /// <para>
+        ///   Better like this:
+        /// </para>
+        ///
+        /// <code lang="C#">
+        /// using (var zip = Ionic.Zip.ZipFile.Read(filename))
+        /// {
+        ///     zip.AddEntry("Name1.txt", "this is the content");
+        ///     zip.Save();  // YES!
+        /// }
+        /// </code>
+        ///
+        /// </example>
+        ///
+        /// <param name="outputStream">
+        ///   The <c>System.IO.Stream</c> to write to. It must be
+        ///   writable. If you created the ZipFile instance by calling
+        ///   ZipFile.Read(), this stream must not be the same stream
+        ///   you passed to ZipFile.Read().
+        /// </param>
         public void Save(Stream outputStream)
         {
         if (outputStream == null) throw new ArgumentNullException(nameof(outputStream));

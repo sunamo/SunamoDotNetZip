@@ -138,6 +138,36 @@ internal class WorkItem
         this.index = ix;
     }
 }
+/// <summary>
+///   A write-only decorator stream that compresses data as it is
+///   written using the BZip2 algorithm. This stream compresses by
+///   block using multiple threads.
+/// </summary>
+/// <para>
+///   This class performs BZIP2 compression through writing.  For
+///   more information on the BZIP2 algorithm, see
+///   <see href="http://en.wikipedia.org/wiki/BZIP2"/>.
+/// </para>
+///
+/// <para>
+///   This class is similar to <see cref="BZip2OutputStream"/>,
+///   except that this implementation uses an approach that employs multiple
+///   worker threads to perform the compression.  On a multi-cpu or multi-core
+///   computer, the performance of this class can be significantly higher than
+///   the single-threaded BZip2OutputStream, particularly for larger streams.
+///   How large?  Anything over 10mb is a good candidate for parallel
+///   compression.
+/// </para>
+///
+/// <para>
+///   The tradeoff is that this class uses more memory and more CPU than the
+///   vanilla <c>BZip2OutputStream</c>. Also, for small files, the
+///   <c>ParallelBZip2OutputStream</c> can be much slower than the vanilla
+///   <c>BZip2OutputStream</c>, because of the overhead associated to using the
+///   thread pool.
+/// </para>
+///
+/// <seealso cref="BZip2OutputStream" />
 public class ParallelBZip2OutputStream : System.IO.Stream
 {
     private static readonly int BufferPairsPerCore = 4;
@@ -171,18 +201,80 @@ public class ParallelBZip2OutputStream : System.IO.Stream
     BitWriter bw;
     readonly int blockSize100k;  // 0...9
     private readonly TraceBits desiredTrace = TraceBits.Crc | TraceBits.Write;
+    /// <summary>
+    ///   Constructs a new <c>ParallelBZip2OutputStream</c>, that sends its
+    ///   compressed output to the given output stream.
+    /// </summary>
+    ///
+    /// <param name='output'>
+    ///   The destination stream, to which compressed output will be sent.
+    /// </param>
+    ///
+    /// <example>
+    ///
+    ///   This example reads a file, then compresses it with bzip2 file,
+    ///   and writes the compressed data into a newly created file.
+    ///
+    ///   <code>
+    ///   var fname = "logfile.log";
+    ///   using (var fs = File.OpenRead(fname))
+    ///   {
+    ///       var outFname = fname + ".bz2";
+    ///       using (var output = File.Create(outFname))
+    ///       {
+    ///           using (var compressor = new ParallelBZip2OutputStream(output))
+    ///           {
+    ///               byte[] buffer = new byte[2048];
+    ///               int n;
+    ///               while ((n = fs.Read(buffer, 0, buffer.Length)) > 0)
+    ///               {
+    ///                   compressor.Write(buffer, 0, n);
+    ///               }
+    ///           }
+    ///       }
+    ///   }
+    ///   </code>
+    /// </example>
     public ParallelBZip2OutputStream(Stream output)
         : this(output, BZip2.MaxBlockSize, false)
     {
     }
+    /// <summary>
+    ///   Constructs a new <c>ParallelBZip2OutputStream</c> with specified blocksize.
+    /// </summary>
+    /// <param name = "output">the destination stream.</param>
+    /// <param name = "blockSize">
+    ///   The blockSize in units of 100000 bytes.
+    ///   The valid range is 1..9.
+    /// </param>
     public ParallelBZip2OutputStream(Stream output, int blockSize)
         : this(output, blockSize, false)
     {
     }
+    /// <summary>
+    ///   Constructs a new <c>ParallelBZip2OutputStream</c>.
+    /// </summary>
+    ///   <param name = "output">the destination stream.</param>
+    /// <param name = "leaveOpen">
+    ///   whether to leave the captive stream open upon closing this stream.
+    /// </param>
     public ParallelBZip2OutputStream(Stream output, bool leaveOpen)
         : this(output, BZip2.MaxBlockSize, leaveOpen)
     {
     }
+    /// <summary>
+    ///   Constructs a new <c>ParallelBZip2OutputStream</c> with specified blocksize,
+    ///   and explicitly specifies whether to leave the wrapped stream open.
+    /// </summary>
+    ///
+    /// <param name = "output">the destination stream.</param>
+    /// <param name = "blockSize">
+    ///   The blockSize in units of 100000 bytes.
+    ///   The valid range is 1..9.
+    /// </param>
+    /// <param name = "leaveOpen">
+    ///   whether to leave the captive stream open upon closing this stream.
+    /// </param>
     public ParallelBZip2OutputStream(Stream output, int blockSize, bool leaveOpen)
     {
         if (blockSize < BZip2.MinBlockSize || blockSize > BZip2.MaxBlockSize)
@@ -220,6 +312,68 @@ public class ParallelBZip2OutputStream : System.IO.Stream
         this.lastWritten = -1;
         this.latestCompressed = -1;
     }
+    /// <summary>
+    ///   The maximum number of concurrent compression worker threads to use.
+    /// </summary>
+    ///
+    /// <remarks>
+    /// <para>
+    ///   This property sets an upper limit on the number of concurrent worker
+    ///   threads to employ for compression. The implementation of this stream
+    ///   employs multiple threads from the .NET thread pool, via <see
+    ///   cref="System.Threading.ThreadPool.QueueUserWorkItem(WaitCallback)">
+    ///   ThreadPool.QueueUserWorkItem()</see>, to compress the incoming data by
+    ///   block.  As each block of data is compressed, this stream re-orders the
+    ///   compressed blocks and writes them to the output stream.
+    /// </para>
+    ///
+    /// <para>
+    ///   A higher number of workers enables a higher degree of
+    ///   parallelism, which tends to increase the speed of compression on
+    ///   multi-cpu computers.  On the other hand, a higher number of buffer
+    ///   pairs also implies a larger memory consumption, more active worker
+    ///   threads, and a higher cpu utilization for any compression. This
+    ///   property enables the application to limit its memory consumption and
+    ///   CPU utilization behavior depending on requirements.
+    /// </para>
+    ///
+    /// <para>
+    ///   By default, DotNetZip allocates 4 workers per CPU core, subject to the
+    ///   upper limit specified in this property. For example, suppose the
+    ///   application sets this property to 16.  Then, on a machine with 2
+    ///   cores, DotNetZip will use 8 workers; that number does not exceed the
+    ///   upper limit specified by this property, so the actual number of
+    ///   workers used will be 4 * 2 = 8.  On a machine with 4 cores, DotNetZip
+    ///   will use 16 workers; again, the limit does not apply. On a machine
+    ///   with 8 cores, DotNetZip will use 16 workers, because of the limit.
+    /// </para>
+    ///
+    /// <para>
+    ///   For each compression "worker thread" that occurs in parallel, there is
+    ///   up to 2mb of memory allocated, for buffering and processing. The
+    ///   actual number depends on the <see cref="BlockSize"/> property.
+    /// </para>
+    ///
+    /// <para>
+    ///   CPU utilization will also go up with additional workers, because a
+    ///   larger number of buffer pairs allows a larger number of background
+    ///   threads to compress in parallel. If you find that parallel
+    ///   compression is consuming too much memory or CPU, you can adjust this
+    ///   value downward.
+    /// </para>
+    ///
+    /// <para>
+    ///   The default value is 16. Different values may deliver better or
+    ///   worse results, depending on your priorities and the dynamic
+    ///   performance characteristics of your storage and compute resources.
+    /// </para>
+    ///
+    /// <para>
+    ///   The application can set this value at any time, but it is effective
+    ///   only before the first call to Write(), which is when the buffers are
+    ///   allocated.
+    /// </para>
+    /// </remarks>
     public int MaxWorkers
     {
         get
@@ -234,6 +388,15 @@ public class ParallelBZip2OutputStream : System.IO.Stream
             _maxWorkers = value;
         }
     }
+    /// <summary>
+    ///   Close the stream.
+    /// </summary>
+    /// <remarks>
+    ///   <para>
+    ///     This may or may not close the underlying stream.  Check the
+    ///     constructors that accept a bool value.
+    ///   </para>
+    /// </remarks>
     public override void Close()
     {
         if (this.pendingException != null)
@@ -280,6 +443,9 @@ public class ParallelBZip2OutputStream : System.IO.Stream
             EmitPendingBuffers(false, false);
         }
     }
+    /// <summary>
+    ///   Flush the stream.
+    /// </summary>
     public override void Flush()
     {
         if (this.output != null)
@@ -318,10 +484,37 @@ public class ParallelBZip2OutputStream : System.IO.Stream
         TraceOutput(TraceBits.Write, "final total : {0} (0x{0:X})",
                     this.bw.TotalBytesWrittenOut);
     }
+    /// <summary>
+    ///   The blocksize parameter specified at construction time.
+    /// </summary>
     public int BlockSize
     {
         get { return this.blockSize100k; }
     }
+    /// <summary>
+    ///   Write data to the stream.
+    /// </summary>
+    /// <remarks>
+    ///
+    /// <para>
+    ///   Use the <c>ParallelBZip2OutputStream</c> to compress data while
+    ///   writing: create a <c>ParallelBZip2OutputStream</c> with a writable
+    ///   output stream.  Then call <c>Write()</c> on that
+    ///   <c>ParallelBZip2OutputStream</c>, providing uncompressed data as
+    ///   input.  The data sent to the output stream will be the compressed
+    ///   form of the input data.
+    /// </para>
+    ///
+    /// <para>
+    ///   A <c>ParallelBZip2OutputStream</c> can be used only for
+    ///   <c>Write()</c> not for <c>Read()</c>.
+    /// </para>
+    ///
+    /// </remarks>
+    ///
+    /// <param name="buffer">The buffer holding data to write to the stream.</param>
+    /// <param name="offset">the offset within that data array to find the first byte to write.</param>
+    /// <param name="count">the number of bytes to write.</param>
     public override void Write(byte[] buffer, int offset, int count)
     {
         bool mustWait = false;
@@ -569,14 +762,32 @@ public class ParallelBZip2OutputStream : System.IO.Stream
             }
         }
     }
+    /// <summary>
+    /// Indicates whether the stream can be read.
+    /// </summary>
+    /// <remarks>
+    /// The return value is always false.
+    /// </remarks>
     public override bool CanRead
     {
         get { return false; }
     }
+    /// <summary>
+    /// Indicates whether the stream supports Seek operations.
+    /// </summary>
+    /// <remarks>
+    /// Always returns false.
+    /// </remarks>
     public override bool CanSeek
     {
         get { return false; }
     }
+    /// <summary>
+    /// Indicates whether the stream can be written.
+    /// </summary>
+    /// <remarks>
+    /// The return value depends on whether the captive stream supports writing.
+    /// </remarks>
     public override bool CanWrite
     {
         get
@@ -584,10 +795,22 @@ public class ParallelBZip2OutputStream : System.IO.Stream
             return this.output == null ? throw new ObjectDisposedException("BZip2Stream") : output.CanWrite;
         }
     }
+    /// <summary>
+    /// Reading this property always throws a <see cref="NotImplementedException"/>.
+    /// </summary>
     public override long Length
     {
         get { throw new NotImplementedException(); }
     }
+    /// <summary>
+    /// The position of the stream pointer.
+    /// </summary>
+    ///
+    /// <remarks>
+    ///   Setting this property always throws a <see
+    ///   cref="NotImplementedException"/>. Reading will return the
+    ///   total number of uncompressed bytes written through.
+    /// </remarks>
     public override long Position
     {
         get
@@ -596,9 +819,32 @@ public class ParallelBZip2OutputStream : System.IO.Stream
         }
         set { throw new NotImplementedException(); }
     }
+    /// <summary>
+    /// The total number of bytes written out by the stream.
+    /// </summary>
+    /// <remarks>
+    /// This value is meaningful only after a call to Close().
+    /// </remarks>
     public Int64 BytesWrittenOut { get { return totalBytesWrittenOut; } }
+    /// <summary>
+    /// Calling this method always throws a <see cref="NotImplementedException"/>.
+    /// </summary>
+    /// <param name="offset">this is irrelevant, since it will always throw!</param>
+    /// <param name="origin">this is irrelevant, since it will always throw!</param>
+    /// <returns>irrelevant!</returns>
     public override long Seek(long offset, System.IO.SeekOrigin origin) => throw new NotImplementedException();
+    /// <summary>
+    /// Calling this method always throws a <see cref="NotImplementedException"/>.
+    /// </summary>
+    /// <param name="value">this is irrelevant, since it will always throw!</param>
     public override void SetLength(long value) => throw new NotImplementedException();
+    /// <summary>
+    /// Calling this method always throws a <see cref="NotImplementedException"/>.
+    /// </summary>
+    /// <param name='buffer'>this parameter is never used</param>
+    /// <param name='offset'>this parameter is never used</param>
+    /// <param name='count'>this parameter is never used</param>
+    /// <returns>never returns anything; always throws</returns>
     public override int Read(byte[] buffer, int offset, int count) => throw new NotImplementedException();
     // used only when Trace is defined
     [Flags]

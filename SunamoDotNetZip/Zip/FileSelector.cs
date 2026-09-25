@@ -45,6 +45,10 @@ namespace Ionic.Zip;
 //
 // and so on.
 // ------------------------------------------------------------------
+/// <summary>
+/// Enumerates the options for a logical conjunction. This enum is intended for use
+/// internally by the FileSelector class.
+/// </summary>
 internal enum LogicalConjunction
 {
     NONE,
@@ -415,22 +419,291 @@ internal partial class CompoundCriterion : SelectionCriterion
         return stringBuilder.ToString();
     }
 }
+/// <summary>
+///   FileSelector encapsulates logic that selects files from a source - a zip file
+///   or the filesystem - based on a set of criteria.  This class is used internally
+///   by the DotNetZip library, in particular for the AddSelectedFiles() methods.
+///   This class can also be used independently of the zip capability in DotNetZip.
+/// </summary>
+///
+/// <remarks>
+///
+/// <para>
+///   The FileSelector class is used internally by the ZipFile class for selecting
+///   files for inclusion into the ZipFile, when the <see
+///   cref="Ionic.Zip.ZipFile.AddSelectedFiles(String,String)"/> method, or one of
+///   its overloads, is called.  It's also used for the <see
+///   cref="Ionic.Zip.ZipFile.ExtractSelectedEntries(String)"/> methods.  Typically, an
+///   application that creates or manipulates Zip archives will not directly
+///   interact with the FileSelector class.
+/// </para>
+///
+/// <para>
+///   Some applications may wish to use the FileSelector class directly, to
+///   select files from disk volumes based on a set of criteria, without creating or
+///   querying Zip archives.  The file selection criteria include: a pattern to
+///   match the filename; the last modified, created, or last accessed time of the
+///   file; the size of the file; and the attributes of the file.
+/// </para>
+///
+/// <para>
+///   Consult the documentation for <see cref="SelectionCriteria"/>
+///   for more information on specifying the selection criteria.
+/// </para>
+///
+/// </remarks>
 public partial class FileSelector
 {
     internal SelectionCriterion _Criterion;
 #if NOTUSED
+        /// <summary>
+        ///   The default constructor.
+        /// </summary>
+        /// <remarks>
+        ///   Typically, applications won't use this constructor.  Instead they'll
+        ///   call the constructor that accepts a selectionCriteria string.  If you
+        ///   use this constructor, you'll want to set the SelectionCriteria
+        ///   property on the instance before calling SelectFiles().
+        /// </remarks>
         protected FileSelector() { }
 #endif
+    /// <summary>
+    ///   Constructor that allows the caller to specify file selection criteria.
+    /// </summary>
+    ///
+    /// <remarks>
+    /// <para>
+    ///   This constructor allows the caller to specify a set of criteria for
+    ///   selection of files.
+    /// </para>
+    ///
+    /// <para>
+    ///   See <see cref="FileSelector.SelectionCriteria"/> for a description of
+    ///   the syntax of the selectionCriteria string.
+    /// </para>
+    ///
+    /// <para>
+    ///   By default the FileSelector will traverse NTFS Reparse Points.  To
+    ///   change this, use <see cref="FileSelector(String,
+    ///   bool)">FileSelector(String, bool)</see>.
+    /// </para>
+    /// </remarks>
+    ///
+    /// <param name="selectionCriteria">The criteria for file selection.</param>
     public FileSelector(String selectionCriteria)
     : this(selectionCriteria, true)
     {
     }
+    /// <summary>
+    ///   Constructor that allows the caller to specify file selection criteria.
+    /// </summary>
+    ///
+    /// <remarks>
+    /// <para>
+    ///   This constructor allows the caller to specify a set of criteria for
+    ///   selection of files.
+    /// </para>
+    ///
+    /// <para>
+    ///   See <see cref="FileSelector.SelectionCriteria"/> for a description of
+    ///   the syntax of the selectionCriteria string.
+    /// </para>
+    /// </remarks>
+    ///
+    /// <param name="selectionCriteria">The criteria for file selection.</param>
+    /// <param name="traverseDirectoryReparsePoints">
+    /// whether to traverse NTFS reparse points (junctions).
+    /// </param>
     public FileSelector(String selectionCriteria, bool traverseDirectoryReparsePoints)
     {
         if (!String.IsNullOrEmpty(selectionCriteria))
             _Criterion = _ParseCriterion(selectionCriteria);
         TraverseReparsePoints = traverseDirectoryReparsePoints;
     }
+    /// <summary>
+    ///   The string specifying which files to include when retrieving.
+    /// </summary>
+    /// <remarks>
+    ///
+    /// <para>
+    ///   Specify the criteria in statements of 3 elements: a noun, an operator,
+    ///   and a value.  Consider the string "name != *.doc" .  The noun is
+    ///   "name".  The operator is "!=", implying "Not Equal".  The value is
+    ///   "*.doc".  That criterion, in English, says "all files with a name that
+    ///   does not end in the .doc extension."
+    /// </para>
+    ///
+    /// <para>
+    ///   Supported nouns include "name" (or "filename") for the filename;
+    ///   "atime", "mtime", and "ctime" for last access time, last modfied time,
+    ///   and created time of the file, respectively; "attributes" (or "attrs")
+    ///   for the file attributes; "size" (or "length") for the file length
+    ///   (uncompressed); and "type" for the type of object, either a file or a
+    ///   directory.  The "attributes", "type", and "name" nouns all support =
+    ///   and != as operators.  The "size", "atime", "mtime", and "ctime" nouns
+    ///   support = and !=, and &gt;, &gt;=, &lt;, &lt;= as well.  The times are
+    ///   taken to be expressed in local time.
+    /// </para>
+    ///
+    /// <para>
+    ///   Specify values for the file attributes as a string with one or more of
+    ///   the characters H,R,text,A,I,L in any order, implying file attributes of
+    ///   Hidden, ReadOnly, System, Archive, NotContextIndexed, and ReparsePoint
+    ///   (symbolic link) respectively.
+    /// </para>
+    ///
+    /// <para>
+    ///   To specify a time, use YYYY-MM-DD-HH:mm:ss or YYYY/MM/DD-HH:mm:ss as
+    ///   the format.  If you omit the HH:mm:ss portion, it is assumed to be
+    ///   00:00:00 (midnight).
+    /// </para>
+    ///
+    /// <para>
+    ///   The value for a size criterion is expressed in integer quantities of
+    ///   bytes, kilobytes (use k or kb after the number), megabytes (m or mb),
+    ///   or gigabytes (g or gb).
+    /// </para>
+    ///
+    /// <para>
+    ///   The value for a name is a pattern to match against the filename,
+    ///   potentially including wildcards.  The pattern follows CMD.exe glob
+    ///   rules: * implies one or more of any character, while ?  implies one
+    ///   character.  If the name pattern contains any slashes, it is matched to
+    ///   the entire filename, including the path; otherwise, it is matched
+    ///   against only the filename without the path.  This means a pattern of
+    ///   "*\*.*" matches all files one directory level deep, while a pattern of
+    ///   "*.*" matches all files in all directories.
+    /// </para>
+    ///
+    /// <para>
+    ///   To specify a name pattern that includes spaces, use single quotes
+    ///   around the pattern.  A pattern of "'* *.*'" will match all files that
+    ///   have spaces in the filename.  The full criteria string for that would
+    ///   be "name = '* *.*'" .
+    /// </para>
+    ///
+    /// <para>
+    ///   The value for a type criterion is either F (implying a file) or D
+    ///   (implying a directory).
+    /// </para>
+    ///
+    /// <para>
+    ///   Some examples:
+    /// </para>
+    ///
+    /// <list type="table">
+    ///   <listheader>
+    ///     <term>criteria</term>
+    ///     <description>Files retrieved</description>
+    ///   </listheader>
+    ///
+    ///   <item>
+    ///     <term>name != *.xls </term>
+    ///     <description>any file with an extension that is not .xls
+    ///     </description>
+    ///   </item>
+    ///
+    ///   <item>
+    ///     <term>name = *.mp3 </term>
+    ///     <description>any file with a .mp3 extension.
+    ///     </description>
+    ///   </item>
+    ///
+    ///   <item>
+    ///     <term>*.mp3</term>
+    ///     <description>(same as above) any file with a .mp3 extension.
+    ///     </description>
+    ///   </item>
+    ///
+    ///   <item>
+    ///     <term>attributes = A </term>
+    ///     <description>all files whose attributes include the Archive bit.
+    ///     </description>
+    ///   </item>
+    ///
+    ///   <item>
+    ///     <term>attributes != H </term>
+    ///     <description>all files whose attributes do not include the Hidden bit.
+    ///     </description>
+    ///   </item>
+    ///
+    ///   <item>
+    ///     <term>mtime > 2009-01-01</term>
+    ///     <description>all files with a last modified time after January 1st, 2009.
+    ///     </description>
+    ///   </item>
+    ///
+    ///   <item>
+    ///     <term>ctime > 2009/01/01-03:00:00</term>
+    ///     <description>all files with a created time after 3am (local time),
+    ///     on January 1st, 2009.
+    ///     </description>
+    ///   </item>
+    ///
+    ///   <item>
+    ///     <term>size > 2gb</term>
+    ///     <description>all files whose uncompressed size is greater than 2gb.
+    ///     </description>
+    ///   </item>
+    ///
+    ///   <item>
+    ///     <term>type = D</term>
+    ///     <description>all directories in the filesystem. </description>
+    ///   </item>
+    ///
+    /// </list>
+    ///
+    /// <para>
+    ///   You can combine criteria with the conjunctions AND, OR, and XOR. Using
+    ///   a string like "name = *.txt AND size &gt;= 100k" for the
+    ///   selectionCriteria retrieves entries whose names end in .txt, and whose
+    ///   uncompressed size is greater than or equal to 100 kilobytes.
+    /// </para>
+    ///
+    /// <para>
+    ///   For more complex combinations of criteria, you can use parenthesis to
+    ///   group clauses in the boolean logic.  Absent parenthesis, the
+    ///   precedence of the criterion atoms is determined by order of
+    ///   appearance.  Unlike the character# language, the AND conjunction does not take
+    ///   precendence over the logical OR.  This is important only in strings
+    ///   that contain 3 or more criterion atoms.  In other words, "name = *.txt
+    ///   and size &gt; 1000 or attributes = H" implies "((name = *.txt AND size
+    ///   &gt; 1000) OR attributes = H)" while "attributes = H OR name = *.txt
+    ///   and size &gt; 1000" evaluates to "((attributes = H OR name = *.txt)
+    ///   AND size &gt; 1000)".  When in doubt, use parenthesis.
+    /// </para>
+    ///
+    /// <para>
+    ///   Using time properties requires some extra care. If you want to
+    ///   retrieve all entries that were last updated on 2009 February 14,
+    ///   specify "mtime &gt;= 2009-02-14 AND mtime &lt; 2009-02-15".  Read this
+    ///   to say: all files updated after 12:00am on February 14th, until
+    ///   12:00am on February 15th.  You can use the same bracketing approach to
+    ///   specify any time period - a year, a month, a week, and so on.
+    /// </para>
+    ///
+    /// <para>
+    ///   The syntax allows one special case: if you provide a string with no
+    ///   spaces, it is treated as a pattern to match for the filename.
+    ///   Therefore a string like "*.xls" will be equivalent to specifying "name
+    ///   = *.xls".  This "shorthand" notation does not work with compound
+    ///   criteria.
+    /// </para>
+    ///
+    /// <para>
+    ///   There is no logic in this class that insures that the inclusion
+    ///   criteria are internally consistent.  For example, it's possible to
+    ///   specify criteria that says the file must have a size of less than 100
+    ///   bytes, as well as a size that is greater than 1000 bytes.  Obviously
+    ///   no file will ever satisfy such criteria, but this class does not check
+    ///   for or detect such inconsistencies.
+    /// </para>
+    ///
+    /// </remarks>
+    ///
+    /// <exception cref="System.Exception">
+    ///   Thrown in the setter if the value has an invalid syntax.
+    /// </exception>
     public String SelectionCriteria
     {
         get
@@ -445,6 +718,9 @@ public partial class FileSelector
                 _Criterion = _ParseCriterion(value);
         }
     }
+    /// <summary>
+    ///  Indicates whether searches will traverse NTFS reparse points, like Junctions.
+    /// </summary>
     public bool TraverseReparsePoints
     {
         get; set;
@@ -769,6 +1045,11 @@ public partial class FileSelector
         }
         return current;
     }
+    /// <summary>
+    /// Returns a string representation of the FileSelector object.
+    /// </summary>
+    /// <returns>The string representation of the boolean logic statement of the file
+    /// selection criteria for this instance. </returns>
     public override String ToString() => "FileSelector(" + _Criterion.ToString() + ")";
     private bool Evaluate(string filename)
     {
@@ -783,7 +1064,52 @@ public partial class FileSelector
         if (_Criterion != null && _Criterion.Verbose)
             System.Console.WriteLine(format, args);
     }
+    /// <summary>
+    ///   Returns the names of the files in the specified directory
+    ///   that fit the selection criteria specified in the FileSelector.
+    /// </summary>
+    ///
+    /// <remarks>
+    ///   This is equivalent to calling <see cref="SelectFiles(String, bool)"/>
+    ///   with recurseDirectories = false.
+    /// </remarks>
+    ///
+    /// <param name="directory">
+    ///   The name of the directory over which to apply the FileSelector
+    ///   criteria.
+    /// </param>
+    ///
+    /// <returns>
+    ///   A collection of strings containing fully-qualified pathnames of files
+    ///   that match the criteria specified in the FileSelector instance.
+    /// </returns>
     public System.Collections.Generic.ICollection<String> SelectFiles(String directory) => SelectFiles(directory, false);
+    /// <summary>
+    ///   Returns the names of the files in the specified directory that fit the
+    ///   selection criteria specified in the FileSelector, optionally recursing
+    ///   through subdirectories.
+    /// </summary>
+    ///
+    /// <remarks>
+    ///   This method applies the file selection criteria contained in the
+    ///   FileSelector to the files contained in the given directory, and
+    ///   returns the names of files that conform to the criteria.
+    /// </remarks>
+    ///
+    /// <param name="directory">
+    ///   The name of the directory over which to apply the FileSelector
+    ///   criteria.
+    /// </param>
+    ///
+    /// <param name="recurseDirectories">
+    ///   Whether to recurse through subdirectories when applying the file
+    ///   selection criteria.
+    /// </param>
+    ///
+    /// <returns>
+    ///   A collection of strings containing fully-qualified pathnames of files
+    ///   that match the criteria specified in the FileSelector instance.
+    /// </returns>
     public System.Collections.ObjectModel.ReadOnlyCollection<String>
         SelectFiles(String directory,
                     bool recurseDirectories)
@@ -830,16 +1156,49 @@ public partial class FileSelector
         return list.AsReadOnly();
     }
 }
+/// <summary>
+/// Summary description for EnumUtil.
+/// </summary>
 internal sealed class EnumUtil
 {
     private EnumUtil() { }
+    /// <summary>
+    ///   Returns the value of the DescriptionAttribute if the specified Enum
+    ///   value has one.  If not, returns the ToString() representation of the
+    ///   Enum value.
+    /// </summary>
+    /// <param name="value">The Enum to get the description for</param>
+    /// <returns></returns>
     internal static string GetDescription(System.Enum value)
     {
         FieldInfo fi = value.GetType().GetField(value.ToString());
         var attributes = (DescriptionAttribute[])fi.GetCustomAttributes(typeof(DescriptionAttribute), false);
         return attributes.Length > 0 ? attributes[0].Description : value.ToString();
     }
+    /// <summary>
+    ///   Converts the string representation of the name or numeric value of one
+    ///   or more enumerated constants to an equivalent enumerated object.
+    ///   Note: use the DescriptionAttribute on enum values to enable this.
+    /// </summary>
+    /// <param name="enumType">The System.Type of the enumeration.</param>
+    /// <param name="stringRepresentation">
+    ///   A string containing the name or value to convert.
+    /// </param>
+    /// <returns></returns>
     internal static object Parse(Type enumType, string stringRepresentation) => Parse(enumType, stringRepresentation, false);
+    /// <summary>
+    ///   Converts the string representation of the name or numeric value of one
+    ///   or more enumerated constants to an equivalent enumerated object.  A
+    ///   parameter specified whether the operation is case-sensitive.  Note:
+    ///   use the DescriptionAttribute on enum values to enable this.
+    /// </summary>
+    /// <param name="enumType">The System.Type of the enumeration.</param>
+    /// <param name="stringRepresentation">
+    ///   A string containing the name or value to convert.
+    /// </param>
+    /// <param name="ignoreCase">
+    ///   Whether the operation is case-sensitive or not.</param>
+    /// <returns></returns>
     internal static object Parse(Type enumType, string stringRepresentation, bool ignoreCase)
     {
         if (ignoreCase)
