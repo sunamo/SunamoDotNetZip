@@ -25,240 +25,15 @@ namespace Ionic.Zip;
 //
 // ------------------------------------------------------------------
 //
-/// <summary>
-///   A class for collecting the various options that can be used when
-///   Reading zip files for extraction or update.
-/// </summary>
-///
-/// <remarks>
-///   <para>
-///     When reading a zip file, there are several options an
-///     application can set, to modify how the file is read, or what
-///     the library does while reading.  This class collects those
-///     options into one container.
-///   </para>
-///
-///   <para>
-///     Pass an instance of the <c>ReadOptions</c> class into the
-///     <c>ZipFile.Read()</c> method.
-///   </para>
-///
-/// <seealso cref="ZipFile.Read(String, ReadOptions)"/>.
-/// <seealso cref="ZipFile.Read(Stream, ReadOptions)"/>.
-/// </remarks>
 public class ReadOptions
 {
-    /// <summary>
-    /// An event handler for Read operations.  When opening large zip
-    /// archives, you may want to display a progress bar or other
-    /// indicator of status progress while reading.  This parameter
-    /// allows you to specify a ReadProgress Event Handler directly.
-    /// When you call <c>Read()</c>, the progress event is invoked as
-    /// necessary.
-    /// </summary>
     public EventHandler<ReadProgressEventArgs> ReadProgress { get; set; }
-    /// <summary>
-    /// The <c>System.IO.TextWriter</c> to use for writing verbose status messages
-    /// during operations on the zip archive.  A console application may wish to
-    /// pass <c>System.Console.Out</c> to get messages on the Console. A graphical
-    /// or headless application may wish to capture the messages in a different
-    /// <c>TextWriter</c>, such as a <c>System.IO.StringWriter</c>.
-    /// </summary>
     public TextWriter StatusMessageWriter { get; set; }
-    /// <summary>
-    /// The <c>System.Text.Encoding</c> to use when reading in the zip archive. Be
-    /// careful specifying the encoding.  If the value you use here is not the same
-    /// as the Encoding used when the zip archive was created (possibly by a
-    /// different archiver) you will get unexpected results and possibly exceptions.
-    /// </summary>
-    ///
-    /// <seealso cref="ZipFile.ProvisionalAlternateEncoding"/>
-    ///
     public System.Text.Encoding @Encoding { get; set; }
 }
 public partial class ZipFile
 {
-    /// <summary>
-    /// Reads a zip file archive and returns the instance.
-    /// </summary>
-    ///
-    /// <remarks>
-    /// <para>
-    /// The stream is read using the default <c>System.Text.Encoding</c>, which is the
-    /// <c>IBM437</c> codepage.
-    /// </para>
-    /// </remarks>
-    ///
-    /// <exception cref="System.Exception">
-    /// Thrown if the <c>ZipFile</c> cannot be read. The implementation of this method
-    /// relies on <c>System.IO.File.OpenRead</c>, which can throw a variety of exceptions,
-    /// including specific exceptions if a file is not found, an unauthorized access
-    /// exception, exceptions for poorly formatted filenames, and so on.
-    /// </exception>
-    ///
-    /// <param name="fileName">
-    /// The name of the zip archive to open.  This can be a fully-qualified or relative
-    /// pathname.
-    /// </param>
-    ///
-    /// <seealso cref="ZipFile.Read(String, ReadOptions)"/>.
-    ///
-    /// <returns>The instance read from the zip archive.</returns>
-    ///
     public static ZipFile Read(string fileName) => ZipFile.Read(fileName, null, null, null);
-    /// <summary>
-    ///   Reads a zip file archive from the named filesystem file using the
-    ///   specified options.
-    /// </summary>
-    ///
-    /// <remarks>
-    /// <para>
-    ///   This version of the <c>Read()</c> method allows the caller to pass
-    ///   in a <c>TextWriter</c> an <c>Encoding</c>, via an instance of the
-    ///   <c>ReadOptions</c> class.  The <c>ZipFile</c> is read in using the
-    ///   specified encoding for entries where UTF-8 encoding is not
-    ///   explicitly specified.
-    /// </para>
-    /// </remarks>
-    ///
-    /// <example>
-    ///
-    /// <para>
-    ///   This example shows how to read a zip file using the Big-5 Chinese
-    ///   code page (950), and extract each entry in the zip file, while
-    ///   sending status messages out to the Console.
-    /// </para>
-    ///
-    /// <para>
-    ///   For this code to work as intended, the zipfile must have been
-    ///   created using the big5 code page (CP950). This is typical, for
-    ///   example, when using WinRar on a machine with CP950 set as the
-    ///   default code page.  In that case, the names of entries within the
-    ///   Zip archive will be stored in that code page, and reading the zip
-    ///   archive must be done using that code page.  If the application did
-    ///   not use the correct code page in ZipFile.Read(), then names of
-    ///   entries within the zip archive would not be correctly retrieved.
-    /// </para>
-    ///
-    /// <code lang="C#">
-    /// string zipToExtract = "MyArchive.zip";
-    /// string extractDirectory = "extract";
-    /// var options = new ReadOptions
-    /// {
-    ///   StatusMessageWriter = System.Console.Out,
-    ///   Encoding = System.Text.Encoding.GetEncoding(950)
-    /// };
-    /// using (ZipFile zip = ZipFile.Read(zipToExtract, options))
-    /// {
-    ///   foreach (ZipEntry e in zip)
-    ///   {
-    ///      e.Extract(extractDirectory);
-    ///   }
-    /// }
-    /// </code>
-    ///
-    ///
-    /// <code lang="VB">
-    /// Dim zipToExtract as String = "MyArchive.zip"
-    /// Dim extractDirectory as String = "extract"
-    /// Dim options as New ReadOptions
-    /// options.Encoding = System.Text.Encoding.GetEncoding(950)
-    /// options.StatusMessageWriter = System.Console.Out
-    /// Using zip As ZipFile = ZipFile.Read(zipToExtract, options)
-    ///     Dim e As ZipEntry
-    ///     For Each e In zip
-    ///      e.Extract(extractDirectory)
-    ///     Next
-    /// End Using
-    /// </code>
-    /// </example>
-    ///
-    ///
-    /// <example>
-    ///
-    /// <para>
-    ///   This example shows how to read a zip file using the default
-    ///   code page, to remove entries that have a modified date before a given threshold,
-    ///   sending status messages out to a <c>StringWriter</c>.
-    /// </para>
-    ///
-    /// <code lang="C#">
-    /// var options = new ReadOptions
-    /// {
-    ///   StatusMessageWriter = new System.IO.StringWriter()
-    /// };
-    /// using (ZipFile zip =  ZipFile.Read("PackedDocuments.zip", options))
-    /// {
-    ///   var Threshold = new DateTime(2007,7,4);
-    ///   // We cannot remove the entry from the list, within the context of
-    ///   // an enumeration of said list.
-    ///   // So we add the doomed entry to a list to be removed later.
-    ///   // pass 1: mark the entries for removal
-    ///   var MarkedEntries = new System.Collections.Generic.List&lt;ZipEntry&gt;();
-    ///   foreach (ZipEntry e in zip)
-    ///   {
-    ///     if (e.LastModified &lt; Threshold)
-    ///       MarkedEntries.Add(e);
-    ///   }
-    ///   // pass 2: actually remove the entry.
-    ///   foreach (ZipEntry zombie in MarkedEntries)
-    ///      zip.RemoveEntry(zombie);
-    ///   zip.Comment = "This archive has been updated.";
-    ///   zip.Save();
-    /// }
-    /// // can now use contents of sw, eg store in an audit log
-    /// </code>
-    ///
-    /// <code lang="VB">
-    /// Dim options as New ReadOptions
-    /// options.StatusMessageWriter = New System.IO.StringWriter
-    /// Using zip As ZipFile = ZipFile.Read("PackedDocuments.zip", options)
-    ///     Dim Threshold As New DateTime(2007, 7, 4)
-    ///     ' We cannot remove the entry from the list, within the context of
-    ///     ' an enumeration of said list.
-    ///     ' So we add the doomed entry to a list to be removed later.
-    ///     ' pass 1: mark the entries for removal
-    ///     Dim MarkedEntries As New System.Collections.Generic.List(Of ZipEntry)
-    ///     Dim e As ZipEntry
-    ///     For Each e In zip
-    ///         If (e.LastModified &lt; Threshold) Then
-    ///             MarkedEntries.Add(e)
-    ///         End If
-    ///     Next
-    ///     ' pass 2: actually remove the entry.
-    ///     Dim zombie As ZipEntry
-    ///     For Each zombie In MarkedEntries
-    ///         zip.RemoveEntry(zombie)
-    ///     Next
-    ///     zip.Comment = "This archive has been updated."
-    ///     zip.Save
-    /// End Using
-    /// ' can now use contents of sw, eg store in an audit log
-    /// </code>
-    /// </example>
-    ///
-    /// <exception cref="System.Exception">
-    ///   Thrown if the zipfile cannot be read. The implementation of
-    ///   this method relies on <c>System.IO.File.OpenRead</c>, which
-    ///   can throw a variety of exceptions, including specific
-    ///   exceptions if a file is not found, an unauthorized access
-    ///   exception, exceptions for poorly formatted filenames, and so
-    ///   on.
-    /// </exception>
-    ///
-    /// <param name="fileName">
-    /// The name of the zip archive to open.
-    /// This can be a fully-qualified or relative pathname.
-    /// </param>
-    ///
-    /// <param name="options">
-    /// The set of options to use when reading the zip file.
-    /// </param>
-    ///
-    /// <returns>The ZipFile instance read from the zip archive.</returns>
-    ///
-    /// <seealso cref="ZipFile.Read(Stream, ReadOptions)"/>
-    ///
     public static ZipFile Read(string fileName,
                                ReadOptions options) => options == null
             ? throw new ArgumentNullException(nameof(options))
@@ -266,38 +41,6 @@ public partial class ZipFile
                     options.StatusMessageWriter,
                     options.Encoding,
                     options.ReadProgress);
-    /// <summary>
-    /// Reads a zip file archive using the specified text encoding,  the specified
-    /// TextWriter for status messages, and the specified ReadProgress event handler,
-    /// and returns the instance.
-    /// </summary>
-    ///
-    /// <param name="fileName">
-    /// The name of the zip archive to open.
-    /// This can be a fully-qualified or relative pathname.
-    /// </param>
-    ///
-    /// <param name="readProgress">
-    /// An event handler for Read operations.
-    /// </param>
-    ///
-    /// <param name="statusMessageWriter">
-    /// The <c>System.IO.TextWriter</c> to use for writing verbose status messages
-    /// during operations on the zip archive.  A console application may wish to
-    /// pass <c>System.Console.Out</c> to get messages on the Console. A graphical
-    /// or headless application may wish to capture the messages in a different
-    /// <c>TextWriter</c>, such as a <c>System.IO.StringWriter</c>.
-    /// </param>
-    ///
-    /// <param name="encoding">
-    /// The <c>System.Text.Encoding</c> to use when reading in the zip archive. Be
-    /// careful specifying the encoding.  If the value you use here is not the same
-    /// as the Encoding used when the zip archive was created (possibly by a
-    /// different archiver) you will get unexpected results and possibly exceptions.
-    /// </param>
-    ///
-    /// <returns>The instance read from the zip archive.</returns>
-    ///
     private static ZipFile Read(string fileName,
                                TextWriter statusMessageWriter,
                                System.Text.Encoding encoding,
@@ -317,183 +60,19 @@ public partial class ZipFile
         zf._fileAlreadyExists = true;
         return zf;
     }
-    /// <summary>
-    ///   Reads a zip archive from a stream.
-    /// </summary>
-    ///
-    /// <remarks>
-    ///
-    /// <para>
-    ///   When reading from a file, it's probably easier to just use
-    ///   <see cref="ZipFile.Read(String,
-    ///   ReadOptions)">ZipFile.Read(String, ReadOptions)</see>.  This
-    ///   overload is useful when when the zip archive content is
-    ///   available from an already-open stream. The stream must be
-    ///   open and readable and seekable when calling this method.  The
-    ///   stream is left open when the reading is completed.
-    /// </para>
-    ///
-    /// <para>
-    ///   Using this overload, the stream is read using the default
-    ///   <c>System.Text.Encoding</c>, which is the <c>IBM437</c>
-    ///   codepage. If you want to specify the encoding to use when
-    ///   reading the zipfile content, see
-    ///   <see cref="ZipFile.Read(Stream,
-    ///   ReadOptions)">ZipFile.Read(Stream, ReadOptions)</see>.  This
-    /// </para>
-    ///
-    /// <para>
-    ///   Reading of zip content begins at the current position in the
-    ///   stream.  This means if you have a stream that concatenates
-    ///   regular data and zip data, if you position the open, readable
-    ///   stream at the start of the zip data, you will be able to read
-    ///   the zip archive using this constructor, or any of the ZipFile
-    ///   constructors that accept a <see cref="System.IO.Stream" /> as
-    ///   input. Some examples of where this might be useful: the zip
-    ///   content is concatenated at the end of a regular EXE file, as
-    ///   some self-extracting archives do.  (Note: SFX files produced
-    ///   by DotNetZip do not work this way; they can be read as normal
-    ///   ZIP files). Another example might be a stream being read from
-    ///   a database, where the zip content is embedded within an
-    ///   aggregate stream of data.
-    /// </para>
-    ///
-    /// </remarks>
-    ///
-    /// <example>
-    /// <para>
-    ///   This example shows how to Read zip content from a stream, and
-    ///   extract one entry into a different stream. In this example,
-    ///   the filename "NameOfEntryInArchive.doc", refers only to the
-    ///   name of the entry within the zip archive.  A file by that
-    ///   name is not created in the filesystem.  The I/O is done
-    ///   strictly with the given streams.
-    /// </para>
-    ///
-    /// <code>
-    /// using (ZipFile zip = ZipFile.Read(InputStream))
-    /// {
-    ///    zip.Extract("NameOfEntryInArchive.doc", OutputStream);
-    /// }
-    /// </code>
-    ///
-    /// <code lang="VB">
-    /// Using zip as ZipFile = ZipFile.Read(InputStream)
-    ///    zip.Extract("NameOfEntryInArchive.doc", OutputStream)
-    /// End Using
-    /// </code>
-    /// </example>
-    ///
-    /// <param name="zipStream">the stream containing the zip data.</param>
-    ///
-    /// <returns>The ZipFile instance read from the stream</returns>
-    ///
     public static ZipFile Read(Stream zipStream) => Read(zipStream, null, null, null);
-    /// <summary>
-    ///   Reads a zip file archive from the given stream using the
-    ///   specified options.
-    /// </summary>
-    ///
-    /// <remarks>
-    ///
-    /// <para>
-    ///   When reading from a file, it's probably easier to just use
-    ///   <see cref="ZipFile.Read(String,
-    ///   ReadOptions)">ZipFile.Read(String, ReadOptions)</see>.  This
-    ///   overload is useful when when the zip archive content is
-    ///   available from an already-open stream. The stream must be
-    ///   open and readable and seekable when calling this method.  The
-    ///   stream is left open when the reading is completed.
-    /// </para>
-    ///
-    /// <para>
-    ///   Reading of zip content begins at the current position in the
-    ///   stream.  This means if you have a stream that concatenates
-    ///   regular data and zip data, if you position the open, readable
-    ///   stream at the start of the zip data, you will be able to read
-    ///   the zip archive using this constructor, or any of the ZipFile
-    ///   constructors that accept a <see cref="System.IO.Stream" /> as
-    ///   input. Some examples of where this might be useful: the zip
-    ///   content is concatenated at the end of a regular EXE file, as
-    ///   some self-extracting archives do.  (Note: SFX files produced
-    ///   by DotNetZip do not work this way; they can be read as normal
-    ///   ZIP files). Another example might be a stream being read from
-    ///   a database, where the zip content is embedded within an
-    ///   aggregate stream of data.
-    /// </para>
-    /// </remarks>
-    ///
-    /// <param name="zipStream">the stream containing the zip data.</param>
-    ///
-    /// <param name="options">
-    ///   The set of options to use when reading the zip file.
-    /// </param>
-    ///
-    /// <exception cref="System.Exception">
-    ///   Thrown if the zip archive cannot be read.
-    /// </exception>
-    ///
-    /// <returns>The ZipFile instance read from the stream.</returns>
-    ///
-    /// <seealso cref="ZipFile.Read(String, ReadOptions)"/>
-    ///
     public static ZipFile Read(Stream zipStream, ReadOptions options) => options == null
             ? throw new ArgumentNullException(nameof(options))
             : Read(zipStream,
                     options.StatusMessageWriter,
                     options.Encoding,
                     options.ReadProgress);
-    /// <summary>
-    /// Reads a zip archive from a stream, using the specified text Encoding, the
-    /// specified TextWriter for status messages,
-    /// and the specified ReadProgress event handler.
-    /// </summary>
-    ///
-    /// <remarks>
-    /// <para>
-    /// Reading of zip content begins at the current position in the stream.  This
-    /// means if you have a stream that concatenates regular data and zip data, if
-    /// you position the open, readable stream at the start of the zip data, you
-    /// will be able to read the zip archive using this constructor, or any of the
-    /// ZipFile constructors that accept a <see cref="System.IO.Stream" /> as
-    /// input. Some examples of where this might be useful: the zip content is
-    /// concatenated at the end of a regular EXE file, as some self-extracting
-    /// archives do.  (Note: SFX files produced by DotNetZip do not work this
-    /// way). Another example might be a stream being read from a database, where
-    /// the zip content is embedded within an aggregate stream of data.
-    /// </para>
-    /// </remarks>
-    ///
-    /// <param name="zipStream">the stream containing the zip data.</param>
-    ///
-    /// <param name="statusMessageWriter">
-    /// The <c>System.IO.TextWriter</c> to which verbose status messages are written
-    /// during operations on the <c>ZipFile</c>.  For example, in a console
-    /// application, System.Console.Out works, and will get a message for each entry
-    /// added to the ZipFile.  If the TextWriter is <c>null</c>, no verbose messages
-    /// are written.
-    /// </param>
-    ///
-    /// <param name="encoding">
-    /// The text encoding to use when reading entries that do not have the UTF-8
-    /// encoding bit set.  Be careful specifying the encoding.  If the value you use
-    /// here is not the same as the Encoding used when the zip archive was created
-    /// (possibly by a different archiver) you will get unexpected results and
-    /// possibly exceptions.  See the <see cref="ProvisionalAlternateEncoding"/>
-    /// property for more information.
-    /// </param>
-    ///
-    /// <param name="readProgress">
-    /// An event handler for Read operations.
-    /// </param>
-    ///
-    /// <returns>an instance of ZipFile</returns>
     private static ZipFile Read(Stream zipStream,
                                TextWriter statusMessageWriter,
                                System.Text.Encoding encoding,
                                EventHandler<ReadProgressEventArgs> readProgress)
     {
-        ArgumentNullException.ThrowIfNull(zipStream);
+        if (zipStream == null) throw new ArgumentNullException(nameof(zipStream));
         ZipFile zf = new()
         {
             _StatusMessageTextWriter = statusMessageWriter,
@@ -838,56 +417,7 @@ public partial class ZipFile
     //     }
     //     return true;
     // }
-    /// <summary>
-    /// Checks the given file to see if it appears to be a valid zip file.
-    /// </summary>
-    /// <remarks>
-    ///
-    /// <para>
-    ///   Calling this method is equivalent to calling <see cref="IsZipFile(string,
-    ///   bool)"/> with the testExtract parameter set to false.
-    /// </para>
-    /// </remarks>
-    ///
-    /// <param name="fileName">The file to check.</param>
-    /// <returns>true if the file appears to be a zip file.</returns>
     public static bool IsZipFile(string fileName) => IsZipFile(fileName, false);
-    /// <summary>
-    /// Checks a file to see if it is a valid zip file.
-    /// </summary>
-    ///
-    /// <remarks>
-    /// <para>
-    ///   This method opens the specified zip file, reads in the zip archive,
-    ///   verifying the ZIP metadata as it reads.
-    /// </para>
-    ///
-    /// <para>
-    ///   If everything succeeds, then the method returns true.  If anything fails -
-    ///   for example if an incorrect signature or CRC is found, indicating a
-    ///   corrupt file, the the method returns false.  This method also returns
-    ///   false for a file that does not exist.
-    /// </para>
-    ///
-    /// <para>
-    ///   If <paramref name="testExtract"/> is true, as part of its check, this
-    ///   method reads in the content for each entry, expands it, and checks CRCs.
-    ///   This provides an additional check beyond verifying the zip header and
-    ///   directory data.
-    /// </para>
-    ///
-    /// <para>
-    ///   If <paramref name="testExtract"/> is true, and if any of the zip entries
-    ///   are protected with a password, this method will return false.  If you want
-    ///   to verify a <c>ZipFile</c> that has entries which are protected with a
-    ///   password, you will need to do that manually.
-    /// </para>
-    ///
-    /// </remarks>
-    ///
-    /// <param name="fileName">The zip file to check.</param>
-    /// <param name="testExtract">true if the caller wants to extract each entry.</param>
-    /// <returns>true if the file contains a valid zip file.</returns>
     public static bool IsZipFile(string fileName, bool testExtract)
     {
         bool result = false;
@@ -901,46 +431,9 @@ public partial class ZipFile
         catch (ZipException) { }
         return result;
     }
-    /// <summary>
-    /// Checks a stream to see if it contains a valid zip archive.
-    /// </summary>
-    ///
-    /// <remarks>
-    /// <para>
-    /// This method reads the zip archive contained in the specified stream, verifying
-    /// the ZIP metadata as it reads.  If testExtract is true, this method also extracts
-    /// each entry in the archive, dumping all the bits into <see cref="Stream.Null"/>.
-    /// </para>
-    ///
-    /// <para>
-    /// If everything succeeds, then the method returns true.  If anything fails -
-    /// for example if an incorrect signature or CRC is found, indicating a corrupt
-    /// file, the the method returns false.  This method also returns false for a
-    /// file that does not exist.
-    /// </para>
-    ///
-    /// <para>
-    /// If <c>testExtract</c> is true, this method reads in the content for each
-    /// entry, expands it, and checks CRCs.  This provides an additional check
-    /// beyond verifying the zip header data.
-    /// </para>
-    ///
-    /// <para>
-    /// If <c>testExtract</c> is true, and if any of the zip entries are protected
-    /// with a password, this method will return false.  If you want to verify a
-    /// ZipFile that has entries which are protected with a password, you will need
-    /// to do that manually.
-    /// </para>
-    /// </remarks>
-    ///
-    /// <seealso cref="IsZipFile(string, bool)"/>
-    ///
-    /// <param name="stream">The stream to check.</param>
-    /// <param name="testExtract">true if the caller wants to extract each entry.</param>
-    /// <returns>true if the stream contains a valid zip archive.</returns>
     public static bool IsZipFile(Stream stream, bool testExtract)
     {
-        ArgumentNullException.ThrowIfNull(stream);
+        if (stream == null) throw new ArgumentNullException(nameof(stream));
         bool result = false;
         try
         {

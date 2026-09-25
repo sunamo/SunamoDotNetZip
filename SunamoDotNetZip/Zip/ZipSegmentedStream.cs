@@ -92,24 +92,12 @@ namespace Ionic.Zip;
             //                    Path.GetFileName(zss.CurrentName));
             return zss;
         }
-        /// <summary>
-        ///   Sort-of like a factory method, ForUpdate is used only when
-        ///   the application needs to update the zip entry metadata for
-        ///   a segmented zip file, when the starting segment is earlier
-        ///   than the ending segment, for a particular entry.
-        /// </summary>
-        /// <remarks>
-        ///   <para>
-        ///     The update is always contiguous, never rolls over.  As a
-        ///     result, this method doesn't need to return a ZSS; it can
-        ///     simply return a FileStream.  That's why it's "sort of"
-        ///     like a Factory method.
-        ///   </para>
-        ///   <para>
-        ///     Caller must Close/Dispose the stream object returned by
-        ///     this method.
-        ///   </para>
-        /// </remarks>
+        // Sort-of like a factory method, ForUpdate is used only when
+        // the application needs to update the zip entry metadata for
+        // a segmented zip file, when the starting segment is earlier
+        // than the ending segment, for a particular entry.
+        // The update is always contiguous, never rolls over.
+        // Caller must Close/Dispose the stream object returned by this method.
         public static Stream ForUpdate(string name, uint diskNumber)
         {
             string fname =
@@ -145,17 +133,10 @@ namespace Ionic.Zip;
                 _currentName = null; // it will get updated next time referenced
             }
         }
-        /// <summary>
-        ///   Name of the filesystem file corresponding to the current segment.
-        /// </summary>
-        /// <remarks>
-        ///   <para>
-        ///     The name is not always the name currently being used in the
-        ///     filesystem.  When rwMode is RwMode.Write, the filesystem file has a
-        ///     temporary name until the stream is closed or until the next segment is
-        ///     started.
-        ///   </para>
-        /// </remarks>
+        // Name of the filesystem file corresponding to the current segment.
+        // The name is not always the name currently being used in the filesystem.
+        // When rwMode is RwMode.Write, the filesystem file has a temporary name
+        // until the stream is closed or until the next segment is started.
         public String CurrentName
         {
             get
@@ -201,13 +182,6 @@ namespace Ionic.Zip;
             //                   Path.GetFileName(CurrentName));
             _innerStream = File.OpenRead(CurrentName);
         }
-        /// <summary>
-        /// Read from the stream
-        /// </summary>
-        /// <param name="buffer">the buffer to read</param>
-        /// <param name="offset">the offset at which to start</param>
-        /// <param name="count">the number of bytes to read</param>
-        /// <returns>the number of bytes actually read</returns>
         public override int Read(byte[] buffer, int offset, int count)
         {
             if (rwMode != RwMode.ReadOnly)
@@ -256,12 +230,6 @@ namespace Ionic.Zip;
             if (CurrentSegment == 0)
                 _innerStream.Write(BitConverter.GetBytes(ZipConstants.SplitArchiveSignature), 0, 4);
         }
-        /// <summary>
-        /// Write to the stream.
-        /// </summary>
-        /// <param name="buffer">the buffer from which to write</param>
-        /// <param name="offset">the offset at which to start writing</param>
-        /// <param name="count">the number of bytes to write</param>
         public override void Write(byte[] buffer, int offset, int count)
         {
             if (rwMode != RwMode.Write)
@@ -337,7 +305,7 @@ namespace Ionic.Zip;
             {
                 try
                 {
-                    _currentTempName = Path.Combine(Path.GetDirectoryName(CurrentName), 
+                    _currentTempName = Path.Combine(Path.GetDirectoryName(CurrentName),
                                                     SharedUtilities.InternalGetTempFileName());
                     // move the .z0x file back to a temp name
                     File.Move(CurrentName, _currentTempName);
