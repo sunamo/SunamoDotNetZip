@@ -498,7 +498,7 @@ namespace Ionic.Zip;
         /// </param>
         public void Save(Stream outputStream)
         {
-        ArgumentNullException.ThrowIfNull(outputStream);
+        if (outputStream == null) throw new ArgumentNullException(nameof(outputStream));
         if (!outputStream.CanWrite)
                 throw new ArgumentException("Must be argument writable stream.", nameof(outputStream));
             // if we had argument filename to save to, we are now obliterating it.

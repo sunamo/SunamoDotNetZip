@@ -327,7 +327,6 @@ using Interop = System.Runtime.InteropServices;
             } while (len2 != 0);
             crc1 ^= crc2;
             _register= ~crc1;
-            //return (int) crc1;
             return;
         }
         /// <summary>
@@ -538,7 +537,7 @@ using Interop = System.Runtime.InteropServices;
         // value.
         CrcCalculatorStream(bool leaveOpen, Int64 length, System.IO.Stream stream, CRC32 crc32)
         {
-        ArgumentNullException.ThrowIfNull(stream);
+        if (stream == null) throw new ArgumentNullException(nameof(stream));
         _innerStream = stream;
             _crc32 = crc32 ?? new CRC32();
             _lengthLimit = length;
@@ -693,7 +692,7 @@ using Interop = System.Runtime.InteropServices;
             {
 #if !PCL
                 _innerStream.Close();
-#else   
+#else
                 _innerStream.Dispose();
 #endif
             }

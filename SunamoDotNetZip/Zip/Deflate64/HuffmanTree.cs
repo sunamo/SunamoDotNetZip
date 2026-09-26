@@ -25,9 +25,6 @@ namespace Ionic.Zip.Deflate64;
         private readonly short[] _left;
         private readonly short[] _right;
         private readonly byte[] _codeLengthArray;
-#if DEBUG
-        private uint[] _codeArrayDebug;
-#endif
         private readonly int _tableMask;
         // huffman tree for static block
         public static HuffmanTree StaticLiteralLengthTree { get; } = new HuffmanTree(GetStaticLiteralTreeLength());
@@ -127,9 +124,6 @@ namespace Ionic.Zip.Deflate64;
         private void CreateTable()
         {
             uint[] codeArray = CalculateHuffmanCode();
-#if DEBUG
-            _codeArrayDebug = codeArray;
-#endif
             short avail = (short)_codeLengthArray.Length;
             for (int ch = 0; ch < _codeLengthArray.Length; ch++)
             {

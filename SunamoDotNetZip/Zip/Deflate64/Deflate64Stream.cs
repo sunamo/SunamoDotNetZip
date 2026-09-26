@@ -9,7 +9,7 @@ namespace Ionic.Zip.Deflate64;
         // A specific constructor to allow decompression of Deflate64
         internal Deflate64Stream(Stream stream, long uncompressedSize = -1)
         {
-        ArgumentNullException.ThrowIfNull(stream);
+        if (stream == null) throw new ArgumentNullException(nameof(stream));
         if (!stream.CanRead)
                 throw new ArgumentException("NotSupported_UnreadableStream", nameof(stream));
             _inflater = new InflaterManaged(null, true, uncompressedSize);
@@ -82,7 +82,7 @@ namespace Ionic.Zip.Deflate64;
         }
         private void ValidateParameters(byte[] array, int offset, int count)
         {
-        ArgumentNullException.ThrowIfNull(array);
+        if (array == null) throw new ArgumentNullException(nameof(array));
         if (offset < 0)
                 throw new ArgumentOutOfRangeException(nameof(offset));
             if (count < 0)

@@ -593,7 +593,7 @@ public partial class ZipEntry
     /// </summary>
     void InternalExtractToBaseDir(string baseDir, string password, ZipContainer zipContainer, ZipEntrySource zipEntrySource, string fileName)
     {
-        ArgumentNullException.ThrowIfNull(baseDir);
+        if (baseDir == null) throw new ArgumentNullException(nameof(baseDir));
         // workitem 7958
         if (zipContainer == null)
             throw new BadStateException("This entry is an orphan");
@@ -971,7 +971,7 @@ public partial class ZipEntry
     }
     Stream GetExtractDecompressor(Stream input2)
     {
-        ArgumentNullException.ThrowIfNull(input2);
+        if (input2 == null) throw new ArgumentNullException(nameof(input2));
         // get a stream that either decompresses or not.
         switch (_CompressionMethod_FromZipFile)
         {
@@ -991,7 +991,7 @@ public partial class ZipEntry
     }
     Stream GetExtractDecryptor(Stream input)
     {
-        ArgumentNullException.ThrowIfNull(input);
+        if (input == null) throw new ArgumentNullException(nameof(input));
         Stream input2;
         if (_Encryption_FromZipFile == EncryptionAlgorithm.PkzipWeak)
             input2 = new ZipCipherStream(input, _zipCrypto_forExtract, CryptoMode.Decrypt);
@@ -1171,7 +1171,7 @@ public partial class ZipEntry
     /// </summary>
     bool IsDoneWithOutputToBaseDir(string baseDir, out string outFileName)
     {
-        ArgumentNullException.ThrowIfNull(baseDir);
+        if (baseDir == null) throw new ArgumentNullException(nameof(baseDir));
         // Sometimes the name on the entry starts with a slash.
         // Rather than unpack to the root of the volume, we're going to
         // drop the slash and unpack to the specified base directory.

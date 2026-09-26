@@ -337,7 +337,7 @@ namespace Ionic.Zip;
             {
                 try
                 {
-                    _currentTempName = Path.Combine(Path.GetDirectoryName(CurrentName), 
+                    _currentTempName = Path.Combine(Path.GetDirectoryName(CurrentName),
                                                     SharedUtilities.InternalGetTempFileName());
                     // move the .z0x file back to a temp name
                     File.Move(CurrentName, _currentTempName);

@@ -509,6 +509,76 @@ namespace Ionic.Zip;
         /// <seealso cref="Ionic.Zip.ZipFile.ReadProgress"/>
         /// <seealso cref="Ionic.Zip.ZipFile.AddProgress"/>
         /// <seealso cref="Ionic.Zip.ZipFile.ExtractProgress"/>
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
         public event EventHandler<SaveProgressEventArgs> SaveProgress;
         internal bool OnSaveBlock(ZipEntry entry, Int64 bytesXferred, Int64 totalBytesToXfer)
         {
@@ -624,6 +694,15 @@ namespace Ionic.Zip;
         /// <seealso cref="Ionic.Zip.ZipFile.SaveProgress"/>
         /// <seealso cref="Ionic.Zip.ZipFile.AddProgress"/>
         /// <seealso cref="Ionic.Zip.ZipFile.ExtractProgress"/>
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
         public event EventHandler<ReadProgressEventArgs> ReadProgress;
         private void OnReadStarted()
         {
@@ -831,6 +910,23 @@ namespace Ionic.Zip;
         /// <seealso cref="Ionic.Zip.ZipFile.SaveProgress"/>
         /// <seealso cref="Ionic.Zip.ZipFile.ReadProgress"/>
         /// <seealso cref="Ionic.Zip.ZipFile.AddProgress"/>
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
         public event EventHandler<ExtractProgressEventArgs> ExtractProgress;
         private void OnExtractEntry(int current, bool before, ZipEntry currentEntry, string path)
         {
@@ -984,6 +1080,17 @@ namespace Ionic.Zip;
         /// <seealso cref="Ionic.Zip.ZipFile.SaveProgress"/>
         /// <seealso cref="Ionic.Zip.ZipFile.ReadProgress"/>
         /// <seealso cref="Ionic.Zip.ZipFile.ExtractProgress"/>
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
         public event EventHandler<AddProgressEventArgs> AddProgress;
         private void OnAddStarted()
         {
@@ -1153,6 +1260,24 @@ namespace Ionic.Zip;
         /// </example>
         ///
         /// <seealso cref="Ionic.Zip.ZipFile.ZipErrorAction"/>
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
         public event EventHandler<ZipErrorEventArgs> ZipError;
         internal bool OnZipErrorSaving(ZipEntry entry, Exception exc)
         {

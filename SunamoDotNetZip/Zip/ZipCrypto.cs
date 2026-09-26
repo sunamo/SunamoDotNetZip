@@ -172,7 +172,7 @@ namespace Ionic.Zip;
         /// <returns>The plaintext.</returns>
         public byte[] DecryptMessage(byte[] cipherText, int length)
         {
-        ArgumentNullException.ThrowIfNull(cipherText);
+        if (cipherText == null) throw new ArgumentNullException(nameof(cipherText));
         if (length > cipherText.Length)
                 throw new ArgumentOutOfRangeException(nameof(length),
                                                       "Bad length during Decryption: the length parameter must be smaller than or equal to the size of the destination array.");
@@ -200,7 +200,7 @@ namespace Ionic.Zip;
         /// <returns>The ciphertext.</returns>
         public byte[] EncryptMessage(byte[] plainText, int length)
         {
-        ArgumentNullException.ThrowIfNull(plainText);
+        if (plainText == null) throw new ArgumentNullException(nameof(plainText));
         if (length > plainText.Length)
                 throw new ArgumentOutOfRangeException(nameof(length),
                                                       "Bad length during Encryption: The length parameter must be smaller than or equal to the size of the destination array.");
@@ -325,7 +325,7 @@ namespace Ionic.Zip;
         /// <param name="cipher">The pre-initialized ZipCrypto object.</param>
         public ZipCipherStream(System.IO.Stream stream, ZipCrypto cipher, CryptoMode mode)
         {
-        ArgumentNullException.ThrowIfNull(stream);
+        if (stream == null) throw new ArgumentNullException(nameof(stream));
         _cipher = cipher;
             _s = stream;
             _mode = mode;
@@ -334,7 +334,7 @@ namespace Ionic.Zip;
         {
             if (_mode == CryptoMode.Encrypt)
                 throw new NotSupportedException("This stream does not encrypt via Read()");
-        ArgumentNullException.ThrowIfNull(buffer);
+        if (buffer == null) throw new ArgumentNullException(nameof(buffer));
         byte[] db = new byte[count];
             int bytesRead = _s.Read(db, 0, count);
             byte[] decrypted = _cipher.DecryptMessage(db, bytesRead);
@@ -348,7 +348,7 @@ namespace Ionic.Zip;
         {
             if (_mode == CryptoMode.Decrypt)
                 throw new NotSupportedException("This stream does not Decrypt via Write()");
-        ArgumentNullException.ThrowIfNull(buffer);
+        if (buffer == null) throw new ArgumentNullException(nameof(buffer));
         // workitem 7696
         if (count == 0) return;
         byte[] plaintext;

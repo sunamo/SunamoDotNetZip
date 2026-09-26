@@ -1276,7 +1276,7 @@ public partial class FileSelector
     /// <returns>a collection of ZipEntry objects that conform to the criteria.</returns>
     public ICollection<Ionic.Zip.ZipEntry> SelectEntries(Ionic.Zip.ZipFile zip)
     {
-        ArgumentNullException.ThrowIfNull(zip);
+        if (zip == null) throw new ArgumentNullException(nameof(zip));
         var list = new List<Ionic.Zip.ZipEntry>();
         foreach (Ionic.Zip.ZipEntry e in zip)
         {
@@ -1325,7 +1325,7 @@ public partial class FileSelector
     /// <returns>a collection of ZipEntry objects that conform to the criteria.</returns>
     public ICollection<Ionic.Zip.ZipEntry> SelectEntries(Ionic.Zip.ZipFile zip, string directoryPathInArchive)
     {
-        ArgumentNullException.ThrowIfNull(zip);
+        if (zip == null) throw new ArgumentNullException(nameof(zip));
         var list = new List<Ionic.Zip.ZipEntry>();
         // workitem 8559
         string slashSwapped = directoryPathInArchive?.Replace("/", "\\");

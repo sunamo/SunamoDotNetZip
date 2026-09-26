@@ -179,6 +179,15 @@ IDisposable
     /// </code>
     /// </example>
     ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
     public bool FullScan
     {
         get;
@@ -212,6 +221,9 @@ IDisposable
     /// </code>
     /// </example>
     ///
+    ///
+    ///
+    ///
     public bool SortEntriesBeforeSaving
     {
         get;
@@ -240,6 +252,8 @@ IDisposable
     /// }
     /// </code>
     /// </example>
+    ///
+    ///
     public bool AddDirectoryWillTraverseReparsePoints { get; set; }
     /// <summary>
     ///   Size of the IO buffer used while saving.
@@ -297,6 +311,13 @@ IDisposable
     /// }
     /// </code>
     /// </example>
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
     public int BufferSize
     {
         get { return _BufferSize; }
@@ -327,6 +348,7 @@ IDisposable
     ///     yourself. Or just leave it alone and accept the default.
     ///   </para>
     /// </remarks>
+    ///
     public int CodecBufferSize
     {
         get;
@@ -359,6 +381,10 @@ IDisposable
     ///  </para>
     ///
     /// </remarks>
+    ///
+    ///
+    ///
+    ///
     public bool FlattenFoldersOnExtract
     {
         get;
@@ -377,6 +403,7 @@ IDisposable
     ///   information see <see
     ///   cref="CompressionStrategy">CompressionStrategy</see>.
     /// </remarks>
+    ///
     public CompressionStrategy Strategy
     {
         get { return _Strategy; }
@@ -406,6 +433,9 @@ IDisposable
     ///   property is implicitly set to <c>null</c>.
     /// </para>
     /// </remarks>
+    ///
+    ///
+    ///
     public string Name
     {
         get { return _name; }
@@ -444,6 +474,9 @@ IDisposable
     ///    alone, and accept the default.
     ///  </para>
     /// </remarks>
+    ///
+    ///
+    ///
     public CompressionLevel CompressionLevel
     {
         get;
@@ -519,6 +552,12 @@ IDisposable
     /// </para>
     ///
     /// </remarks>
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
     public string Comment
     {
         get { return _Comment; }
@@ -636,6 +675,17 @@ IDisposable
     ///
     /// <seealso cref="ZipEntry.EmitTimesInWindowsFormatWhenSaving" />
     /// <seealso cref="EmitTimesInUnixFormatWhenSaving" />
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
     public bool EmitTimesInWindowsFormatWhenSaving
     {
         get
@@ -725,6 +775,14 @@ IDisposable
     ///
     /// <seealso cref="ZipEntry.EmitTimesInUnixFormatWhenSaving" />
     /// <seealso cref="EmitTimesInWindowsFormatWhenSaving" />
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
     public bool EmitTimesInUnixFormatWhenSaving
     {
         get
@@ -746,6 +804,7 @@ IDisposable
     ///   This is a <em>synthetic</em> property.  It returns true if the <see
     ///   cref="StatusMessageTextWriter"/> is non-null.
     /// </remarks>
+    ///
     internal bool Verbose
     {
         get { return (_StatusMessageTextWriter != null); }
@@ -773,6 +832,7 @@ IDisposable
     ///   filenames. But since this library is not built for non-Windows platforms,
     ///   in most cases you should just leave this property alone.
     /// </remarks>
+    ///
     public bool CaseSensitiveRetrieval
     {
         get
@@ -919,6 +979,16 @@ IDisposable
     /// </para>
     /// </remarks>
     /// <seealso cref="ProvisionalAlternateEncoding"/>
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
     [Obsolete("Beginning with v1.9.1.6 of DotNetZip, this property is obsolete.  It will be removed in a future version of the library. Your applications should  use AlternateEncoding and AlternateEncodingUsage instead.")]
     public bool UseUnicodeAsNecessary
     {
@@ -981,6 +1051,13 @@ IDisposable
     ///
     /// </remarks>
     /// <seealso cref="RequiresZip64"/>
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
     public Zip64Option UseZip64WhenSaving
     {
         get
@@ -1036,6 +1113,12 @@ IDisposable
     /// </remarks>
     /// <seealso cref="UseZip64WhenSaving"/>
     /// <seealso cref="OutputUsedZip64"/>
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
     public Nullable<bool> RequiresZip64
     {
         get
@@ -1090,6 +1173,10 @@ IDisposable
     /// </remarks>
     /// <seealso cref="UseZip64WhenSaving"/>
     /// <seealso cref="RequiresZip64"/>
+    ///
+    ///
+    ///
+    ///
     public Nullable<bool> OutputUsedZip64
     {
         get
@@ -1106,6 +1193,7 @@ IDisposable
     ///   This property will return null (Nothing in VB) if you've added an entry after reading
     ///   the zip file.
     /// </remarks>
+    ///
     public Nullable<bool> InputUsesZip64
     {
         get
@@ -1265,6 +1353,18 @@ IDisposable
     /// </example>
     ///
     /// <seealso cref="Ionic.Zip.ZipFile.DefaultEncoding">DefaultEncoding</seealso>
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
     [Obsolete("use AlternateEncoding instead.")]
     public System.Text.Encoding ProvisionalAlternateEncoding
     {
@@ -1381,6 +1481,14 @@ IDisposable
     ///
     /// </code>
     /// </example>
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
     public TextWriter StatusMessageTextWriter
     {
         get { return _StatusMessageTextWriter; }
@@ -1435,6 +1543,12 @@ IDisposable
     /// <exception cref="System.IO.FileNotFoundException">
     /// Thrown when setting the property if the directory does not exist.
     /// </exception>
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
     ///
     public String TempFileFolder
     {
@@ -1587,6 +1701,25 @@ IDisposable
     ///
     /// <seealso cref="Ionic.Zip.ZipFile.Encryption">ZipFile.Encryption</seealso>
     /// <seealso cref="Ionic.Zip.ZipEntry.Password">ZipEntry.Password</seealso>
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
     public String Password
     {
         set
@@ -1626,6 +1759,8 @@ IDisposable
     /// </para>
     /// </remarks>
     /// <seealso cref="Ionic.Zip.ZipEntry.ExtractExistingFile"/>
+    ///
+    ///
     public ExtractExistingFileAction ExtractExistingFile
     {
         get;
@@ -1722,6 +1857,17 @@ IDisposable
     ///
     /// <seealso cref="Ionic.Zip.ZipEntry.ZipErrorAction"/>
     /// <seealso cref="Ionic.Zip.ZipFile.ZipError"/>
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
     public ZipErrorAction ZipErrorAction
     {
         get
@@ -1854,6 +2000,20 @@ IDisposable
     ///
     /// <seealso cref="Ionic.Zip.ZipFile.Password">ZipFile.Password</seealso>
     /// <seealso cref="Ionic.Zip.ZipEntry.Encryption">ZipEntry.Encryption</seealso>
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
     public EncryptionAlgorithm Encryption
     {
         get
@@ -1912,6 +2072,12 @@ IDisposable
     /// </para>
     ///
     /// </remarks>
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
     public SetCompressionCallback SetCompression
     {
         get;
@@ -1997,6 +2163,15 @@ IDisposable
     /// </remarks>
     ///
     /// <seealso cref="NumberOfSegmentsForMostRecentSave"/>
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
     public Int32 MaxOutputSegmentSize
     {
         get
@@ -2092,6 +2267,15 @@ IDisposable
     /// </remarks>
     ///
     /// <seealso cref="NumberOfSegmentsForMostRecentSave"/>
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
     public Int64 MaxOutputSegmentSize64
     {
         get
@@ -2187,6 +2371,14 @@ IDisposable
     ///
     /// <seealso cref="ParallelDeflateMaxBufferPairs"/>
     ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
     public long ParallelDeflateThreshold
     {
         set
@@ -2276,6 +2468,14 @@ IDisposable
     ///
     /// <seealso cref="ParallelDeflateThreshold"/>
     ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
     public int ParallelDeflateMaxBufferPairs
     {
         get
@@ -2309,6 +2509,7 @@ IDisposable
     ///     This static property is primarily useful for diagnostic purposes.
     ///   </para>
     /// </remarks>
+    ///
     public static System.Version LibraryVersion
     {
         get
@@ -2459,6 +2660,18 @@ IDisposable
     ///
     /// <param name="fileName">The filename to use for the new zip archive.</param>
     ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
     public ZipFile(string fileName)
     {
         if (DefaultEncoding == null)
@@ -2516,6 +2729,12 @@ IDisposable
     /// <param name="encoding">The Encoding is used as the default alternate
     /// encoding for entries with filenames or comments that cannot be encoded
     /// with the IBM437 code page. </param>
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
     public ZipFile(string fileName, System.Text.Encoding encoding)
     {
         try
@@ -2583,6 +2802,12 @@ IDisposable
     /// End Using
     /// </code>
     /// </example>
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
     public ZipFile()
     {
         if (DefaultEncoding == null)
@@ -2614,6 +2839,9 @@ IDisposable
     /// The Encoding is used as the default alternate encoding for entries with
     /// filenames or comments that cannot be encoded with the IBM437 code page.
     /// </param>
+    ///
+    ///
+    ///
     public ZipFile(System.Text.Encoding encoding)
     {
         AlternateEncoding = encoding;
@@ -2688,6 +2916,15 @@ IDisposable
     /// <param name="fileName">The filename to use for the new zip archive.</param>
     /// <param name="statusMessageWriter">A TextWriter to use for writing
     /// verbose status messages.</param>
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
     public ZipFile(string fileName, TextWriter statusMessageWriter)
     {
         if (DefaultEncoding == null)
@@ -2766,6 +3003,14 @@ IDisposable
     /// The Encoding is used as the default alternate encoding for entries with
     /// filenames or comments that cannot be encoded with the IBM437 code page.
     /// </param>
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
     public ZipFile(string fileName, TextWriter statusMessageWriter,
                    System.Text.Encoding encoding)
     {
@@ -2802,6 +3047,10 @@ IDisposable
     ///
     /// </remarks>
     /// <param name="fileName">the name of the existing zip file to read in.</param>
+    ///
+    ///
+    ///
+    ///
     public void Initialize(string fileName)
     {
         try
@@ -2880,6 +3129,12 @@ IDisposable
     ///   The <c>ZipEntry</c> within the Zip archive at the specified index. If the
     ///   entry does not exist in the archive, this indexer throws.
     /// </returns>
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
     ///
     public ZipEntry this[int ix]
     {
@@ -2969,6 +3224,16 @@ IDisposable
     ///   filename. If the named entry does not exist in the archive, this indexer
     ///   returns <c>null</c> (<c>Nothing</c> in VB).
     /// </returns>
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
     ///
     public ZipEntry this[String fileName]
     {
@@ -3076,6 +3341,10 @@ IDisposable
     ///   The list of strings for the filenames contained within the Zip archive.
     /// </returns>
     ///
+    ///
+    ///
+    ///
+    ///
     public System.Collections.Generic.ICollection<String> EntryFileNames
     {
         get
@@ -3101,6 +3370,8 @@ IDisposable
     /// </para>
     /// </remarks>
     /// <seealso cref="EntriesSorted"/>
+    ///
+    ///
     public System.Collections.Generic.ICollection<ZipEntry> Entries
     {
         get
@@ -3152,6 +3423,13 @@ IDisposable
     /// </example>
     ///
     /// <seealso cref="Entries"/>
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
     public System.Collections.Generic.ICollection<ZipEntry> EntriesSorted
     {
         get
@@ -3258,11 +3536,21 @@ IDisposable
     ///
     /// <seealso cref="Ionic.Zip.ZipFile.RemoveSelectedEntries(string)"/>
     ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
     public void RemoveEntry(ZipEntry entry)
     {
         //if (!_entries.Values.Contains(entry))
         //    throw new ArgumentException("The entry you specified does not exist in the zip archive.");
-        ArgumentNullException.ThrowIfNull(entry);
+        if (entry == null) throw new ArgumentNullException(nameof(entry));
         var path = SharedUtilities.NormalizePathForUseInZipFile(entry.FileName);
         _entries.Remove(path);
         if (!AnyCaseInsensitiveMatches(path))
@@ -3357,6 +3645,14 @@ IDisposable
     /// pathname can use forward-slashes or backward slashes.
     /// </param>
     ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
     public void RemoveEntry(String fileName)
     {
         string modifiedName = ZipEntry.NameInArchive(fileName, null);
@@ -3415,6 +3711,9 @@ IDisposable
     /// End Using ' Dispose is implicity called here
     /// </code>
     /// </example>
+    ///
+    ///
+    ///
     public void Dispose()
     {
         // dispose of the managed and unmanaged resources
@@ -3436,6 +3735,8 @@ IDisposable
     /// <param name="disposeManagedResources">
     ///   indicates whether the method should dispose streams or not.
     /// </param>
+    ///
+    ///
     protected virtual void Dispose(bool disposeManagedResources)
     {
         if (!this._disposed)

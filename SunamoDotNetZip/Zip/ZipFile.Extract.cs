@@ -139,6 +139,20 @@ namespace Ionic.Zip;
     ///   The path can be relative or fully-qualified.
     /// </param>
     ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
     public void ExtractAll(string path) => _InternalExtractAll(path, true);
     /// <summary>
     /// Extracts all of the items in the zip archive, to the specified path in the
@@ -202,6 +216,15 @@ namespace Ionic.Zip;
     /// The action to take if extraction would overwrite an existing file.
     /// </param>
     /// <seealso cref="ExtractSelectedEntries(String,ExtractExistingFileAction)"/>
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
+    ///
     public void ExtractAll(string path, ExtractExistingFileAction extractExistingFile)
         {
             ExtractExistingFile = extractExistingFile;

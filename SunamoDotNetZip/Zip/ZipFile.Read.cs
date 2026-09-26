@@ -493,7 +493,7 @@ public partial class ZipFile
                                System.Text.Encoding encoding,
                                EventHandler<ReadProgressEventArgs> readProgress)
     {
-        ArgumentNullException.ThrowIfNull(zipStream);
+        if (zipStream == null) throw new ArgumentNullException(nameof(zipStream));
         ZipFile zf = new()
         {
             _StatusMessageTextWriter = statusMessageWriter,
@@ -940,7 +940,7 @@ public partial class ZipFile
     /// <returns>true if the stream contains a valid zip archive.</returns>
     public static bool IsZipFile(Stream stream, bool testExtract)
     {
-        ArgumentNullException.ThrowIfNull(stream);
+        if (stream == null) throw new ArgumentNullException(nameof(stream));
         bool result = false;
         try
         {
