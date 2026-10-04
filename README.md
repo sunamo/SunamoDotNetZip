@@ -1,5 +1,10 @@
 # SunamoDotNetZip
 
+## Short description
+
+Fork knihovny DotNetZip pro .NET 9, vytvořený kvůli závažné bezpečnostní zranitelnosti původní verze. Poskytuje práci s archivy ZIP.
+
+
 .NET 9 fork for DotNetZip because have high security vulnerability
 
 ## Overview
