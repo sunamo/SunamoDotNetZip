@@ -121,10 +121,6 @@ internal class BZip2Compressor
     private static readonly int[] increments = [ 1, 4, 13, 40, 121, 364, 1093, 3280,
                                                      9841, 29524, 88573, 265720, 797161,
                                                      2391484 ];
-    /// <summary>
-    ///   BZip2Compressor writes its compressed data out via a BitWriter. This
-    ///   is necessary because BZip2 does byte shredding.
-    /// </summary>
     public BZip2Compressor(BitWriter writer)
         : this(writer, BZip2.MaxBlockSize)
     {
@@ -165,33 +161,10 @@ internal class BZip2Compressor
     {
         get; private set;
     }
-    /// <summary>
-    ///   The number of uncompressed bytes being held in the buffer.
-    /// </summary>
-    /// <remarks>
-    ///   <para>
-    ///     I am thinking this may be useful in a Stream that uses this
-    ///     compressor class. In the Close() method on the stream it could
-    ///     check this value to see if anything has been written at all.  You
-    ///     may think the stream could easily track the number of bytes it
-    ///     wrote, which would eliminate the need for this. But, there is the
-    ///     case where the stream writes a complete block, and it is full, and
-    ///     then writes no more. In that case the stream may want to check.
-    ///   </para>
-    /// </remarks>
     public int UncompressedBytes
     {
         get { return this.last + 1; }
     }
-    /// <summary>
-    ///   Accept new bytes into the compressor data buffer
-    /// </summary>
-    /// <remarks>
-    ///   <para>
-    ///     This method does the first-level (cheap) run-length encoding, and
-    ///     stores the encoded data into the rle block.
-    ///   </para>
-    /// </remarks>
     public int Fill(byte[] buffer, int offset, int count)
     {
         if (this.last >= this.outBlockFillThreshold)
@@ -207,27 +180,6 @@ internal class BZip2Compressor
         } while (offset < limit && writeResult == 1);
         return bytesWritten;
     }
-    /// <summary>
-    ///   Process one input byte into the block.
-    /// </summary>
-    ///
-    /// <remarks>
-    ///   <para>
-    ///     To "process" the byte means to do the run-length encoding.
-    ///     There are 3 possible return values:
-    ///
-    ///        0 - the byte was not written, in other words, not
-    ///            encoded into the block. This happens when the
-    ///            byte b would require the start of a new run, and
-    ///            the block has no more room for new runs.
-    ///
-    ///        1 - the byte was written, and the block is not full.
-    ///
-    ///        2 - the byte was written, and the block is full.
-    ///
-    ///   </para>
-    /// </remarks>
-    /// <returns>0 if the byte was not written, non-zero if written.</returns>
     private int write0(byte value)
     {
         bool isBlockFull;
@@ -266,20 +218,6 @@ internal class BZip2Compressor
         this.currentByte = value;
         return 1;
     }
-    /// <summary>
-    ///   Append one run to the output block.
-    /// </summary>
-    ///
-    /// <remarks>
-    ///   <para>
-    ///     This compressor does run-length-encoding before BWT and etc. This
-    ///     method simply appends a run to the output block. The append always
-    ///     succeeds. The return value indicates whether the block is full:
-    ///     false (not full) implies that at least one additional run could be
-    ///     processed.
-    ///   </para>
-    /// </remarks>
-    /// <returns>true if the block is now full; otherwise false.</returns>
     private bool AddRunToOutputBlock(bool isFinal)
     {
         runs++;
@@ -338,16 +276,6 @@ internal class BZip2Compressor
         // is full?
         return (this.last >= this.outBlockFillThreshold);
     }
-    /// <summary>
-    ///   Compress the data that has been placed (Run-length-encoded) into the
-    ///   block. The compressed data goes into the CompressedBytes array.
-    /// </summary>
-    /// <remarks>
-    ///   <para>
-    ///     Side effects: 1.  fills the CompressedBytes array.  2. sets the
-    ///     AvailableBytesOut property.
-    ///   </para>
-    /// </remarks>
     public void CompressAndWrite() // endBlock
     {
         if (this.runLength > 0)
