@@ -26,37 +26,8 @@ namespace Ionic.Zip;
 // Created Tue Apr 15 17:39:56 2008
 //
 // ------------------------------------------------------------------
-    /// <summary>
-    ///   This class implements the "traditional" or "classic" PKZip encryption,
-    ///   which today is considered to be weak. On the other hand it is
-    ///   ubiquitous. This class is intended for use only by the DotNetZip
-    ///   library.
-    /// </summary>
-    ///
-    /// <remarks>
-    ///   Most uses of the DotNetZip library will not involve direct calls into
-    ///   the ZipCrypto class.  Instead, the ZipCrypto class is instantiated and
-    ///   used by the ZipEntry() class when encryption or decryption on an entry
-    ///   is employed.  If for some reason you really wanted to use a weak
-    ///   encryption algorithm in some other application, you might use this
-    ///   library.  But you would be much better off using one of the built-in
-    ///   strong encryption libraries in the .NET Framework, like the AES
-    ///   algorithm or SHA.
-    /// </remarks>
     internal class ZipCrypto
     {
-        /// <summary>
-        ///   The default constructor for ZipCrypto.
-        /// </summary>
-        ///
-        /// <remarks>
-        ///   This class is intended for internal use by the library only. It's
-        ///   probably not useful to you. Seriously.  Stop reading this
-        ///   documentation.  It's a waste of your time.  Go do something else.
-        ///   Check the football scores. Go get an ice cream with a friend.
-        ///   Seriously.
-        /// </remarks>
-        ///
         private ZipCrypto() { }
         public static ZipCrypto ForWrite(string password)
         {
@@ -125,14 +96,6 @@ namespace Ionic.Zip;
             }
             return crypto;
         }
-        /// <summary>
-        /// From AppNote.txt:
-        /// unsigned char decrypt_byte()
-        ///     local unsigned short temp
-        ///     temp :=- Key(2) | 2
-        ///     decrypt_byte := (temp * (temp ^ 1)) bitshift-right 8
-        /// end decrypt_byte
-        /// </summary>
         private byte MagicByte
         {
             get
@@ -148,28 +111,6 @@ namespace Ionic.Zip;
         //     update_keys(C)
         //     buffer(i) := C
         // end loop
-        /// <summary>
-        ///   Call this method on a cipher text to render the plaintext. You must
-        ///   first initialize the cipher with a call to InitCipher.
-        /// </summary>
-        ///
-        /// <example>
-        ///   <code>
-        ///     var cipher = new ZipCrypto();
-        ///     cipher.InitCipher(Password);
-        ///     // Decrypt the header.  This has a side effect of "further initializing the
-        ///     // encryption keys" in the traditional zip encryption.
-        ///     byte[] DecryptedMessage = cipher.DecryptMessage(EncryptedMessage);
-        ///   </code>
-        /// </example>
-        ///
-        /// <param name="cipherText">The encrypted buffer.</param>
-        /// <param name="length">
-        ///   The number of bytes to encrypt.
-        ///   Should be less than or equal to CipherText.Length.
-        /// </param>
-        ///
-        /// <returns>The plaintext.</returns>
         public byte[] DecryptMessage(byte[] cipherText, int length)
         {
         if (cipherText == null) throw new ArgumentNullException(nameof(cipherText));
@@ -185,19 +126,6 @@ namespace Ionic.Zip;
             }
             return plainText;
         }
-        /// <summary>
-        ///   This is the converse of DecryptMessage.  It encrypts the plaintext
-        ///   and produces a ciphertext.
-        /// </summary>
-        ///
-        /// <param name="plainText">The plain text buffer.</param>
-        ///
-        /// <param name="length">
-        ///   The number of bytes to encrypt.
-        ///   Should be less than or equal to plainText.Length.
-        /// </param>
-        ///
-        /// <returns>The ciphertext.</returns>
         public byte[] EncryptMessage(byte[] plainText, int length)
         {
         if (plainText == null) throw new ArgumentNullException(nameof(plainText));
@@ -213,56 +141,6 @@ namespace Ionic.Zip;
             }
             return cipherText;
         }
-        /// <summary>
-        ///   This initializes the cipher with the given password.
-        ///   See AppNote.txt for details.
-        /// </summary>
-        ///
-        /// <param name="passphrase">
-        ///   The passphrase for encrypting or decrypting with this cipher.
-        /// </param>
-        ///
-        /// <remarks>
-        /// <code>
-        /// Step 1 - Initializing the encryption keys
-        /// -----------------------------------------
-        /// Start with these keys:
-        /// Key(0) := 305419896 (0x12345678)
-        /// Key(1) := 591751049 (0x23456789)
-        /// Key(2) := 878082192 (0x34567890)
-        ///
-        /// Then, initialize the keys with a password:
-        ///
-        /// loop for i from 0 to length(password)-1
-        ///     update_keys(password(i))
-        /// end loop
-        ///
-        /// Where update_keys() is defined as:
-        ///
-        /// update_keys(char):
-        ///   Key(0) := crc32(key(0),char)
-        ///   Key(1) := Key(1) + (Key(0) bitwiseAND 000000ffH)
-        ///   Key(1) := Key(1) * 134775813 + 1
-        ///   Key(2) := crc32(key(2),key(1) rightshift 24)
-        /// end update_keys
-        ///
-        /// Where crc32(old_crc,char) is a routine that given a CRC value and a
-        /// character, returns an updated CRC value after applying the CRC-32
-        /// algorithm described elsewhere in this document.
-        ///
-        /// </code>
-        ///
-        /// <para>
-        ///   After the keys are initialized, then you can use the cipher to
-        ///   encrypt the plaintext.
-        /// </para>
-        ///
-        /// <para>
-        ///   Essentially we encrypt the password with the keys, then discard the
-        ///   ciphertext for the password. This initializes the keys for later use.
-        /// </para>
-        ///
-        /// </remarks>
         public void InitCipher(string passphrase)
         {
             byte[] p = SharedUtilities.StringToByteArray(passphrase);
@@ -276,11 +154,6 @@ namespace Ionic.Zip;
             _Keys[1] = _Keys[1] * 0x08088405 + 1;
             _Keys[2] = (UInt32)crc32.ComputeCrc32((int)_Keys[2], (byte)(_Keys[1] >> 24));
         }
-        ///// <summary>
-        ///// The byte array representing the seed keys used.
-        ///// Get this after calling InitCipher.  The 12 bytes represents
-        ///// what the zip spec calls the "EncryptionHeader".
-        ///// </summary>
         //public byte[] KeyHeader
         //{
         //    get
@@ -310,19 +183,11 @@ namespace Ionic.Zip;
         Encrypt,
         Decrypt
     }
-    /// <summary>
-    ///   A Stream for reading and concurrently decrypting data from a zip file,
-    ///   or for writing and concurrently encrypting data to a zip file.
-    /// </summary>
     internal class ZipCipherStream : System.IO.Stream
     {
         private readonly ZipCrypto _cipher;
         private readonly System.IO.Stream _s;
         private readonly CryptoMode _mode;
-        /// <summary>  The constructor. </summary>
-        /// <param name="stream">The underlying stream</param>
-        /// <param name="mode">To either encrypt or decrypt.</param>
-        /// <param name="cipher">The pre-initialized ZipCrypto object.</param>
         public ZipCipherStream(System.IO.Stream stream, ZipCrypto cipher, CryptoMode mode)
         {
         if (stream == null) throw new ArgumentNullException(nameof(stream));

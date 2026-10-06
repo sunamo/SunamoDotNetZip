@@ -16,13 +16,8 @@ namespace Ionic.Zip.Deflate64;
         private int _end;                 // end position of the buffer
         private uint _bitBuffer = 0;      // store the bits here, we can quickly shift in this buffer
         private int _bitsInBuffer = 0;    // number of bits available in bitBuffer
-        /// <summary>Total bits available in the input buffer.</summary>
         public int AvailableBits => _bitsInBuffer;
-        /// <summary>Total bytes available in the input buffer.</summary>
         public int AvailableBytes => (_end - _start) + (_bitsInBuffer / 8);
-        /// <summary>Ensure that count bits are in the bit buffer.</summary>
-        /// <param name="count">Can be up to 16.</param>
-        /// <returns>Returns false if input is not sufficient to make this true.</returns>
         public bool EnsureBitsAvailable(int count)
         {
             Debug.Assert(0 < count && count <= 16, "count is invalid.");
@@ -50,13 +45,6 @@ namespace Ionic.Zip.Deflate64;
             }
             return true;
         }
-        /// <summary>
-        /// This function will try to load 16 or more bits into bitBuffer.
-        /// It returns whatever is contained in bitBuffer after loading.
-        /// The main difference between this and GetBits is that this will
-        /// never return -1. So the caller needs to check AvailableBits to
-        /// see how many bits are available.
-        /// </summary>
         public uint TryLoad16Bits()
         {
             Debug.Assert(_buffer != null);
@@ -84,7 +72,6 @@ namespace Ionic.Zip.Deflate64;
             return _bitBuffer;
         }
         private uint GetBitMask(int count) => ((uint)1 << count) - 1;
-        /// <summary>Gets count bits from the input buffer. Returns -1 if not enough bits available.</summary>
         public int GetBits(int count)
         {
             Debug.Assert(0 < count && count <= 16, "count is invalid.");
@@ -97,12 +84,10 @@ namespace Ionic.Zip.Deflate64;
             _bitsInBuffer -= count;
             return result;
         }
-        /// <summary>
-        /// Copies length bytes from input buffer to output buffer starting at output[offset].
-        /// You have to make sure, that the buffer is byte aligned. If not enough bytes are
-        /// available, copies fewer bytes.
-        /// </summary>
-        /// <returns>Returns the number of bytes copied, 0 if no byte is available.</returns>
+        // Copies length bytes from input buffer to output buffer starting at output[offset].
+        // You have to make sure, that the buffer is byte aligned. If not enough bytes are
+        // available, copies fewer bytes.
+        // Returns the number of bytes copied, 0 if no byte is available.
         public int CopyTo(byte[] output, int offset, int length)
         {
             Debug.Assert(output != null);
@@ -134,18 +119,14 @@ namespace Ionic.Zip.Deflate64;
             _start += length;
             return bytesFromBitBuffer + length;
         }
-        /// <summary>
-        /// Return true is all input bytes are used.
-        /// This means the caller can call SetInput to add more input.
-        /// </summary>
+        // Return true is all input bytes are used.
+        // This means the caller can call SetInput to add more input.
         public bool NeedsInput() => _start == _end;
-        /// <summary>
-        /// Set the byte array to be processed.
-        /// All the bits remained in bitBuffer will be processed before the new bytes.
-        /// We don't clone the byte array here since it is expensive.
-        /// The caller should make sure after a buffer is passed in.
-        /// It will not be changed before calling this function again.
-        /// </summary>
+        // Set the byte array to be processed.
+        // All the bits remained in bitBuffer will be processed before the new bytes.
+        // We don't clone the byte array here since it is expensive.
+        // The caller should make sure after a buffer is passed in.
+        // It will not be changed before calling this function again.
         public void SetInput(byte[] buffer, int offset, int length)
         {
             Debug.Assert(buffer != null);
@@ -159,14 +140,14 @@ namespace Ionic.Zip.Deflate64;
                 _end = offset + length;
             }
         }
-        /// <summary>Skip n bits in the buffer.</summary>
+        // Skip n bits in the buffer.
         public void SkipBits(int bitCount)
         {
             Debug.Assert(_bitsInBuffer >= bitCount, "No enough bits in the buffer, Did you call EnsureBitsAvailable?");
             _bitBuffer >>= bitCount;
             _bitsInBuffer -= bitCount;
         }
-        /// <summary>Skips to the next byte boundary.</summary>
+        // Skips to the next byte boundary.
         public void SkipToByteBoundary()
         {
             _bitBuffer >>= (_bitsInBuffer % 8);

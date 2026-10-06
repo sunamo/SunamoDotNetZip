@@ -50,9 +50,6 @@ namespace Ionic.BZip2;
  */
 // compile: msbuild
 // not: csc.exe /t:library /debug+ /out:dll BZip2InputStream.cs BCRC32.cs Rand.cs
-    /// <summary>
-    ///   A read-only decorator stream that performs BZip2 decompression on Read.
-    /// </summary>
     public class BZip2InputStream : System.IO.Stream
     {
         bool _disposed;
@@ -73,9 +70,6 @@ namespace Ionic.BZip2;
         private int inUseCount;
         private Stream input;
         private int currentChar = -1;
-        /// <summary>
-        ///   Compressor State
-        /// </summary>
         // variables names: ok
         enum CState
         {
@@ -102,53 +96,9 @@ namespace Ionic.BZip2;
         private int setupTPosition;
         private char setupZ;
         private BZip2InputStream.DecompressionState data;
-        /// <summary>
-        ///   Create a BZip2InputStream, wrapping it around the given input Stream.
-        /// </summary>
-        /// <remarks>
-        ///   <para>
-        ///     The input stream will be closed when the BZip2InputStream is closed.
-        ///   </para>
-        /// </remarks>
-        /// <param name='input'>The stream from which to read compressed data</param>
         public BZip2InputStream(Stream input)
             : this(input, false)
         {}
-        /// <summary>
-        ///   Create a BZip2InputStream with the given stream, and
-        ///   specifying whether to leave the wrapped stream open when
-        ///   the BZip2InputStream is closed.
-        /// </summary>
-        /// <param name='input'>The stream from which to read compressed data</param>
-        /// <param name='leaveOpen'>
-        ///   Whether to leave the input stream open, when the BZip2InputStream closes.
-        /// </param>
-        ///
-        /// <example>
-        ///
-        ///   This example reads a bzip2-compressed file, decompresses it,
-        ///   and writes the decompressed data into a newly created file.
-        ///
-        ///   <code>
-        ///   var fname = "logfile.log.bz2";
-        ///   using (var fs = File.OpenRead(fname))
-        ///   {
-        ///       using (var decompressor = new BZip2InputStream(fs))
-        ///       {
-        ///           var outFname = fname + ".decompressed";
-        ///           using (var output = File.Create(outFname))
-        ///           {
-        ///               byte[] buffer = new byte[2048];
-        ///               int n;
-        ///               while ((n = decompressor.Read(buffer, 0, buffer.Length)) > 0)
-        ///               {
-        ///                   output.Write(buffer, 0, n);
-        ///               }
-        ///           }
-        ///       }
-        ///   }
-        ///   </code>
-        /// </example>
         public BZip2InputStream(Stream input, bool leaveOpen)
             : base()
         {
@@ -156,27 +106,6 @@ namespace Ionic.BZip2;
             this._leaveOpen = leaveOpen;
             init();
         }
-        /// <summary>
-        ///   Read data from the stream.
-        /// </summary>
-        ///
-        /// <remarks>
-        ///   <para>
-        ///     To decompress a BZip2 data stream, create a <c>BZip2InputStream</c>,
-        ///     providing a stream that reads compressed data.  Then call Read() on
-        ///     that <c>BZip2InputStream</c>, and the data read will be decompressed
-        ///     as you read.
-        ///   </para>
-        ///
-        ///   <para>
-        ///     A <c>BZip2InputStream</c> can be used only for <c>Read()</c>, not for <c>Write()</c>.
-        ///   </para>
-        /// </remarks>
-        ///
-        /// <param name="buffer">The buffer into which the read data should be placed.</param>
-        /// <param name="offset">the offset within that data array to put the first byte read.</param>
-        /// <param name="count">the number of bytes to read.</param>
-        /// <returns>the number of bytes actually read</returns>
         public override int Read(byte[] buffer, int offset, int count)
         {
             if (offset < 0)
@@ -208,10 +137,6 @@ namespace Ionic.BZip2;
             }
             this.inUseCount = sequenceIndex;
         }
-        /// <summary>
-        ///   Read a single byte from the stream.
-        /// </summary>
-        /// <returns>the byte read from the stream, or -1 if EOF</returns>
         public override int ReadByte()
         {
             int retChar = this.currentChar;
@@ -243,12 +168,6 @@ namespace Ionic.BZip2;
             }
             return retChar;
         }
-        /// <summary>
-        /// Indicates whether the stream can be read.
-        /// </summary>
-        /// <remarks>
-        /// The return value depends on whether the captive stream supports reading.
-        /// </remarks>
         public override bool CanRead
         {
             get
@@ -256,22 +175,10 @@ namespace Ionic.BZip2;
             return _disposed ? throw new ObjectDisposedException("BZip2Stream") : input.CanRead;
         }
     }
-        /// <summary>
-        /// Indicates whether the stream supports Seek operations.
-        /// </summary>
-        /// <remarks>
-        /// Always returns false.
-        /// </remarks>
         public override bool CanSeek
         {
             get { return false; }
         }
-        /// <summary>
-        /// Indicates whether the stream can be written.
-        /// </summary>
-        /// <remarks>
-        /// The return value depends on whether the captive stream supports writing.
-        /// </remarks>
         public override bool CanWrite
         {
             get
@@ -279,30 +186,15 @@ namespace Ionic.BZip2;
             return _disposed ? throw new ObjectDisposedException("BZip2Stream") : input.CanWrite;
         }
     }
-        /// <summary>
-        /// Flush the stream.
-        /// </summary>
         public override void Flush()
         {
             if (_disposed) throw new ObjectDisposedException("BZip2Stream");
             input.Flush();
         }
-        /// <summary>
-        /// Reading this property always throws a <see cref="NotImplementedException"/>.
-        /// </summary>
         public override long Length
         {
             get { throw new NotImplementedException(); }
         }
-        /// <summary>
-        /// The position of the stream pointer.
-        /// </summary>
-        ///
-        /// <remarks>
-        ///   Setting this property always throws a <see
-        ///   cref="NotImplementedException"/>. Reading will return the
-        ///   total number of uncompressed bytes read in.
-        /// </remarks>
         public override long Position
         {
             get
@@ -311,31 +203,9 @@ namespace Ionic.BZip2;
             }
             set { throw new NotImplementedException(); }
         }
-    /// <summary>
-    /// Calling this method always throws a <see cref="NotImplementedException"/>.
-    /// </summary>
-    /// <param name="offset">this is irrelevant, since it will always throw!</param>
-    /// <param name="origin">this is irrelevant, since it will always throw!</param>
-    /// <returns>irrelevant!</returns>
     public override long Seek(long offset, System.IO.SeekOrigin origin) => throw new NotImplementedException();
-    /// <summary>
-    /// Calling this method always throws a <see cref="NotImplementedException"/>.
-    /// </summary>
-    /// <param name="value">this is irrelevant, since it will always throw!</param>
     public override void SetLength(long value) => throw new NotImplementedException();
-    /// <summary>
-    ///   Calling this method always throws a <see cref="NotImplementedException"/>.
-    /// </summary>
-    /// <param name='buffer'>this parameter is never used</param>
-    /// <param name='offset'>this parameter is never used</param>
-    /// <param name='count'>this parameter is never used</param>
     public override void Write(byte[] buffer, int offset, int count) => throw new NotImplementedException();
-    /// <summary>
-    ///   Dispose the stream.
-    /// </summary>
-    /// <param name="disposing">
-    ///   indicates whether the Dispose method was invoked by user code.
-    /// </param>
     protected override void Dispose(bool disposing)
         {
             try
@@ -453,9 +323,6 @@ namespace Ionic.BZip2;
                 throw new IOException(msg);
             }
         }
-        /// <summary>
-        ///   Close the stream.
-        /// </summary>
         public override void Close()
         {
             Stream inShadow = this.input;
@@ -473,18 +340,6 @@ namespace Ionic.BZip2;
                 }
             }
         }
-        /// <summary>
-        ///   Read bitCount bits from input, right justifying the result.
-        /// </summary>
-        /// <remarks>
-        ///   <para>
-        ///     For example, if you read 1 bit, the result is either 0
-        ///     or 1.
-        ///   </para>
-        /// </remarks>
-        /// <param name ="bitCount">
-        ///   The number of bits to read, always between 1 and 32.
-        /// </param>
         private int GetBits(int bitCount)
         {
             int bsLiveShadow = this.bsLive;

@@ -637,59 +637,14 @@ namespace Ionic.Zip;
         }
         #endregion
         #region Read
-        /// <summary>
-        /// An event handler invoked before, during, and after the reading of a zip archive.
-        /// </summary>
         ///
-        /// <remarks>
-        /// <para>
-        /// Depending on the particular event being signaled, different properties on the
-        /// <see cref="ReadProgressEventArgs"/> parameter are set.  The following table
-        /// summarizes the available EventTypes and the conditions under which this
-        /// event handler is invoked with a <c>ReadProgressEventArgs</c> with the given EventType.
-        /// </para>
         ///
-        /// <list type="table">
-        /// <listheader>
-        /// <term>value of EntryType</term>
-        /// <description>Meaning and conditions</description>
-        /// </listheader>
         ///
-        /// <item>
-        /// <term>ZipProgressEventType.Reading_Started</term>
-        /// <description>Fired just as ZipFile.Read() begins. Meaningful properties: ArchiveName.
-        /// </description>
-        /// </item>
         ///
-        /// <item>
-        /// <term>ZipProgressEventType.Reading_Completed</term>
-        /// <description>Fired when ZipFile.Read() has completed. Meaningful properties: ArchiveName.
-        /// </description>
-        /// </item>
         ///
-        /// <item>
-        /// <term>ZipProgressEventType.Reading_ArchiveBytesRead</term>
-        /// <description>Fired while reading, updates the number of bytes read for the entire archive.
-        /// Meaningful properties: ArchiveName, CurrentEntry, BytesTransferred, TotalBytesToTransfer.
-        /// </description>
-        /// </item>
         ///
-        /// <item>
-        /// <term>ZipProgressEventType.Reading_BeforeReadEntry</term>
-        /// <description>Indicates an entry is about to be read from the archive.
-        /// Meaningful properties: ArchiveName, EntriesTotal.
-        /// </description>
-        /// </item>
         ///
-        /// <item>
-        /// <term>ZipProgressEventType.Reading_AfterReadEntry</term>
-        /// <description>Indicates an entry has just been read from the archive.
-        /// Meaningful properties: ArchiveName, EntriesTotal, CurrentEntry.
-        /// </description>
-        /// </item>
         ///
-        /// </list>
-        /// </remarks>
         ///
         /// <seealso cref="Ionic.Zip.ZipFile.SaveProgress"/>
         /// <seealso cref="Ionic.Zip.ZipFile.AddProgress"/>
@@ -761,151 +716,22 @@ namespace Ionic.Zip;
         }
         #endregion
         #region Extract
-        /// <summary>
-        ///   An event handler invoked before, during, and after extraction of
-        ///   entries in the zip archive.
-        /// </summary>
         ///
-        /// <remarks>
-        /// <para>
-        ///   Depending on the particular event, different properties on the <see
-        ///   cref="ExtractProgressEventArgs"/> parameter are set.  The following
-        ///   table summarizes the available EventTypes and the conditions under
-        ///   which this event handler is invoked with a
-        ///   <c>ExtractProgressEventArgs</c> with the given EventType.
-        /// </para>
         ///
-        /// <list type="table">
-        /// <listheader>
-        /// <term>value of EntryType</term>
-        /// <description>Meaning and conditions</description>
-        /// </listheader>
         ///
-        /// <item>
-        /// <term>ZipProgressEventType.Extracting_BeforeExtractAll</term>
-        /// <description>
-        ///   Set when ExtractAll() begins. The ArchiveName, Overwrite, and
-        ///   ExtractLocation properties are meaningful.</description>
-        /// </item>
         ///
-        /// <item>
-        /// <term>ZipProgressEventType.Extracting_AfterExtractAll</term>
-        /// <description>
-        ///   Set when ExtractAll() has completed.  The ArchiveName, Overwrite,
-        ///   and ExtractLocation properties are meaningful.
-        /// </description>
-        /// </item>
         ///
-        /// <item>
-        /// <term>ZipProgressEventType.Extracting_BeforeExtractEntry</term>
-        /// <description>
-        ///   Set when an Extract() on an entry in the ZipFile has begun.
-        ///   Properties that are meaningful: ArchiveName, EntriesTotal,
-        ///   CurrentEntry, Overwrite, ExtractLocation, EntriesExtracted.
-        /// </description>
-        /// </item>
         ///
-        /// <item>
-        /// <term>ZipProgressEventType.Extracting_AfterExtractEntry</term>
-        /// <description>
-        ///   Set when an Extract() on an entry in the ZipFile has completed.
-        ///   Properties that are meaningful: ArchiveName, EntriesTotal,
-        ///   CurrentEntry, Overwrite, ExtractLocation, EntriesExtracted.
-        /// </description>
-        /// </item>
         ///
-        /// <item>
-        /// <term>ZipProgressEventType.Extracting_EntryBytesWritten</term>
-        /// <description>
-        ///   Set within a call to Extract() on an entry in the ZipFile, as data
-        ///   is extracted for the entry.  Properties that are meaningful:
-        ///   ArchiveName, CurrentEntry, BytesTransferred, TotalBytesToTransfer.
-        /// </description>
-        /// </item>
         ///
-        /// <item>
-        /// <term>ZipProgressEventType.Extracting_ExtractEntryWouldOverwrite</term>
-        /// <description>
-        ///   Set within a call to Extract() on an entry in the ZipFile, when the
-        ///   extraction would overwrite an existing file. This event type is used
-        ///   only when <c>ExtractExistingFileAction</c> on the <c>ZipFile</c> or
-        ///   <c>ZipEntry</c> is set to <c>InvokeExtractProgressEvent</c>.
-        /// </description>
-        /// </item>
         ///
-        /// </list>
         ///
-        /// </remarks>
         ///
-        /// <example>
-        /// <code>
-        /// private static bool justHadByteUpdate = false;
-        /// public static void ExtractProgress(object sender, ExtractProgressEventArgs element)
-        /// {
-        ///   if(element.EventType == ZipProgressEventType.Extracting_EntryBytesWritten)
-        ///   {
-        ///     if (justHadByteUpdate)
-        ///       Console.SetCursorPosition(0, Console.CursorTop);
         ///
-        ///     Console.Write("   {0}/{1} ({2:N0}%)", element.BytesTransferred, element.TotalBytesToTransfer,
-        ///                   element.BytesTransferred / (0.01 * element.TotalBytesToTransfer ));
-        ///     justHadByteUpdate = true;
-        ///   }
-        ///   else if(element.EventType == ZipProgressEventType.Extracting_BeforeExtractEntry)
-        ///   {
-        ///     if (justHadByteUpdate)
-        ///       Console.WriteLine();
-        ///     Console.WriteLine("Extracting: {0}", element.CurrentEntry.FileName);
-        ///     justHadByteUpdate= false;
-        ///   }
-        /// }
         ///
-        /// public static ExtractZip(string zipToExtract, string directory)
-        /// {
-        ///   string TargetDirectory= "extract";
-        ///   using (var zip = ZipFile.Read(zipToExtract)) {
-        ///     zip.ExtractProgress += ExtractProgress;
-        ///     foreach (var element in zip1)
-        ///     {
-        ///       element.Extract(TargetDirectory, true);
-        ///     }
-        ///   }
-        /// }
         ///
-        /// </code>
-        /// <code lang="VB">
-        /// Public Shared Sub Main(ByVal args As String())
-        ///     Dim ZipToUnpack As String = "C1P3SML.zip"
-        ///     Dim TargetDir As String = "ExtractTest_Extract"
-        ///     Console.WriteLine("Extracting file {0} to {1}", ZipToUnpack, TargetDir)
-        ///     Using zip1 As ZipFile = ZipFile.Read(ZipToUnpack)
-        ///         AddHandler zip1.ExtractProgress, AddressOf MyExtractProgress
-        ///         Dim element As ZipEntry
-        ///         For Each element In zip1
-        ///             element.Extract(TargetDir, True)
-        ///         Next
-        ///     End Using
-        /// End Sub
         ///
-        /// Private Shared justHadByteUpdate As Boolean = False
         ///
-        /// Public Shared Sub MyExtractProgress(ByVal sender As Object, ByVal element As ExtractProgressEventArgs)
-        ///     If (element.EventType = ZipProgressEventType.Extracting_EntryBytesWritten) Then
-        ///         If ExtractTest.justHadByteUpdate Then
-        ///             Console.SetCursorPosition(0, Console.CursorTop)
-        ///         End If
-        ///         Console.Write("   {0}/{1} ({2:N0}%)", element.BytesTransferred, element.TotalBytesToTransfer, (CDbl(element.BytesTransferred) / (0.01 * element.TotalBytesToTransfer)))
-        ///         ExtractTest.justHadByteUpdate = True
-        ///     ElseIf (element.EventType = ZipProgressEventType.Extracting_BeforeExtractEntry) Then
-        ///         If ExtractTest.justHadByteUpdate Then
-        ///             Console.WriteLine
-        ///         End If
-        ///         Console.WriteLine("Extracting: {0}", element.CurrentEntry.FileName)
-        ///         ExtractTest.justHadByteUpdate = False
-        ///     End If
-        /// End Sub
-        /// </code>
-        /// </example>
         ///
         /// <seealso cref="Ionic.Zip.ZipFile.SaveProgress"/>
         /// <seealso cref="Ionic.Zip.ZipFile.ReadProgress"/>
@@ -1002,80 +828,16 @@ namespace Ionic.Zip;
         }
         #endregion
         #region Add
-        /// <summary>
-        /// An event handler invoked before, during, and after Adding entries to a zip archive.
-        /// </summary>
         ///
-        /// <remarks>
-        ///     Adding a large number of entries to a zip file can take a long
-        ///     time.  For example, when calling <see cref="AddDirectory(string)"/> on a
-        ///     directory that contains 50,000 files, it could take 3 minutes or so.
-        ///     This event handler allws an application to track the progress of the Add
-        ///     operation, and to optionally cancel a lengthy Add operation.
-        /// </remarks>
         ///
-        /// <example>
-        /// <code lang="C#">
         ///
-        /// int _numEntriesToAdd= 0;
-        /// int _numEntriesAdded= 0;
-        /// void AddProgressHandler(object sender, AddProgressEventArgs element)
-        /// {
-        ///     switch (element.EventType)
-        ///     {
-        ///         case ZipProgressEventType.Adding_Started:
-        ///             Console.WriteLine("Adding files to the zip...");
-        ///             break;
-        ///         case ZipProgressEventType.Adding_AfterAddEntry:
-        ///             _numEntriesAdded++;
-        ///             Console.WriteLine(String.Format("Adding file {0}/{1} :: {2}",
-        ///                                      _numEntriesAdded, _numEntriesToAdd, element.CurrentEntry.FileName));
-        ///             break;
-        ///         case ZipProgressEventType.Adding_Completed:
-        ///             Console.WriteLine("Added all files");
-        ///             break;
-        ///     }
-        /// }
         ///
-        /// void CreateTheZip()
-        /// {
-        ///     using (ZipFile zip = new ZipFile())
-        ///     {
-        ///         zip.AddProgress += AddProgressHandler;
-        ///         zip.AddDirectory(System.IO.Path.GetFileName(DirToZip));
-        ///         zip.Save(ZipFileToCreate);
-        ///     }
-        /// }
         ///
-        /// </code>
         ///
-        /// <code lang="VB">
         ///
-        /// Private Sub AddProgressHandler(ByVal sender As Object, ByVal element As AddProgressEventArgs)
-        ///     Select Case element.EventType
-        ///         Case ZipProgressEventType.Adding_Started
-        ///             Console.WriteLine("Adding files to the zip...")
-        ///             Exit Select
-        ///         Case ZipProgressEventType.Adding_AfterAddEntry
-        ///             Console.WriteLine(String.Format("Adding file {0}", element.CurrentEntry.FileName))
-        ///             Exit Select
-        ///         Case ZipProgressEventType.Adding_Completed
-        ///             Console.WriteLine("Added all files")
-        ///             Exit Select
-        ///     End Select
-        /// End Sub
         ///
-        /// Sub CreateTheZip()
-        ///     Using zip as ZipFile = New ZipFile
-        ///         AddHandler zip.AddProgress, AddressOf AddProgressHandler
-        ///         zip.AddDirectory(System.IO.Path.GetFileName(DirToZip))
-        ///         zip.Save(ZipFileToCreate);
-        ///     End Using
-        /// End Sub
         ///
-        /// </code>
         ///
-        /// </example>
         ///
         /// <seealso cref="Ionic.Zip.ZipFile.SaveProgress"/>
         /// <seealso cref="Ionic.Zip.ZipFile.ReadProgress"/>
@@ -1125,139 +887,23 @@ namespace Ionic.Zip;
         }
         #endregion
         #region Error
-        /// <summary>
-        /// An event that is raised when an error occurs during open or read of files
-        /// while saving a zip archive.
-        /// </summary>
         ///
-        /// <remarks>
-        ///  <para>
-        ///     Errors can occur as a file is being saved to the zip archive.  For
-        ///     example, the File.Open may fail, or a File.Read may fail, because of
-        ///     lock conflicts or other reasons.  If you add a handler to this event,
-        ///     you can handle such errors in your own code.  If you don't add a
-        ///     handler, the library will throw an exception if it encounters an I/O
-        ///     error during a call to <c>Save()</c>.
-        ///  </para>
         ///
-        ///  <para>
-        ///    Setting a handler implicitly sets <see cref="ZipFile.ZipErrorAction"/> to
-        ///    <c>ZipErrorAction.InvokeErrorEvent</c>.
-        ///  </para>
         ///
-        ///  <para>
-        ///    The handler you add applies to all <see cref="ZipEntry"/> items that are
-        ///    subsequently added to the <c>ZipFile</c> instance. If you set this
-        ///    property after you have added items to the <c>ZipFile</c>, but before you
-        ///    have called <c>Save()</c>, errors that occur while saving those items
-        ///    will not cause the error handler to be invoked.
-        ///  </para>
         ///
-        ///  <para>
-        ///    If you want to handle any errors that occur with any entry in the zip
-        ///    file using the same error handler, then add your error handler once,
-        ///    before adding any entries to the zip archive.
-        ///  </para>
         ///
-        ///  <para>
-        ///    In the error handler method, you need to set the <see
-        ///    cref="ZipEntry.ZipErrorAction"/> property on the
-        ///    <c>ZipErrorEventArgs.CurrentEntry</c>.  This communicates back to
-        ///    DotNetZip what you would like to do with this particular error.  Within
-        ///    an error handler, if you set the <c>ZipEntry.ZipErrorAction</c> property
-        ///    on the <c>ZipEntry</c> to <c>ZipErrorAction.InvokeErrorEvent</c> or if
-        ///    you don't set it at all, the library will throw the exception. (It is the
-        ///    same as if you had set the <c>ZipEntry.ZipErrorAction</c> property on the
-        ///    <c>ZipEntry</c> to <c>ZipErrorAction.Throw</c>.) If you set the
-        ///    <c>ZipErrorEventArgs.Cancel</c> to true, the entire <c>Save()</c> will be
-        ///    canceled.
-        ///  </para>
         ///
-        ///  <para>
-        ///    In the case that you use <c>ZipErrorAction.Skip</c>, implying that
-        ///    you want to skip the entry for which there's been an error, DotNetZip
-        ///    tries to seek backwards in the output stream, and truncate all bytes
-        ///    written on behalf of that particular entry. This works only if the
-        ///    output stream is seekable.  It will not work, for example, when using
-        ///    ASPNET's Response.OutputStream.
-        ///  </para>
         ///
-        /// </remarks>
         ///
-        /// <example>
         ///
-        /// This example shows how to use an event handler to handle
-        /// errors during save of the zip file.
-        /// <code lang="C#">
         ///
-        /// public static void MyZipError(object sender, ZipErrorEventArgs element)
-        /// {
-        ///     Console.WriteLine("Error saving {0}...", element.FileName);
-        ///     Console.WriteLine("   Exception: {0}", element.exception);
-        ///     ZipEntry entry = element.CurrentEntry;
-        ///     string response = null;
-        ///     // Ask the user whether he wants to skip this error or not
-        ///     do
-        ///     {
-        ///         Console.Write("Retry, Skip, Throw, or Cancel ? (R/S/T/C) ");
-        ///         response = Console.ReadLine();
-        ///         Console.WriteLine();
         ///
-        ///     } while (response != null &amp;&amp;
-        ///              response[0]!='S' &amp;&amp; response[0]!='s' &amp;&amp;
-        ///              response[0]!='R' &amp;&amp; response[0]!='r' &amp;&amp;
-        ///              response[0]!='T' &amp;&amp; response[0]!='t' &amp;&amp;
-        ///              response[0]!='C' &amp;&amp; response[0]!='c');
         ///
-        ///     element.Cancel = (response[0]=='C' || response[0]=='c');
         ///
-        ///     if (response[0]=='S' || response[0]=='s')
-        ///         entry.ZipErrorAction = ZipErrorAction.Skip;
-        ///     else if (response[0]=='R' || response[0]=='r')
-        ///         entry.ZipErrorAction = ZipErrorAction.Retry;
-        ///     else if (response[0]=='T' || response[0]=='t')
-        ///         entry.ZipErrorAction = ZipErrorAction.Throw;
-        /// }
         ///
-        /// public void SaveTheFile()
-        /// {
-        ///   string directoryToZip = "fodder";
-        ///   string directoryInArchive = "files";
-        ///   string zipFileToCreate = "Archive.zip";
-        ///   using (var zip = new ZipFile())
-        ///   {
-        ///     // set the event handler before adding any entries
-        ///     zip.ZipError += MyZipError;
-        ///     zip.AddDirectory(directoryToZip, directoryInArchive);
-        ///     zip.Save(zipFileToCreate);
-        ///   }
-        /// }
-        /// </code>
         ///
-        /// <code lang="VB">
-        /// Private Sub MyZipError(ByVal sender As Object, ByVal element As Ionic.Zip.ZipErrorEventArgs)
-        ///     ' At this point, the application could prompt the user for an action to take.
-        ///     ' But in this case, this application will simply automatically skip the file, in case of error.
-        ///     Console.WriteLine("Zip Error,  entry {0}", element.CurrentEntry.FileName)
-        ///     Console.WriteLine("   Exception: {0}", element.exception)
-        ///     ' set the desired ZipErrorAction on the CurrentEntry to communicate that to DotNetZip
-        ///     element.CurrentEntry.ZipErrorAction = Zip.ZipErrorAction.Skip
-        /// End Sub
         ///
-        /// Public Sub SaveTheFile()
-        ///     Dim directoryToZip As String = "fodder"
-        ///     Dim directoryInArchive As String = "files"
-        ///     Dim zipFileToCreate as String = "Archive.zip"
-        ///     Using zipArchive As ZipFile = New ZipFile
-        ///         ' set the event handler before adding any entries
-        ///         AddHandler zipArchive.ZipError, AddressOf MyZipError
-        ///         zipArchive.AddDirectory(directoryToZip, directoryInArchive)
-        ///         zipArchive.Save(zipFileToCreate)
-        ///     End Using
-        /// End Sub
         ///
-        /// </code>
-        /// </example>
         ///
         /// <seealso cref="Ionic.Zip.ZipFile.ZipErrorAction"/>
         ///
