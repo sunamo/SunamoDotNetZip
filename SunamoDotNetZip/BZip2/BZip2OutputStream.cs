@@ -283,7 +283,6 @@ namespace Ionic.BZip2;
         {
             if ((bits & this.desiredTrace) != 0)
             {
-                //lock(outputLock)
                 {
                     int tid = System.Threading.Thread.CurrentThread.GetHashCode();
                     Console.ForegroundColor = (ConsoleColor) (tid % 8 + 10);

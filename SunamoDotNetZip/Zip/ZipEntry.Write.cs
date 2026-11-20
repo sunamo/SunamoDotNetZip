@@ -274,10 +274,6 @@ using RE = System.Text.RegularExpressions;
                 // PostProcessOutput.
                 //?? I don't understand why I wouldn't want to just use
                 // the recalculated Extra field. ??
-                // byte[] h = _EntryHeader ?? _Extra;
-                // int offx = (h == _EntryHeader) ? 30 + filenameLength : 0;
-                // Buffer.BlockCopy(h, offx, bytes, i, extraFieldLength);
-                // i += extraFieldLength;
                 byte[] h = _Extra;
                 int offx = 0;
                 Buffer.BlockCopy(h, offx, bytes, i, extraFieldLength);
@@ -291,8 +287,6 @@ using RE = System.Text.RegularExpressions;
                     commentLength = bytes.Length - i;
                 // now actually write the comment itself into the byte buffer
                 Buffer.BlockCopy(_CommentBytes, 0, bytes, i, commentLength);
-                // for (j = 0; (j < commentLength) && (i + j < bytes.Length); j++)
-                //     bytes[i + j] = _CommentBytes[j];
                 i += commentLength;
             }
             bytes[32] = (byte)(commentLength & 0x00FF);
@@ -352,13 +346,11 @@ using RE = System.Text.RegularExpressions;
                 int i = 0;
                 if (_presumeZip64 || forCentralDirectory)
                 {
-                    // HeaderId = always use zip64 extensions.
                     block[i++] = 0x01;
                     block[i++] = 0x00;
                 }
                 else
                 {
-                    // HeaderId = dummy data now, maybe set to 0x0001 (ZIP64) later.
                     block[i++] = 0x99;
                     block[i++] = 0x99;
                 }
@@ -522,27 +514,6 @@ using RE = System.Text.RegularExpressions;
             }
             return aggregateBlock;
         }
-        // private System.Text.Encoding GenerateCommentBytes()
-        // {
-        //     var getEncoding = new Func<System.Text.Encoding>({
-        //     switch (AlternateEncodingUsage)
-        //     {
-        //         case ZipOption.Always:
-        //             return AlternateEncoding;
-        //         case ZipOption.Never:
-        //             return ibm437;
-        //     }
-        //     var cb = ibm437.GetBytes(_Comment);
-        //     string s1 = ibm437.GetString(cb);
-        //     if (s1 == _Comment)
-        //         return ibm437;
-        //     return AlternateEncoding;
-        //     });
-        //
-        //     var encoding = getEncoding();
-        //     _CommentBytes = encoding.GetBytes(_Comment);
-        //     return encoding;
-        // }
         private string NormalizeFileName()
         {
             // here, we need to flip the backslashes to forward-slashes,
@@ -594,7 +565,6 @@ using RE = System.Text.RegularExpressions;
                     return ibm437.GetBytes(s1);
             }
             // arriving here means AlternateEncodingUsage is "AsNecessary"
-            // case ZipOption.AsNecessary:
             // workitem 6513: when writing, use the alternative encoding
             // only when _actualEncoding is not yet set (it can be set
             // during Read), and when ibm437 will not do.
@@ -720,7 +690,6 @@ using RE = System.Text.RegularExpressions;
         // stream and be done with it.  But the possibility to use split archives
         // makes this approach ineffective.  In split archives, each file or segment
         // is bound to a max size limit, and each local file header must not span a
-        // segment boundary; it must be written contiguously.  If it will fit in the
         // current segment, then the ROLH is just the current Position in the output
         // stream.  If it won't fit, then we need a new file (segment) and the ROLH
         // is zero.
@@ -826,10 +795,6 @@ using RE = System.Text.RegularExpressions;
             // general purpose bitfield
             // In the current implementation, this library uses only these bits
             // in the GP bitfield:
-            //  bit 0 = if set, indicates the entry is encrypted
-            //  bit 3 = if set, indicates the CRC, C and UC sizes follow the file data.
-            //  bit 6 = strong encryption - for pkware's meaning of strong encryption
-            //  bit 11 = UTF-8 encoding is used in the comment and filename
             // Here we set or unset the encryption bit.
             // _BitField may already be set, as with a ZipEntry added into ZipOutputStream, which
             // has bit 3 always set. We only want to set one bit
@@ -839,7 +804,6 @@ using RE = System.Text.RegularExpressions;
                 _BitField |= 1;   // encryption bit ON
             // workitem 7941: WinZip does not the "strong encryption" bit  when using AES.
             // This "Strong Encryption" is a PKWare Strong encryption thing.
-            //                 _BitField |= 0x0020;
             // set the UTF8 bit if necessary
             if (_actualEncoding.CodePage == System.Text.Encoding.UTF8.CodePage)
                 _BitField |= 0x0800;
@@ -923,8 +887,6 @@ using RE = System.Text.RegularExpressions;
             // place in the header.
             if (this.__FileDataPosition == -1)
             {
-                //_UncompressedSize = 0; // do not unset - may need this value for restream
-                // _Crc32 = 0;           // ditto
                 _CompressedSize = 0;
                 _crcCalculated = false;
             }
@@ -1002,18 +964,13 @@ using RE = System.Text.RegularExpressions;
             byte[] bytes = new byte[i + filenameLength + extraFieldLength];
             // get the fixed portion
             Buffer.BlockCopy(block, 0, bytes, 0, i);
-            //for (j = 0; j < i; j++) bytes[j] = block[j];
             // The filename written to the archive.
             Buffer.BlockCopy(fileNameBytes, 0, bytes, i, fileNameBytes.Length);
-            // for (j = 0; j < fileNameBytes.Length; j++)
-            //     bytes[i + j] = fileNameBytes[j];
             i += fileNameBytes.Length;
             // "Extra field"
             if (_Extra != null)
             {
                 Buffer.BlockCopy(_Extra, 0, bytes, i, _Extra.Length);
-                // for (j = 0; j < _Extra.Length; j++)
-                //     bytes[i + j] = _Extra[j];
                 i += _Extra.Length;
             }
             _LengthOfHeader = i;
@@ -1080,7 +1037,6 @@ using RE = System.Text.RegularExpressions;
                     }
                     else
                     {
-                        //input = File.OpenRead(LocalFileName);
                         input = File.Open(LocalFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                     }
                     var crc32 = new Ionic.Zlib.CRC32();
@@ -1449,8 +1405,6 @@ using RE = System.Text.RegularExpressions;
                 // workitem 7924 - don't need bit 3
                 // // workitem 7917
                 // // set bit 3 for ZIP64 compatibility with WinZip12
-                // _BitField |= 0x0008;
-                // _EntryHeader[6] = (byte)(_BitField & 0x00FF);
                 // CompressedSize and UncompressedSize - 0xFF
                 for (int j = 0; j < 8; j++)
                     _EntryHeader[i++] = 0xff;
@@ -1492,7 +1446,6 @@ using RE = System.Text.RegularExpressions;
                     // HeaderId is not guaranteed to be any particular value.  So
                     // we determine if the first header is a putative zip64 header
                     // by examining the datasize.  UInt16 HeaderId =
-                    // (UInt16)(_EntryHeader[i] + _EntryHeader[i + 1] * 256);
                     Int16 DataSize = (short)(_EntryHeader[i + 2] + _EntryHeader[i + 3] * 256);
                     if (DataSize == 16)
                     {
@@ -1836,8 +1789,6 @@ using RE = System.Text.RegularExpressions;
                             // handle case for split archives
                             if (zss1 != null)
                             {
-                                // Console.WriteLine("***_diskNumber/first: {0}", _diskNumber);
-                                // Console.WriteLine("***_diskNumber/current: {0}", zss.CurrentSegment);
                                 zss1.TruncateBackward(_diskNumber, _RelativeOffsetOfLocalHeader);
                             }
                             else
@@ -1922,7 +1873,6 @@ using RE = System.Text.RegularExpressions;
             _CompressionMethod_FromZipFile = _CompressionMethod;
             _restreamRequiredOnSave = false;
             _metadataChanged = false;
-            //_Source = ZipEntrySource.None;
             _Source = ZipEntrySource.ZipFile; // workitem 10694
         }
         internal void WriteSecurityMetadata(Stream outstream)
@@ -2124,7 +2074,6 @@ using RE = System.Text.RegularExpressions;
                     {
                         // same descriptor on input and output. Copy it through.
                         outstream.Write(Descriptor, 0, size);
-                        //_LengthOfTrailer += size;
                     }
                 }
             }

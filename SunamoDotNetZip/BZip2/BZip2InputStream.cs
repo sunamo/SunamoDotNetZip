@@ -277,12 +277,10 @@ namespace Ionic.BZip2;
             else
             {
                 this.storedBlockCRC = bsGetInt();
-                // Console.WriteLine(" stored block CRC     : {0:X8}", this.storedBlockCRC);
                 this.blockRandomised = (GetBits(1) == 1);
                 // Lazily allocate data
                 if (this.data == null)
                     this.data = new DecompressionState(this.blockSize100k);
-                // currBlockNo++;
                 getAndMoveToFrontDecode();
                 this.crc.Reset();
                 this.currentState = CState.START_BLOCK;
@@ -296,20 +294,13 @@ namespace Ionic.BZip2;
             {
                 // make next blocks readable without error
                 // (repair feature, not yet documented, not tested)
-                // this.computedCombinedCRC = (this.storedCombinedCRC << 1)
-                //     | (this.storedCombinedCRC >> 31);
-                // this.computedCombinedCRC ^= this.storedBlockCRC;
                 var msg = String.Format("BZip2 CRC error (expected {0:X8}, computed {1:X8})",
                                         this.storedBlockCRC, this.computedBlockCRC);
                 throw new IOException(msg);
             }
-            // Console.WriteLine(" combined CRC (before): {0:X8}", this.computedCombinedCRC);
             this.computedCombinedCRC = (this.computedCombinedCRC << 1)
                 | (this.computedCombinedCRC >> 31);
             this.computedCombinedCRC ^= this.computedBlockCRC;
-            // Console.WriteLine(" computed block  CRC  : {0:X8}", this.computedBlockCRC);
-            // Console.WriteLine(" combined CRC (after) : {0:X8}", this.computedCombinedCRC);
-            // Console.WriteLine();
         }
         private void complete()
         {
@@ -351,7 +342,6 @@ namespace Ionic.BZip2;
                     int byteValue = this.input.ReadByte();
                     if (byteValue < 0)
                         throw new IOException("unexpected end of stream");
-                    // Console.WriteLine("R {0:X2}", byteValue);
                     bsBuffShadow = (bsBuffShadow << 8) | byteValue;
                     bsLiveShadow += 8;
                 } while (bsLiveShadow < bitCount);
@@ -360,28 +350,6 @@ namespace Ionic.BZip2;
             this.bsLive = bsLiveShadow - bitCount;
             return (bsBuffShadow >> (bsLiveShadow - bitCount)) & ((1 << bitCount) - 1);
         }
-        // private bool bsGetBit()
-        // {
-        //     int bsLiveShadow = this.bsLive;
-        //     int bsBuffShadow = this.bsBuff;
-        //
-        //     if (bsLiveShadow < 1)
-        //     {
-        //         int thech = this.input.ReadByte();
-        //
-        //         if (thech < 0)
-        //         {
-        //             throw new IOException("unexpected end of stream");
-        //         }
-        //
-        //         bsBuffShadow = (bsBuffShadow << 8) | thech;
-        //         bsLiveShadow += 8;
-        //         this.bsBuff = bsBuffShadow;
-        //     }
-        //
-        //     this.bsLive = bsLiveShadow - 1;
-        //     return ((bsBuffShadow >> (bsLiveShadow - 1)) & 1) != 0;
-        // }
         private bool bsGetBit()
         {
             int bit = GetBits(1);
@@ -438,7 +406,6 @@ namespace Ionic.BZip2;
             var state = this.data;
             bool[] inUse = state.inUse;
             byte[] pos = state.recvDecodingTables_pos;
-            //byte[] selector = state.selector;
             int inUse16 = 0;
             /* Receive the mapping table */
             for (int i = 0; i < 16; i++)
@@ -609,7 +576,6 @@ namespace Ionic.BZip2;
                         }
                         int codeLength = minLens_tableIndex;
                         // Inlined:
-                        // int vectorValue = GetBits(codeLength);
                         while (bsLiveShadow < codeLength)
                         {
                             int byteValue = this.input.ReadByte();
@@ -698,7 +664,6 @@ namespace Ionic.BZip2;
                     }
                     int codeLength = minLens_tableIndex;
                     // Inlined:
-                    // int vectorValue = GetBits(codeLength);
                     while (bsLiveShadow < codeLength)
                     {
                         int byteValue = this.input.ReadByte();
@@ -1047,17 +1012,8 @@ namespace Ionic.BZip2;
     //  * @return true, if this stream is a bzip2 compressed stream, false otherwise
     //  *
     //  * @since Apache Commons Compress 1.1
-    //  */
-    // public static boolean MatchesSig(byte[] signature)
-    // {
-    //     if ((signature.Length < 3) ||
     //         (signature[0] != 'B') ||
     //         (signature[1] != 'Z') ||
-    //         (signature[2] != 'h'))
-    //         return false;
-    //
-    //     return true;
-    // }
     internal static class BZip2
     {
             internal static T[][] InitRectangularArray<T>(int rowCount, int columnCount)

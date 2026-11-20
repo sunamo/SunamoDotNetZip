@@ -31,13 +31,11 @@ namespace Ionic.Zip;
             None = 0,
             ReadOnly = 1,
             Write = 2,
-            //Update = 3
         }
         private RwMode rwMode;
         private bool _exceptionPending; // **see note below
         private string _baseName;
         private string _baseDir;
-        //private bool _isDisposed;
         private string _currentName;
         private string _currentTempName;
         private uint _currentDiskNumber;
@@ -69,8 +67,6 @@ namespace Ionic.Zip;
                     _maxDiskNumber = maxDiskNumber,
                     _baseName = name,
                 };
-            // Console.WriteLine("ZSS: ForReading ({0})",
-            //                    Path.GetFileName(zss.CurrentName));
             zss._SetReadStream();
             return zss;
         }
@@ -88,8 +84,6 @@ namespace Ionic.Zip;
             // workitem 9522
             if (zss._baseDir=="") zss._baseDir=".";
             zss._SetWriteStream(0);
-            // Console.WriteLine("ZSS: ForWriting ({0})",
-            //                    Path.GetFileName(zss.CurrentName));
             return zss;
         }
         // Sort-of like a factory method, ForUpdate is used only when
@@ -105,8 +99,6 @@ namespace Ionic.Zip;
                                  Path.Combine(Path.GetDirectoryName(name),
                                               Path.GetFileNameWithoutExtension(name)),
                                  diskNumber + 1);
-            // Console.WriteLine("ZSS: ForUpdate ({0})",
-            //                   Path.GetFileName(fname));
             // This class assumes that the update will not expand the
             // size of the segment. Update is used only for an in-place
             // update of zip metadata. It never will try to write beyond
@@ -178,8 +170,6 @@ namespace Ionic.Zip;
             _innerStream?.Dispose();
             if (CurrentSegment + 1 == _maxDiskNumber)
                 _currentName = _baseName;
-            // Console.WriteLine("ZSS: SRS ({0})",
-            //                   Path.GetFileName(CurrentName));
             _innerStream = File.OpenRead(CurrentName);
         }
         public override int Read(byte[] buffer, int offset, int count)
@@ -217,16 +207,12 @@ namespace Ionic.Zip;
                 if (File.Exists(CurrentName))
                     File.Delete(CurrentName);
                 File.Move(_currentTempName, CurrentName);
-                // Console.WriteLine("ZSS: SWS close ({0})",
-                //                   Path.GetFileName(CurrentName));
             }
             if (increment > 0)
                 CurrentSegment += increment;
             SharedUtilities.CreateAndOpenUniqueTempFile(_baseDir,
                                                         out _innerStream,
                                                         out _currentTempName);
-            // Console.WriteLine("ZSS: SWS open ({0})",
-            //                   Path.GetFileName(_currentTempName));
             if (CurrentSegment == 0)
                 _innerStream.Write(BitConverter.GetBytes(ZipConstants.SplitArchiveSignature), 0, 4);
         }
@@ -267,8 +253,6 @@ namespace Ionic.Zip;
         }
         public long TruncateBackward(uint diskNumber, long offset)
         {
-            // Console.WriteLine("***ZSS.Trunc to disk {0}", diskNumber);
-            // Console.WriteLine("***ZSS.Trunc:  current disk {0}", CurrentSegment);
             if (rwMode != RwMode.Write)
             {
                 _exceptionPending = true;
@@ -294,7 +278,6 @@ namespace Ionic.Zip;
             for (uint j= CurrentSegment-1; j > diskNumber; j--)
             {
                 string text = _NameForSegment(j);
-                // Console.WriteLine("***ZSS.Trunc:  removing file {0}", text);
                 if (File.Exists(text))
                     File.Delete(text);
             }
@@ -377,15 +360,11 @@ namespace Ionic.Zip;
         protected override void Dispose(bool disposing)
         {
             // this gets called by Stream.Close()
-            // if (_isDisposed) return;
-            // _isDisposed = true;
-            //Console.WriteLine("Dispose (mode={0})\n", rwMode.ToString());
             try
             {
                 if (_innerStream != null)
                 {
                     _innerStream.Dispose();
-                    //_innerStream = null;
                     if (rwMode == RwMode.Write)
                     {
                         if (_exceptionPending)
@@ -396,10 +375,6 @@ namespace Ionic.Zip;
                         else
                         {
                             // // move the final temp file to the .zNN name
-                            // if (File.Exists(CurrentName))
-                            //     File.Delete(CurrentName);
-                            // if (File.Exists(_currentTempName))
-                            //     File.Move(_currentTempName, CurrentName);
                         }
                     }
                 }

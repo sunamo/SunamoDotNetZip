@@ -232,7 +232,6 @@ namespace Ionic.Zip;
                     zde._InputUsesZip64 = (zde._CompressedSize == 0xFFFFFFFF ||
                           zde._UncompressedSize == 0xFFFFFFFF ||
                           zde._RelativeOffsetOfLocalHeader == 0xFFFFFFFF);
-                    // Console.WriteLine("  Input uses Z64?:      {0}", zde._InputUsesZip64);
                     bytesRead += zde.ProcessExtraField(stream, zde._extraFieldLength);
                     zde._CompressedFileDataSize = zde._CompressedSize;
                 }
@@ -280,7 +279,6 @@ namespace Ionic.Zip;
                         zde._Comment = Ionic.Zip.SharedUtilities.StringFromBuffer(block, expectedEncoding);
                     }
                 }
-                //zde._LengthOfDirEntry = bytesRead;
                 if (zf.IgnoreDuplicateFiles && previouslySeen.ContainsKey(zde._FileNameInArchive))
                 {
                     continue;
@@ -292,7 +290,6 @@ namespace Ionic.Zip;
     private Int16 _VersionMadeBy;
         private Int16 _InternalFileAttrs;
         private Int32 _ExternalFileAttrs;
-        //private Int32 _LengthOfDirEntry;
         private Int16 _filenameLength;
         private Int16 _extraFieldLength;
         private Int16 _commentLength;

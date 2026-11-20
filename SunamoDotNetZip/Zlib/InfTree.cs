@@ -47,8 +47,6 @@ namespace Ionic.Zlib;
 // FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL JCRAFT,
 // INC. OR ANY CONTRIBUTORS TO THIS SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT,
 // INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
-// OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
 // LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 // EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -383,11 +381,7 @@ sealed class InfTree
             Array.Clear(v, 0, vsize);
             Array.Clear(c, 0, BMAX + 1);
             r[0] = 0; r[1] = 0; r[2] = 0;
-            //  for(int i=0; i<BMAX; i++){u[i]=0;}
-            //Array.Copy(c, 0, u, 0, BMAX);
             Array.Clear(u, 0, BMAX);
-            //  for(int i=0; i<BMAX+1; i++){x[i]=0;}
-            //Array.Copy(c, 0, x, 0, BMAX + 1);
             Array.Clear(x, 0, BMAX + 1);
         }
     }

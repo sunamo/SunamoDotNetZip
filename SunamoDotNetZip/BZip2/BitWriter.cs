@@ -37,10 +37,8 @@ namespace Ionic.BZip2;
 // the approach is used extensively in bzip2 files - sometimes 5 bits
 // are used, sometimes 24 or 3 bits, sometimes just 1 bit, and so on.
 // It's not possible to send this information directly to a stream in
-// this form; Streams in .NET accept byte-oriented input.  Therefore,
 // when actually writing a bz2 file, the output data must be organized
 // into a byte-aligned format before being written to the output stream.
-//
 // This BitWriter class provides the byte-shredding necessary for BZip2
 // output. Think of this class as an Adapter that enables Bit-oriented
 // output to a standard byte-oriented .NET stream. This class writes
@@ -56,17 +54,13 @@ namespace Ionic.BZip2;
 // 2 more whole bytes (16 more bits), in 8-bit chunks, leaving 5 in the
 // accumulator. BitWriter then follows the same procedure with the 32
 // new bits. And so on.
-//
 // A quick tour of the implementation:
-//
 // The accumulator is a uint - so it can accumulate at most 4 bytes of
 // information. In practice because of the design of this class, it
 // never accumulates more than 3 bytes.
-//
 // The Flush() method emits all whole bytes available. After calling
 // Flush(), there may be between 0-7 bits yet to be emitted into the
 // output stream.
-//
 // FinishAndPad() emits all data, including the last partial byte and
 // any necessary padding. In effect, it establishes a byte-alignment
 // barrier. To support bzip2, FinishAndPad() should be called only once
@@ -74,8 +68,6 @@ namespace Ionic.BZip2;
 // this adapter.  Other binary file formats may use byte-alignment at
 // various points within the file, and FinishAndPad() would support that
 // scenario.
-//
-// The internal fn Reset() is used to reset the state of the adapter;
 // this class is used by BZip2Compressor, instances of which get re-used
 // by multiple distinct threads, for different blocks of data.
 //

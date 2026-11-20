@@ -27,7 +27,6 @@ namespace Ionic.Zip;
 internal static class SharedUtilities
 {
     // private null constructor
-    //private SharedUtilities() { }
     // workitem 8423
     public static Int64 GetFileLength(string fileName)
     {
@@ -48,7 +47,6 @@ internal static class SharedUtilities
             if ((source.Second % 2) == 1)
                 source += new TimeSpan(0, 0, 1);
             DateTime dtRounded = new DateTime(source.Year, source.Month, source.Day, source.Hour, source.Minute, source.Second);
-            //if (source.Millisecond >= 500) dtRounded = dtRounded.AddSeconds(1);
             return dtRounded;
         }
 #endif
@@ -118,7 +116,6 @@ internal static class SharedUtilities
         }
         return path;
     }
-    //static System.Text.Encoding ibm437 = System.Text.Encoding.GetEncoding("IBM437");
     static readonly System.Text.Encoding utf8 = System.Text.Encoding.GetEncoding("UTF-8");
     internal static byte[] StringToByteArray(string value, System.Text.Encoding encoding)
     {
@@ -160,14 +157,6 @@ internal static class SharedUtilities
 #endif
         return StringToByteArray(value, ibm437);
     }
-    //internal static byte[] Utf8StringToByteArray(string value)
-    //{
-    //    return StringToByteArray(value, utf8);
-    //}
-    //internal static string StringFromBuffer(byte[] buf, int maxlength)
-    //{
-    //    return StringFromBuffer(buf, maxlength, ibm437);
-    //}
     internal static string Utf8StringFromBuffer(byte[] buf) => StringFromBuffer(buf, utf8);
     internal static string StringFromBuffer(byte[] buf, System.Text.Encoding encoding)
     {
@@ -304,7 +293,6 @@ internal static class SharedUtilities
         int day = packedDate & 0x001F;
         int hour = (packedTime & 0xF800) >> 11;
         int minute = (packedTime & 0x07E0) >> 5;
-        //int second = packedTime & 0x001F;
         int second = (packedTime & 0x001F) * 2;
         // validation and error checking.
         // this is not foolproof but will catch most errors.
@@ -366,7 +354,6 @@ internal static class SharedUtilities
             throw new ZipException(String.Format("Bad date/time format in the zip file. ({0})", msg));
         }
         // workitem 6191
-        //dateTime = AdjustTime_Reverse(dateTime);
         dateTime = DateTime.SpecifyKind(dateTime, DateTimeKind.Local);
         return dateTime;
     }
@@ -378,7 +365,6 @@ internal static class SharedUtilities
         // since the time is being written out, it needs to be adjusted.
         time = time.ToLocalTime();
         // workitem 7966
-        //time = AdjustTime_Forward(time);
         // see http://www.vsft.com/hal/dostime.htm for the format
         UInt16 packedDate = (UInt16)((time.Day & 0x0000001F) | ((time.Month << 5) & 0x000001E0) | (((time.Year - 1980) << 9) & 0x0000FE00));
         UInt16 packedTime = (UInt16)((time.Second / 2 & 0x0000001F) | ((time.Minute << 5) & 0x000007E0) | ((time.Hour << 11) & 0x0000F800));

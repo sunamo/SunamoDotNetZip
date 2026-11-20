@@ -102,7 +102,6 @@ public partial class ZipFile
             }
             zf.OnReadStarted();
             // change for workitem 8098
-            //zf._originPosition = text.Position;
             // Try reading the central directory, rather than scanning the file.
             uint datum = ReadFirstFourBytes(text);
             if (datum == ZipConstants.EndOfCentralDirectorySignature)
@@ -167,7 +166,6 @@ public partial class ZipFile
                 // Could not find the central directory.
                 // Fallback to the old method.
                 // workitem 8098: ok
-                //text.Seek(zf._originPosition, SeekOrigin.Begin);
                 text.Seek(0L, SeekOrigin.Begin);
                 ReadIntoInstance_Orig(zf);
             }
@@ -200,7 +198,6 @@ public partial class ZipFile
         zf._OffsetOfCentralDirectory64 = offset64;
         // change for workitem 8098
         text.Seek(offset64, SeekOrigin.Begin);
-        //zf.SeekFromOrigin(Offset64);
         uint datum = (uint)Ionic.Zip.SharedUtilities.ReadInt(text);
         if (datum != ZipConstants.Zip64EndOfCentralDirectoryRecordSignature)
             throw new BadReadException(String.Format("  Bad signature (0x{0:X8}) looking for ZIP64 EoCD Record at position 0x{1:X8}", datum, text.Position));
@@ -211,7 +208,6 @@ public partial class ZipFile
         offset64 = BitConverter.ToInt64(block, 36);
         // change for workitem 8098
         text.Seek(offset64, SeekOrigin.Begin);
-        //zf.SeekFromOrigin(Offset64);
     }
     private static uint ReadFirstFourBytes(Stream text)
     {
@@ -243,7 +239,6 @@ public partial class ZipFile
             if (de._InputUsesZip64) inputUsesZip64 = true;
             previouslySeen.Add(de.FileName, null); // to prevent dupes
         }
-        // workitem 9214; auto-set the zip64 flag
         if (inputUsesZip64) zf.UseZip64WhenSaving = Zip64Option.Always;
         // workitem 8299
         if (zf._locEndOfCDS > 0)
@@ -345,7 +340,6 @@ public partial class ZipFile
             zf._versionNeededToExtract = BitConverter.ToUInt16(block, j);
             j += 2;
             zf._diskNumberWithCd = BitConverter.ToUInt32(block, j);
-            //zf._diskNumberWithCd++; // hack!!
             // read the extended block
             block = new byte[DataSize - 44];
             text.Read(block, 0, block.Length);
@@ -383,7 +377,6 @@ public partial class ZipFile
         if (zf._diskNumberWithCd == 0)
         {
             zf._diskNumberWithCd = BitConverter.ToUInt16(block, 2);
-            //zf._diskNumberWithCd++; // hack!!
         }
         // read the comment here
         ReadZipFileComment(zf);
@@ -408,15 +401,6 @@ public partial class ZipFile
             zf.Comment = s1;
         }
     }
-    // private static bool BlocksAreEqual(byte[] a, byte[] buffer)
-    // {
-    //     if (a.Length != buffer.Length) return false;
-    //     for (int i = 0; i < a.Length; i++)
-    //     {
-    //         if (a[i] != buffer[i]) return false;
-    //     }
-    //     return true;
-    // }
     public static bool IsZipFile(string fileName) => IsZipFile(fileName, false);
     public static bool IsZipFile(string fileName, bool testExtract)
     {

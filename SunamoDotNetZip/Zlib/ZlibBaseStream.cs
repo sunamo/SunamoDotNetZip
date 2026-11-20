@@ -55,7 +55,6 @@ internal class ZlibBaseStream : System.IO.Stream
         : base()
     {
         this._flushMode = FlushType.None;
-        //this._workingBuffer = new byte[WORKING_BUFFER_SIZE_DEFAULT];
         this._stream = stream;
         this._leaveOpen = leaveOpen;
         this._compressionMode = compressionMode;
@@ -130,7 +129,6 @@ internal class ZlibBaseStream : System.IO.Stream
                 : _z.Inflate();
             if (rc != ZlibConstants.Z_OK && rc != ZlibConstants.Z_STREAM_END)
                 throw new ZlibException((_wantCompress ? "de" : "in") + "flating: " + _z.Message);
-            //if (_workingBuffer.Length - _z.AvailableBytesOut > 0)
             _stream.Write(_workingBuffer, 0, _workingBuffer.Length - _z.AvailableBytesOut);
             done = _z.AvailableBytesIn == 0 && _z.AvailableBytesOut != 0;
             // If GZIP and de-compress, we're done when 8 bytes remain.
@@ -404,7 +402,6 @@ internal class ZlibBaseStream : System.IO.Stream
             if ((nomoreinput || rc == ZlibConstants.Z_STREAM_END) && (_z.AvailableBytesOut == count))
                 break; // nothing more to read
         }
-        //while (_z.AvailableBytesOut == count && rc == ZlibConstants.Z_OK);
         while (_z.AvailableBytesOut > 0 && !nomoreinput && rc == ZlibConstants.Z_OK);
         // workitem 8557
         // is there more room in output?

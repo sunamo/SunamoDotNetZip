@@ -369,7 +369,6 @@ public class ZipOutputStream : Stream
     }
     private void _InitiateCurrentEntry(bool finishing)
     {
-        // If finishing==true, this means we're initiating the entry at the time of
         // Close() or PutNextEntry().  If this happens, it means no data was written
         // for the entry - Write() was never called.  (The usual case us to call
         // _InitiateCurrentEntry(bool) from within Write().)  If finishing==true,

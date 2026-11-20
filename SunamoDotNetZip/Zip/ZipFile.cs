@@ -968,7 +968,6 @@ IDisposable
         if (diskNumber + 1 == this._diskNumberWithCd ||
             (diskNumber == 0 && this._diskNumberWithCd == 0))
         {
-            //return (this.ReadStream as FileStream);
             return this.ReadStream;
         }
         return ZipSegmentedStream.ForReading(this._readName ?? this._name,
@@ -1464,8 +1463,6 @@ IDisposable
     ///
     public void RemoveEntry(ZipEntry entry)
     {
-        //if (!_entries.Values.Contains(entry))
-        //    throw new ArgumentException("The entry you specified does not exist in the zip archive.");
         if (entry == null) throw new ArgumentNullException(nameof(entry));
         var path = SharedUtilities.NormalizePathForUseInZipFile(entry.FileName);
         _entries.Remove(path);
@@ -1531,13 +1528,8 @@ IDisposable
     //         /// is destroyed.  Because the <c>ZipFile</c> type implements IDisposable, this
     //         /// method calls Dispose(false).
     //         /// </summary>
-    //         ~ZipFile()
-    //         {
     //             // call Dispose with false.  Since we're in the
     //             // destructor call, the managed resources will be
-    //             // disposed of anyways.
-    //             Dispose(false);
-    //         }
     ///
     ///
     ///
@@ -1662,7 +1654,6 @@ IDisposable
     private UInt32 _numberOfSegmentsForMostRecentSave;
     private ZipErrorAction _zipErrorAction;
     private bool _disposed;
-    //private System.Collections.Generic.List<ZipEntry> _entries;
     private System.Collections.Generic.Dictionary<String, ZipEntry> _entries;
     private System.Collections.Generic.Dictionary<String, ZipEntry> _entriesInsensitive;
     private List<ZipEntry> _zipEntriesAsList;
@@ -1817,8 +1808,6 @@ enum AddOrUpdateAction
 //
 // ***The external file attributes follows the MS-DOS file attribute byte, described here:
 // at http://support.microsoft.com/kb/q125019/
-// 0x0010 => directory
-// 0x0020 => file
 //
 //
 // End of central directory record:

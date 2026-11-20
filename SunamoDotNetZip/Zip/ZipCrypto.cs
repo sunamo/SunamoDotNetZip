@@ -107,9 +107,6 @@ namespace Ionic.Zip;
         // Decrypting:
         // From AppNote.txt:
         // loop for i from 0 to 11
-        //     C := buffer(i) ^ decrypt_byte()
-        //     update_keys(C)
-        //     buffer(i) := C
         // end loop
         public byte[] DecryptMessage(byte[] cipherText, int length)
         {
@@ -155,25 +152,6 @@ namespace Ionic.Zip;
             _Keys[2] = (UInt32)crc32.ComputeCrc32((int)_Keys[2], (byte)(_Keys[1] >> 24));
         }
         //public byte[] KeyHeader
-        //{
-        //    get
-        //    {
-        //        byte[] result = new byte[12];
-        //        result[0] = (byte)(_Keys[0] & 0xff);
-        //        result[1] = (byte)((_Keys[0] >> 8) & 0xff);
-        //        result[2] = (byte)((_Keys[0] >> 16) & 0xff);
-        //        result[3] = (byte)((_Keys[0] >> 24) & 0xff);
-        //        result[4] = (byte)(_Keys[1] & 0xff);
-        //        result[5] = (byte)((_Keys[1] >> 8) & 0xff);
-        //        result[6] = (byte)((_Keys[1] >> 16) & 0xff);
-        //        result[7] = (byte)((_Keys[1] >> 24) & 0xff);
-        //        result[8] = (byte)(_Keys[2] & 0xff);
-        //        result[9] = (byte)((_Keys[2] >> 8) & 0xff);
-        //        result[10] = (byte)((_Keys[2] >> 16) & 0xff);
-        //        result[11] = (byte)((_Keys[2] >> 24) & 0xff);
-        //        return result;
-        //    }
-        //}
         // private fields for the crypto stuff:
         private readonly UInt32[] _Keys = [0x12345678, 0x23456789, 0x34567890];
         private readonly Ionic.Zlib.CRC32 crc32 = new();
@@ -243,7 +221,6 @@ namespace Ionic.Zip;
         }
         public override void Flush()
         {
-            //throw new NotSupportedException();
         }
         public override long Length
         {

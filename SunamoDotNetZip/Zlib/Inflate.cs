@@ -49,8 +49,6 @@ namespace Ionic.Zlib;
 // FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL JCRAFT,
 // INC. OR ANY CONTRIBUTORS TO THIS SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT,
 // INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
-// OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
 // LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 // EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -327,10 +325,6 @@ sealed class InflateBlocks
                     else
                     {
                         Array.Clear(blens, 0, t);
-                        // for (int i = 0; i < t; i++)
-                        // {
-                        //     blens[i] = 0;
-                        // }
                     }
                     b >>= 14;
                     k -= 14;
@@ -1234,7 +1228,6 @@ internal sealed class InflateManager
                                  // if BAD, inflateSync's marker bytes count
     internal int marker;
     // mode independent information
-    //internal int nowrap; // flag for no wrapper
     private bool _handleRfc1950HeaderBytes = true;
     internal bool HandleRfc1950HeaderBytes
     {
@@ -1268,18 +1261,11 @@ internal sealed class InflateManager
         _codec.Message = null;
         blocks = null;
         // handle undocumented nowrap option (no zlib header or check)
-        //nowrap = 0;
-        //if (windowBits < 0)
-        //{
-        //    windowBits = - windowBits;
-        //    nowrap = 1;
-        //}
         // set window size
         if (windowBits < 8 || windowBits > 15)
         {
             End();
             throw new ZlibException("Bad window size.");
-            //return ZlibConstants.Z_STREAM_ERROR;
         }
         wbits = windowBits;
         blocks = new InflateBlocks(codec,
@@ -1294,9 +1280,6 @@ internal sealed class InflateManager
         int b;
         if (_codec.InputBuffer == null)
             throw new ZlibException("InputBuffer is null. ");
-        //             int f = (flush == FlushType.Finish)
-        //                 ? ZlibConstants.Z_BUF_ERROR
-        //                 : ZlibConstants.Z_OK;
         // workitem 8870
         int f = ZlibConstants.Z_OK;
         int r = ZlibConstants.Z_BUF_ERROR;

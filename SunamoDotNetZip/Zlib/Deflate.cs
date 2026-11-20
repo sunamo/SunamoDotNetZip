@@ -54,8 +54,6 @@ namespace Ionic.Zlib;
 // FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL JCRAFT,
 // INC. OR ANY CONTRIBUTORS TO THIS SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT,
 // INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
-// OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
 // LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 // EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -92,7 +90,6 @@ namespace Ionic.Zlib;
             // Attempt to find a better match only when the current match is
             // strictly smaller than this value. This mechanism is used only for
             // compression levels >= 4.  For levels 1,2,3: MaxLazy is actually
-            // MaxInsertLength. (See DeflateFast)
             internal int MaxLazy;    // do not perform lazy search above this match length
             internal int NiceLength; // quit search above this match length
             // To speed up deflation, hash chains are never searched beyond this
@@ -169,7 +166,6 @@ namespace Ionic.Zlib;
         internal int w_size;       // LZ77 window size (32K by default)
         internal int w_bits;       // log2(w_size)  (8..16)
         internal int w_mask;       // w_size - 1
-        //internal byte[] dictionary;
         internal byte[] window;
         // Sliding window. Input bytes are read into the second half of the window,
         // and move to the first half later to keep a dictionary of at least wSize
@@ -274,7 +270,6 @@ namespace Ionic.Zlib;
             window_size = 2 * w_size;
             // clear the hash - workitem 9063
             Array.Clear(head, 0, hash_size);
-            //for (int i = 0; i < hash_size; i++) head[i] = 0;
             config = Config.Lookup(compressionLevel);
             SetDeflater();
             strstart = 0;
@@ -544,10 +539,7 @@ namespace Ionic.Zlib;
             {
                 if (bi_valid > (int)Buf_size - len)
                 {
-                    //int val = value;
-                    //      bi_buf |= (val << bi_valid);
                     bi_buf |= (short)((value << bi_valid) & 0xffff);
-                    //put_short(bi_buf);
                         pending[pendingCount++] = (byte)bi_buf;
                         pending[pendingCount++] = (byte)(bi_buf >> 8);
                     bi_buf = (short)((uint)value >> (Buf_size - bi_valid));
@@ -555,7 +547,6 @@ namespace Ionic.Zlib;
                 }
                 else
                 {
-                    //      bi_buf |= (value) << bi_valid;
                     bi_buf |= (short)((value << bi_valid) & 0xffff);
                     bi_valid += len;
                 }
@@ -717,7 +708,6 @@ namespace Ionic.Zlib;
             }
             else if (bi_valid >= 8)
             {
-                //put_byte((byte)bi_buf);
                 pending[pendingCount++] = (byte)bi_buf;
                 bi_buf >>= 8;
                 bi_valid -= 8;
@@ -733,7 +723,6 @@ namespace Ionic.Zlib;
             }
             else if (bi_valid > 0)
             {
-                //put_byte((byte)bi_buf);
                 pending[pendingCount++] = (byte)bi_buf;
             }
             bi_buf = 0;
@@ -748,10 +737,8 @@ namespace Ionic.Zlib;
             if (header)
                 unchecked
                 {
-                    //put_short((short)len);
                     pending[pendingCount++] = (byte)len;
                     pending[pendingCount++] = (byte)(len >> 8);
-                    //put_short((short)~len);
                     pending[pendingCount++] = (byte)~len;
                     pending[pendingCount++] = (byte)(~len >> 8);
                 }
@@ -890,8 +877,6 @@ namespace Ionic.Zlib;
         // IN assertion: lookahead < MIN_LOOKAHEAD
         // OUT assertions: strstart <= window_size-MIN_LOOKAHEAD
         //    At least one byte has been read, or avail_in == 0; reads are
-        //    performed for at least two bytes (required for the zip translate_eol
-        //    option -- not supported here).
         private void _fillWindow()
         {
             int hashCount, headValue;
@@ -908,7 +893,6 @@ namespace Ionic.Zlib;
                 else if (more == -1)
                 {
                     // Very unlikely, but possible on 16 bit machine if strstart == 0
-                    // and lookahead == 1 (input done one byte at time)
                     more--;
                     // If the window is almost full and there is insufficient lookahead,
                     // move the upper half to the lower one to make room in the upper half.
@@ -953,8 +937,6 @@ namespace Ionic.Zlib;
                 // => more >= window_size - 2*WSIZE + 2
                 // In the BIG_MEM or MMAP case (not yet supported),
                 //   window_size == input_size + MIN_LOOKAHEAD  &&
-                //   strstart + s->lookahead <= input_size => more >= MIN_LOOKAHEAD.
-                // Otherwise, window_size == 2*WSIZE so more >= 2.
                 // If there was sliding, more >= WSIZE. So in all cases, more >= 2.
                 int bytesRead = _codec.read_buf(window, strstart + lookahead, more);
                 lookahead += bytesRead;
@@ -976,7 +958,6 @@ namespace Ionic.Zlib;
         // matches. It is used only for the fast compression options.
         internal BlockState DeflateFast(FlushType flush)
         {
-            //    short hash_head = 0; // head of the hash chain
             int hash_head = 0; // head of the hash chain
             bool bflush; // set if current block must be flushed
             while (true)
@@ -1000,7 +981,6 @@ namespace Ionic.Zlib;
                 if (lookahead >= MIN_MATCH)
                 {
                     ins_h = (((ins_h) << hash_shift) ^ (window[(strstart) + (MIN_MATCH - 1)] & 0xff)) & hash_mask;
-                    //  prev[strstart&w_mask]=hash_head=head[ins_h];
                     hash_head = (head[ins_h] & 0xffff);
                     prev[strstart & w_mask] = head[ins_h];
                     head[ins_h] = unchecked((short)strstart);
@@ -1020,7 +1000,6 @@ namespace Ionic.Zlib;
                 }
                 if (match_length >= MIN_MATCH)
                 {
-                    //        check_match(strstart, match_start, match_length);
                     bflush = _tr_tally(strstart - match_start, match_length - MIN_MATCH);
                     lookahead -= match_length;
                     // Insert new strings in the hash table only if the match length
@@ -1032,7 +1011,6 @@ namespace Ionic.Zlib;
                         {
                             strstart++;
                             ins_h = ((ins_h << hash_shift) ^ (window[(strstart) + (MIN_MATCH - 1)] & 0xff)) & hash_mask;
-                            //      prev[strstart&w_mask]=hash_head=head[ins_h];
                             hash_head = (head[ins_h] & 0xffff);
                             prev[strstart & w_mask] = head[ins_h];
                             head[ins_h] = unchecked((short)strstart);
@@ -1078,7 +1056,6 @@ namespace Ionic.Zlib;
         // no better match at the next window position.
         internal BlockState DeflateSlow(FlushType flush)
         {
-            //    short hash_head = 0;    // head of hash chain
             int hash_head = 0; // head of hash chain
             bool bflush; // set if current block must be flushed
             // Process the input block.
@@ -1101,7 +1078,6 @@ namespace Ionic.Zlib;
                 if (lookahead >= MIN_MATCH)
                 {
                     ins_h = (((ins_h) << hash_shift) ^ (window[(strstart) + (MIN_MATCH - 1)] & 0xff)) & hash_mask;
-                    //  prev[strstart&w_mask]=hash_head=head[ins_h];
                     hash_head = (head[ins_h] & 0xffff);
                     prev[strstart & w_mask] = head[ins_h];
                     head[ins_h] = unchecked((short)strstart);
@@ -1135,7 +1111,6 @@ namespace Ionic.Zlib;
                 {
                     int max_insert = strstart + lookahead - MIN_MATCH;
                     // Do not insert strings in hash table beyond this.
-                    //          check_match(strstart-1, prev_match, prev_length);
                     bflush = _tr_tally(strstart - 1 - prev_match, prev_length - MIN_MATCH);
                     // Insert in hash table all strings up to the end of the match.
                     // strstart-1 and strstart are already inserted. If there is not
@@ -1148,7 +1123,6 @@ namespace Ionic.Zlib;
                         if (++strstart <= max_insert)
                         {
                             ins_h = (((ins_h) << hash_shift) ^ (window[(strstart) + (MIN_MATCH - 1)] & 0xff)) & hash_mask;
-                            //prev[strstart&w_mask]=hash_head=head[ins_h];
                             hash_head = (head[ins_h] & 0xffff);
                             prev[strstart & w_mask] = head[ins_h];
                             head[ins_h] = unchecked((short)strstart);
@@ -1243,7 +1217,6 @@ namespace Ionic.Zlib;
                 // are always equal when the other bytes match, given that
                 // the hash keys are equal and that HASH_BITS >= 8.
                 scan += 2; match++;
-                // We check for insufficient lookahead only every 8th comparison;
                 // the 256th check will be made at strstart+258.
                 do
                 {
@@ -1301,7 +1274,6 @@ namespace Ionic.Zlib;
             window = new byte[w_size * 2];
             prev = new short[w_size];
             head = new short[hash_size];
-            // for memLevel==8, this will be 16384, 16k
             lit_bufsize = 1 << (memLevel + 6);
             // Use a single array as the buffer for data pending compression,
             // the output distance codes, and the output length codes (aka tree).
@@ -1323,7 +1295,6 @@ namespace Ionic.Zlib;
         {
             _codec.TotalBytesIn = _codec.TotalBytesOut = 0;
             _codec.Message = null;
-            //strm.data_type = Z_UNKNOWN;
             pendingCount = 0;
             nextPending = 0;
             Rfc1950BytesEmitted = false;
@@ -1345,7 +1316,6 @@ namespace Ionic.Zlib;
             prev = null;
             window = null;
             // free
-            // dstate=null;
             return status == BUSY_STATE ? ZlibConstants.Z_DATA_ERROR : ZlibConstants.Z_OK;
         }
         private void SetDeflater()
@@ -1442,7 +1412,6 @@ namespace Ionic.Zlib;
                     header |= PRESET_DICT;
                 header += 31 - (header % 31);
                 status = BUSY_STATE;
-                //putShortMSB(header);
                 unchecked
                 {
                     pending[pendingCount++] = (byte)(header >> 8);
@@ -1464,12 +1433,10 @@ namespace Ionic.Zlib;
                 _codec.flush_pending();
                 if (_codec.AvailableBytesOut == 0)
                 {
-                    //System.out.println("  avail_out==0");
                     // Since avail_out is 0, deflate will be called again with
                     // more output space, but possibly with both pending and
                     // avail_in equal to zero. There won't be anything to do,
                     // but this is not an error situation so make sure we
-                    // return OK instead of BUF_ERROR at next call of deflate:
                     last_flush = -1;
                     return ZlibConstants.Z_OK;
                 }
@@ -1487,8 +1454,6 @@ namespace Ionic.Zlib;
                 // means there's nothing to deflate.  And the caller has not asked
                 // for a FlushType.Finish, but...  that seems very non-fatal.  We
                 // can just say "OK" and do nothing.
-                // _codec.Message = z_errmsg[ZlibConstants.Z_NEED_DICT - (ZlibConstants.Z_BUF_ERROR)];
-                // throw new ZlibException("AvailableBytesIn == 0 && flush<=old_flush && flush != FlushType.Finish");
                 return ZlibConstants.Z_OK;
             }
             // User must not provide more input after the first FINISH:
@@ -1555,8 +1520,6 @@ namespace Ionic.Zlib;
             pending[pendingCount++] = (byte)((_codec._Adler32 & 0x00FF0000) >> 16);
             pending[pendingCount++] = (byte)((_codec._Adler32 & 0x0000FF00) >> 8);
             pending[pendingCount++] = (byte)(_codec._Adler32 & 0x000000FF);
-            //putShortMSB((int)(SharedUtils.URShift(_codec._Adler32, 16)));
-            //putShortMSB((int)(_codec._Adler32 & 0xffff));
             _codec.flush_pending();
             // If avail_out is zero, the application will call deflate again
             // to flush the rest.

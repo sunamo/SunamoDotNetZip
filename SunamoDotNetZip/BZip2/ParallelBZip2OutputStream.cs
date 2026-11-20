@@ -463,7 +463,6 @@ public class ParallelBZip2OutputStream : System.IO.Stream
                         var memoryStream = workitem.ms;
                         memoryStream.Seek(0, SeekOrigin.Begin);
                         // cannot dump bytes!!
-                        // ms.WriteTo(this.output);
                         //
                         // must do byte shredding:
                         int bytesRead;

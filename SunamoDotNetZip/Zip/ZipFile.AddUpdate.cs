@@ -261,7 +261,6 @@ namespace Ionic.Zip;
                     if (_addOperationCanceled) break;
                     if (directoryPathInArchive != null)
                     {
-                        //string s = SharedUtilities.NormalizePath(Path.Combine(directoryPathInArchive, Path.GetDirectoryName(f)));
                         string s = Path.GetFullPath(Path.Combine(directoryPathInArchive, Path.GetDirectoryName(f)));
                         this.AddFile(f, s);
                     }
@@ -651,7 +650,6 @@ namespace Ionic.Zip;
             ze.Encryption = this.Encryption;
             ze.EmitTimesInWindowsFormatWhenSaving = this._emitNtfsTimes;
             ze.EmitTimesInUnixFormatWhenSaving = this._emitUnixTimes;
-            //string key = DictionaryKeyForEntry(ze);
             InternalAddEntry(ze.FileName,ze);
             AfterAddEntry(ze);
             return ze;
@@ -758,11 +756,6 @@ namespace Ionic.Zip;
             RemoveEntryForUpdate(entryName);
             return AddEntry(entryName, byteContent);
         }
-    //         private string DictionaryKeyForEntry(ZipEntry ze1)
-    //         {
-    //             var filename = SharedUtilities.NormalizePathForUseInZipFile(ze1.FileName);
-    //             return filename;
-    //         }
     ///
     ///
     ///
@@ -832,7 +825,6 @@ namespace Ionic.Zip;
             dir.EmitTimesInWindowsFormatWhenSaving = _emitNtfsTimes;
             dir.EmitTimesInUnixFormatWhenSaving = _emitUnixTimes;
             dir._Source = ZipEntrySource.Stream;
-            //string key = DictionaryKeyForEntry(dir);
             InternalAddEntry(dir.FileName,dir);
             AfterAddEntry(dir);
             return dir;

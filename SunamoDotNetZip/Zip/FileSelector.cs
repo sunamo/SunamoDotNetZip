@@ -26,16 +26,11 @@ namespace Ionic.Zip;
 // a simple expression language. Examples:
 //
 // find all .txt files:
-//     name = *.txt
-//
 // shorthand for the above
 //     *.txt
-//
 // all files modified after January 1st, 2009
 //     mtime > 2009-01-01
-//
 // All .txt files modified after the first of the year
-//     name = *.txt  AND  mtime > 2009-01-01
 //
 // All .txt files modified after the first of the year, or any file with the archive bit set
 //     (name = *.txt  AND  mtime > 2009-01-01) or (attribtues = A)
@@ -83,7 +78,6 @@ internal abstract partial class SelectionCriterion
     [System.Diagnostics.Conditional("SelectorTrace")]
     protected static void CriterionTrace(string format, params object[] args)
     {
-        //System.Console.WriteLine("  " + format, args);
     }
 }
 internal partial class SizeCriterion : SelectionCriterion
@@ -181,7 +175,6 @@ internal partial class NameCriterion : SelectionCriterion
                 .Replace(@"\\\*\.\*", @"\\([^\.]+|.*\.[^\\\.]*)")
                 .Replace(@"\.\*", @"\.[^\\\.]*")
                 .Replace(@"\*", @".*")
-                //.Replace(@"\*", @"[^\\\.]*") // ill-conceived
                 .Replace(@"\?", @"[^\\\.]")
                 + "$";
             CriterionTrace("NameCriterion regexString({0})", _regexString);
@@ -474,7 +467,6 @@ public partial class FileSelector
         //
         // before                         after
         // -------------------------------------------------------------------
-        // name=*.txt                     name = *.txt
         // (size>100)AND(name=*.txt)      ( size > 100 ) AND ( name = *.txt )
         //
         // This is relatively straightforward using regular expression
@@ -532,7 +524,6 @@ public partial class FileSelector
         string interim = source;
         for (int i = 0; i < prPairs.Length; i++)
         {
-            //char caseIdx = (char)('A' + i);
             string pattern = RegexAssertions.PrecededByEvenNumberOfSingleQuotes +
                 prPairs[i][0] +
                 RegexAssertions.FollowedByEvenNumberOfSingleQuotesAndLineEnd;
@@ -699,8 +690,6 @@ public partial class FileSelector
                             m = m[1..^1]
                                 .Replace("\u0006", " ");
                         }
-                        // if (m.StartsWith("'"))
-                        //     m = m.Replace("\u0006", " ");
                         //Fix for Unix -> NormalizeCriteriaExpression replaces all slashes with backslashes
                         if (Path.DirectorySeparatorChar == '/')
                             m = m.Replace('\\', Path.DirectorySeparatorChar);
