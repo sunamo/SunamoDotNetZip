@@ -6,7 +6,7 @@
     <Nullable>disable</Nullable>
     <Description>.NET 9 fork for DotNetZip because have high security vulnerability</Description>
     <Version>26.5.18.4</Version>
-    <Authors>www.sunamo.cz</Authors>
+    <Authors>Dino Chiesa; www.sunamo.cz</Authors>
     <Copyright>www.sunamo.cz</Copyright>
     <PackageProjectUrl>https://sunamo.github.io/PlatformIndependentNuGetPackages/SunamoDotNetZip/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/sunamo/SunamoDotNetZip.git</RepositoryUrl>
