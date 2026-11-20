@@ -11,7 +11,7 @@
     <PackageProjectUrl>https://sunamo.github.io/PlatformIndependentNuGetPackages/SunamoDotNetZip/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/sunamo/SunamoDotNetZip.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageLicenseExpression>MS-PL AND BSD-3-Clause AND Apache-2.0</PackageLicenseExpression>
     <RootNamespace>Ionic</RootNamespace>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
