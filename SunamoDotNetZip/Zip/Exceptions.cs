@@ -1,5 +1,3 @@
-// variables names: ok
-// Variable names have been checked and replaced with self-descriptive names
 
 
 // Exceptions.cs
