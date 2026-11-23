@@ -240,8 +240,6 @@ using Interop = System.Runtime.InteropServices;
                     throw new InvalidOperationException("Unsupported compression method.");
                 // If the source is a zip archive and there was encryption on the
                 // entry, changing the compression method is not supported.
-                //                 if (this._Source == ZipEntrySource.ZipFile && _sourceIsEncrypted)
-                //                     throw new InvalidOperationException("Cannot change compression method on encrypted entries read from archives.");
                 _CompressionMethod = (Int16)value;
                 if (_CompressionMethod == (Int16)Ionic.Zip.CompressionMethod.None)
                     _CompressionLevel = CompressionLevel.None;
@@ -316,8 +314,6 @@ using Interop = System.Runtime.InteropServices;
                     throw new InvalidOperationException("You may not set Encryption to that value.");
                 // If the source is a zip archive and there was encryption
                 // on the entry, this will not work. <XXX>
-                //if (this._Source == ZipEntrySource.ZipFile && _sourceIsEncrypted)
-                //    throw new InvalidOperationException("You cannot change the encryption method on encrypted entries read from archives.");
                 _Encryption = value;
                 _restreamRequiredOnSave = true;
                 _container.ZipFile?.NotifyEntryChanged();
@@ -448,12 +444,6 @@ using Interop = System.Runtime.InteropServices;
         // ///
         // /// <seealso cref="ZipFile.ProvisionalAlternateEncoding" />
         // public System.Text.Encoding ActualEncoding
-        // {
-        //     get
-        //     {
-        //         return _actualEncoding;
-        //     }
-        // }
         internal static string NameInArchive(String filename, string directoryPathInArchive)
         {
         string result;
@@ -471,7 +461,6 @@ using Interop = System.Runtime.InteropServices;
                     result = Path.Combine(directoryPathInArchive, Path.GetFileName(filename));
                 }
             }
-            //result = Path.GetFullPath(result);
             result = SharedUtilities.NormalizePathForUseInZipFile(result);
             return result;
         }
@@ -674,16 +663,11 @@ using Interop = System.Runtime.InteropServices;
             // So we won't.
             Int16 filenameLength = (short)(block[26] + block[27] * 256);
             Int16 extraFieldLength = (short)(block[28] + block[29] * 256);
-            // Console.WriteLine("  pos  0x{0:X8} ({0})", this.ArchiveStream.Position);
-            // Console.WriteLine("  seek 0x{0:X8} ({0})", filenameLength + extraFieldLength);
             this.ArchiveStream.Seek(filenameLength + extraFieldLength, SeekOrigin.Current);
             this._LengthOfHeader = 30 + extraFieldLength + filenameLength +
                 GetLengthOfCryptoHeaderBytes(_Encryption_FromZipFile);
-            // Console.WriteLine("  ROLH  0x{0:X8} ({0})", _RelativeOffsetOfLocalHeader);
-            // Console.WriteLine("  LOH   0x{0:X8} ({0})", _LengthOfHeader);
             // workitem 8098: ok (arithmetic)
             this.__FileDataPosition = _RelativeOffsetOfLocalHeader + _LengthOfHeader;
-            // Console.WriteLine("  FDP   0x{0:X8} ({0})", __FileDataPosition);
             // restore file position:
             // workitem 8098: ok (restore)
             this.ArchiveStream.Seek(origPosition, SeekOrigin.Begin);
@@ -698,7 +682,6 @@ using Interop = System.Runtime.InteropServices;
 #endif
         internal static int GetLengthOfCryptoHeaderBytes(EncryptionAlgorithm a)
         {
-            //if ((_BitField & 0x01) != 0x01) return 0;
             if (a == EncryptionAlgorithm.None) return 0;
 #if AESCRYPTO
             if (a == EncryptionAlgorithm.WinZipAes128 ||
@@ -770,7 +753,6 @@ using Interop = System.Runtime.InteropServices;
 #else
         private static readonly System.Text.Encoding ibm437 = System.Text.Encoding.GetEncoding("IBM437");
 #endif
-        //private System.Text.Encoding _provisionalAlternateEncoding = System.Text.Encoding.GetEncoding("IBM437");
         private System.Text.Encoding _actualEncoding;
         internal ZipContainer _container;
         private long __FileDataPosition = -1;
@@ -806,7 +788,6 @@ using Interop = System.Runtime.InteropServices;
         // summary
         // The default size of the IO buffer for ZipEntry instances. Currently it is 8192 bytes.
         // summary
-        //public const int IO_BUFFER_SIZE_DEFAULT = 8192; // 0x8000; // 0x4400
     }
     [Flags]
     public enum ZipEntryTimestamp

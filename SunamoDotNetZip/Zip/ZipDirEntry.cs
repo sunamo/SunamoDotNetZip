@@ -166,7 +166,7 @@ namespace Ionic.Zip;
                 int bytesReadCount = stream.Read(block, 0, block.Length);
                 if (bytesReadCount != block.Length) return null;
                 int i = 0;
-            ZipEntry zde = new()
+            ZipEntry here = new()
             {
                 AlternateEncoding = expectedEncoding,
                 _Source = ZipEntrySource.ZipFile,
@@ -174,125 +174,122 @@ namespace Ionic.Zip;
             };
             unchecked
                 {
-                    zde._VersionMadeBy = (short)(block[i++] + block[i++] * 256);
-                    zde._VersionNeeded = (short)(block[i++] + block[i++] * 256);
-                    zde._BitField = (short)(block[i++] + block[i++] * 256);
-                    zde._CompressionMethod = (Int16)(block[i++] + block[i++] * 256);
-                    zde._TimeBlob = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
-                    zde._LastModified = Ionic.Zip.SharedUtilities.PackedToDateTime(zde._TimeBlob);
-                    zde._timestamp |= ZipEntryTimestamp.DOS;
-                    zde._Crc32 = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
-                    zde._CompressedSize = (uint)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
-                    zde._UncompressedSize = (uint)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
+                    here._VersionMadeBy = (short)(block[i++] + block[i++] * 256);
+                    here._VersionNeeded = (short)(block[i++] + block[i++] * 256);
+                    here._BitField = (short)(block[i++] + block[i++] * 256);
+                    here._CompressionMethod = (Int16)(block[i++] + block[i++] * 256);
+                    here._TimeBlob = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
+                    here._LastModified = Ionic.Zip.SharedUtilities.PackedToDateTime(here._TimeBlob);
+                    here._timestamp |= ZipEntryTimestamp.DOS;
+                    here._Crc32 = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
+                    here._CompressedSize = (uint)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
+                    here._UncompressedSize = (uint)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
                 }
                 // preserve
-                zde._CompressionMethod_FromZipFile = zde._CompressionMethod;
-                zde._filenameLength = (short)(block[i++] + block[i++] * 256);
-                zde._extraFieldLength = (short)(block[i++] + block[i++] * 256);
-                zde._commentLength = (short)(block[i++] + block[i++] * 256);
-                zde._diskNumber = (UInt32)(block[i++] + block[i++] * 256);
-                zde._InternalFileAttrs = (short)(block[i++] + block[i++] * 256);
-                zde._ExternalFileAttrs = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
-                zde._RelativeOffsetOfLocalHeader = (uint)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
+                here._CompressionMethod_FromZipFile = here._CompressionMethod;
+                here._filenameLength = (short)(block[i++] + block[i++] * 256);
+                here._extraFieldLength = (short)(block[i++] + block[i++] * 256);
+                here._commentLength = (short)(block[i++] + block[i++] * 256);
+                here._diskNumber = (UInt32)(block[i++] + block[i++] * 256);
+                here._InternalFileAttrs = (short)(block[i++] + block[i++] * 256);
+                here._ExternalFileAttrs = block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256;
+                here._RelativeOffsetOfLocalHeader = (uint)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
                 // workitem 7801
-                zde.IsText = ((zde._InternalFileAttrs & 0x01) == 0x01);
-                block = new byte[zde._filenameLength];
+                here.IsText = ((here._InternalFileAttrs & 0x01) == 0x01);
+                block = new byte[here._filenameLength];
                 bytesReadCount = stream.Read(block, 0, block.Length);
                 bytesRead += bytesReadCount;
-                if ((zde._BitField & 0x0800) == 0x0800)
+                if ((here._BitField & 0x0800) == 0x0800)
                 {
                     // UTF-8 is in use
-                    zde._FileNameInArchive = Ionic.Zip.SharedUtilities.Utf8StringFromBuffer(block);
+                    here._FileNameInArchive = Ionic.Zip.SharedUtilities.Utf8StringFromBuffer(block);
                 }
                 else
                 {
-                    zde._FileNameInArchive = Ionic.Zip.SharedUtilities.StringFromBuffer(block, expectedEncoding);
+                    here._FileNameInArchive = Ionic.Zip.SharedUtilities.StringFromBuffer(block, expectedEncoding);
                 }
                 // workitem 10330
                 // insure unique entry names
-                while (!zf.IgnoreDuplicateFiles && previouslySeen.ContainsKey(zde._FileNameInArchive))
+                while (!zf.IgnoreDuplicateFiles && previouslySeen.ContainsKey(here._FileNameInArchive))
                 {
-                    zde._FileNameInArchive = CopyHelper.AppendCopyToFileName(zde._FileNameInArchive);
-                    zde._metadataChanged = true;
+                    here._FileNameInArchive = CopyHelper.AppendCopyToFileName(here._FileNameInArchive);
+                    here._metadataChanged = true;
                 }
-                if (zde.AttributesIndicateDirectory)
-                    zde.MarkAsDirectory();  // may append a slash to filename if nec.
+                if (here.AttributesIndicateDirectory)
+                    here.MarkAsDirectory();  // may append a slash to filename if nec.
                     // workitem 6898
-                else if (zde._FileNameInArchive.EndsWith("/")) zde.MarkAsDirectory();
-                zde._CompressedFileDataSize = zde._CompressedSize;
-                if ((zde._BitField & 0x01) == 0x01)
+                else if (here._FileNameInArchive.EndsWith("/")) here.MarkAsDirectory();
+                here._CompressedFileDataSize = here._CompressedSize;
+                if ((here._BitField & 0x01) == 0x01)
                 {
                     // this may change after processing the Extra field
-                    zde._Encryption_FromZipFile = zde._Encryption =
+                    here._Encryption_FromZipFile = here._Encryption =
                         EncryptionAlgorithm.PkzipWeak;
-                    zde._sourceIsEncrypted = true;
+                    here._sourceIsEncrypted = true;
                 }
-                if (zde._extraFieldLength > 0)
+                if (here._extraFieldLength > 0)
                 {
-                    zde._InputUsesZip64 = (zde._CompressedSize == 0xFFFFFFFF ||
-                          zde._UncompressedSize == 0xFFFFFFFF ||
-                          zde._RelativeOffsetOfLocalHeader == 0xFFFFFFFF);
-                    // Console.WriteLine("  Input uses Z64?:      {0}", zde._InputUsesZip64);
-                    bytesRead += zde.ProcessExtraField(stream, zde._extraFieldLength);
-                    zde._CompressedFileDataSize = zde._CompressedSize;
+                    here._InputUsesZip64 = (here._CompressedSize == 0xFFFFFFFF ||
+                          here._UncompressedSize == 0xFFFFFFFF ||
+                          here._RelativeOffsetOfLocalHeader == 0xFFFFFFFF);
+                    bytesRead += here.ProcessExtraField(stream, here._extraFieldLength);
+                    here._CompressedFileDataSize = here._CompressedSize;
                 }
                 // we've processed the extra field, so we know the encryption method is set now.
-                if (zde._Encryption == EncryptionAlgorithm.PkzipWeak)
+                if (here._Encryption == EncryptionAlgorithm.PkzipWeak)
                 {
                     // the "encryption header" of 12 bytes precedes the file data
-                    zde._CompressedFileDataSize -= 12;
+                    here._CompressedFileDataSize -= 12;
                 }
 #if AESCRYPTO
-                else if (zde.Encryption == EncryptionAlgorithm.WinZipAes128 ||
-                            zde.Encryption == EncryptionAlgorithm.WinZipAes256)
+                else if (here.Encryption == EncryptionAlgorithm.WinZipAes128 ||
+                            here.Encryption == EncryptionAlgorithm.WinZipAes256)
                 {
-                    zde._CompressedFileDataSize = zde.CompressedSize -
-                        (ZipEntry.GetLengthOfCryptoHeaderBytes(zde.Encryption) + 10);
-                        zde._LengthOfTrailer = 10;
+                    here._CompressedFileDataSize = here.CompressedSize -
+                        (ZipEntry.GetLengthOfCryptoHeaderBytes(here.Encryption) + 10);
+                        here._LengthOfTrailer = 10;
                 }
 #endif
                 // tally the trailing descriptor
-                if ((zde._BitField & 0x0008) == 0x0008)
+                if ((here._BitField & 0x0008) == 0x0008)
                 {
                     // sig, CRC, Comp and Uncomp sizes
-                    if (zde._InputUsesZip64)
-                        zde._LengthOfTrailer += 24;
+                    if (here._InputUsesZip64)
+                        here._LengthOfTrailer += 24;
                     else
-                        zde._LengthOfTrailer += 16;
+                        here._LengthOfTrailer += 16;
                 }
                 // workitem 12744
-                zde.AlternateEncoding = ((zde._BitField & 0x0800) == 0x0800)
+                here.AlternateEncoding = ((here._BitField & 0x0800) == 0x0800)
                     ? System.Text.Encoding.UTF8
                     :expectedEncoding;
-                zde.AlternateEncodingUsage = ZipOption.Always;
-                if (zde._commentLength > 0)
+                here.AlternateEncodingUsage = ZipOption.Always;
+                if (here._commentLength > 0)
                 {
-                    block = new byte[zde._commentLength];
+                    block = new byte[here._commentLength];
                     bytesReadCount = stream.Read(block, 0, block.Length);
                     bytesRead += bytesReadCount;
-                    if ((zde._BitField & 0x0800) == 0x0800)
+                    if ((here._BitField & 0x0800) == 0x0800)
                     {
                         // UTF-8 is in use
-                        zde._Comment = Ionic.Zip.SharedUtilities.Utf8StringFromBuffer(block);
+                        here._Comment = Ionic.Zip.SharedUtilities.Utf8StringFromBuffer(block);
                     }
                     else
                     {
-                        zde._Comment = Ionic.Zip.SharedUtilities.StringFromBuffer(block, expectedEncoding);
+                        here._Comment = Ionic.Zip.SharedUtilities.StringFromBuffer(block, expectedEncoding);
                     }
                 }
-                //zde._LengthOfDirEntry = bytesRead;
-                if (zf.IgnoreDuplicateFiles && previouslySeen.ContainsKey(zde._FileNameInArchive))
+                if (zf.IgnoreDuplicateFiles && previouslySeen.ContainsKey(here._FileNameInArchive))
                 {
                     continue;
                 }
-                return zde;
+                return here;
             }
         }
     internal static bool IsNotValidZipDirEntrySig(int signature) => (signature != ZipConstants.ZipDirEntrySignature);
     private Int16 _VersionMadeBy;
         private Int16 _InternalFileAttrs;
         private Int32 _ExternalFileAttrs;
-        //private Int32 _LengthOfDirEntry;
         private Int16 _filenameLength;
         private Int16 _extraFieldLength;
         private Int16 _commentLength;

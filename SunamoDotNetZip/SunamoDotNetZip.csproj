@@ -5,22 +5,22 @@
     <LangVersion>latest</LangVersion>
     <Nullable>disable</Nullable>
     <Description>.NET 9 fork for DotNetZip because have high security vulnerability</Description>
-    <Version>26.5.18.4</Version>
-    <PackageReleaseNotes>y</PackageReleaseNotes>
-    <Authors>www.sunamo.cz</Authors>
+    <Version>26.11.23.1</Version>
+    <Authors>Dino Chiesa; www.sunamo.cz</Authors>
     <Copyright>www.sunamo.cz</Copyright>
     <PackageProjectUrl>https://sunamo.github.io/PlatformIndependentNuGetPackages/SunamoDotNetZip/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/sunamo/SunamoDotNetZip.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageLicenseExpression>MS-PL AND BSD-3-Clause AND Apache-2.0</PackageLicenseExpression>
     <RootNamespace>Ionic</RootNamespace>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
     <IsPackable>true</IsPackable>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <EmbedAllSources>true</EmbedAllSources>
-    <Optimize>false</Optimize>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
   </PropertyGroup>
   <PropertyGroup>
     <DebugType>portable</DebugType>
@@ -32,7 +32,7 @@
     <PackageReference Include="System.Security.Permissions" Version="10.0.2" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="10.0.2" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.2" Pack="True" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.102" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="11.0.100" PrivateAssets="all" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="DotNet.ReproducibleBuilds" Version="2.0.2">
@@ -50,5 +50,8 @@
     <PackageReference Include="PolySharp" Version="1.15.0" PrivateAssets="all" />
   </ItemGroup>  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="readme.md" Pack="True" PackagePath="." />
   </ItemGroup>
 </Project>

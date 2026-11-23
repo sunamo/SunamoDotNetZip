@@ -159,7 +159,6 @@ public partial class ZipEntry
                     if (currentBytesRead != 20) return false;
                     // do not increment bytesRead - it is for entry header only.
                     // the data we have just read is a footer (falls after the file data)
-                    //bytesRead += currentBytesRead;
                     i = 0;
                     ze._Crc32 = (Int32)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
                     ze._CompressedSize = BitConverter.ToInt64(block, i);
@@ -175,7 +174,6 @@ public partial class ZipEntry
                     if (currentBytesRead != 12) return false;
                     // do not increment bytesRead - it is for entry header only.
                     // the data we have just read is a footer (falls after the file data)
-                    //bytesRead += currentBytesRead;
                     i = 0;
                     ze._Crc32 = (Int32)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
                     ze._CompressedSize = (uint)(block[i++] + block[i++] * 256 + block[i++] * 256 * 256 + block[i++] * 256 * 256 * 256);
@@ -432,7 +430,6 @@ public partial class ZipEntry
                 if ((this._BitField & 0x01) != 0x01)
                     throw new BadReadException(String.Format("  Inconsistent metadata at position 0x{0:X16}", posn));
                 this._sourceIsEncrypted = true;
-                //this._aesCrypto = new WinZipAesCrypto(this);
                 // see spec at http://www.winzip.com/aes_info.htm
                 if (dataSize != 7)
                     throw new BadReadException(String.Format("  Inconsistent size (0x{0:X4}) in WinZip AES field at position 0x{1:X16}", dataSize, posn));

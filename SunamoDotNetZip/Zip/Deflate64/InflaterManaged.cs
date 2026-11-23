@@ -248,7 +248,6 @@ namespace Ionic.Zip.Deflate64;
         }
         //
         // If we reached the end of the block and the block we were decoding had
-        // bfinal=1 (final block)
         //
         if (eob && (_bfinal != 0))
             {
@@ -434,7 +433,6 @@ namespace Ionic.Zip.Deflate64;
                         goto case InflaterState.HaveDistCode;
                     case InflaterState.HaveDistCode:
                         // To avoid a table lookup we note that for distanceCode > 3,
-                        // extra_bits = (distanceCode-2) >> 1
                         int offset;
                         if (_distanceCode > 3)
                         {

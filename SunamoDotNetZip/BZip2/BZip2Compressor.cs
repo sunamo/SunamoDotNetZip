@@ -140,7 +140,6 @@ internal class BZip2Compressor
     }
     void Reset()
     {
-        // initBlock();
         this.crc.Reset();
         this.currentByte = -1;
         this.runLength = 0;
@@ -221,7 +220,6 @@ internal class BZip2Compressor
     private bool AddRunToOutputBlock(bool isFinal)
     {
         runs++;
-        /* add_pair_to_block ( EState* s ) */
         int previousLast = this.last;
         // sanity check only - because of the check done at the
         // bottom of this method, and the logic in write0(), this
@@ -281,8 +279,6 @@ internal class BZip2Compressor
         if (this.runLength > 0)
             AddRunToOutputBlock(true);
         this.currentByte = -1;
-        // Console.WriteLine("  BZip2Compressor:CompressAndWrite (r={0} bcrc={1:X8})",
-        //                   runs, this.crc.Crc32Result);
         // has any data been written?
         if (this.last == -1)
             return; // no data; nothing to compress
@@ -530,7 +526,6 @@ internal class BZip2Compressor
                 break;
             }
         }
-        // assert (this.origPtr != -1) : this.origPtr;
     }
     /**
      * This is the most hammered method of this class.
@@ -573,12 +568,6 @@ internal class BZip2Compressor
                     int currentValue = fmap[i];
                     int currentValuePlusDepth = currentValue + depth;
                     int j = i;
-                    // for (int compareValue;
-                    // (j > mj) && mainGtU((compareValue = fmap[j - gap]) + d, currentValuePlusDepth,
-                    // block, quadrant, lastShadow);
-                    // j -= gap) {
-                    // fmap[j] = compareValue;
-                    // }
                     //
                     // unrolled version:
                     // start inline mainGTU
@@ -1070,7 +1059,6 @@ internal class BZip2Compressor
             }
         }
         /* Decide how many coding tables to use */
-        // assert (this.nMTF > 0) : this.nMTF;
         int nGroups = (this.nMTF < 200) ? 2 : (this.nMTF < 600) ? 3
             : (this.nMTF < 1200) ? 4 : (this.nMTF < 2400) ? 5 : 6;
         /* Generate an initial set of coding tables */
@@ -1379,7 +1367,6 @@ internal class BZip2Compressor
     }
     private void sendMTFValues2(int nGroups, int nSelectors)
     {
-        // assert (nGroups < 8) : nGroups;
         CompressionState dataShadow = this.cstate;
         byte[] pos = dataShadow.sendMTFValues2_pos;
         for (int i = nGroups; --i >= 0;)
@@ -1423,8 +1410,6 @@ internal class BZip2Compressor
                     minLen = codeLength;
                 }
             }
-            // assert (maxLen <= 20) : maxLen;
-            // assert (minLen >= 1) : minLen;
             hbAssignCodes(code[tableIndex], len[tableIndex], minLen, maxLen, alphaSize);
         }
     }

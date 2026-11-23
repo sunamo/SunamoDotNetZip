@@ -48,8 +48,6 @@ namespace Ionic.Zlib;
 // FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL JCRAFT,
 // INC. OR ANY CONTRIBUTORS TO THIS SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT,
 // INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
-// OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
 // LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 // EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -84,7 +82,6 @@ namespace Ionic.Zlib;
         // length codes.
         internal const int Buf_size = 8 * 2;
         // see definition of array dist_code below
-        //internal const int DIST_CODE_LEN = 512;
         private static readonly sbyte[] _dist_code =
         [
             0,  1,  2,  3,  4,  4,  5,  5,  6,  6,  6,  6,  7,  7,  7,  7, 
@@ -291,7 +288,6 @@ namespace Ionic.Zlib;
             node = elems; // next internal node of the tree
             do
             {
-                // n = node of least frequency
                 n = manager.heap[1];
                 manager.heap[1] = manager.heap[manager.heap_len--];
                 manager.pqdownheap(tree, 1);
@@ -334,9 +330,6 @@ namespace Ionic.Zlib;
                 }
             // Check that the bit counts in bl_count are consistent. The last code
             // must be all ones.
-            //Assert (code + bl_count[MAX_BITS]-1 == (1<<MAX_BITS)-1,
-            //        "inconsistent bit counts");
-            //Tracev((stderr,"\ngen_codes: max_code %d ", max_code));
             for (n = 0; n <= max_code; n++)
             {
                 int len = tree[n * 2 + 1];

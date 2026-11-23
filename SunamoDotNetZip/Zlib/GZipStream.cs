@@ -47,8 +47,6 @@ public class GZipStream : System.IO.Stream
     //  CRC32                4 bytes
     //  isize                4 bytes    data size modulo 2^32
     //
-    //     FLG (FLaGs)
-    //                bit 0   FTEXT - indicates file is ASCII text (can be safely ignored)
     //                bit 1   FHCRC - there is a CRC16 for the header immediately following the header
     //                bit 2   FEXTRA - extra fields are present
     //                bit 3   FNAME - the zero-terminated filename is present. encoding; ISO-8859-1.
@@ -226,8 +224,6 @@ public class GZipStream : System.IO.Stream
     {
         if (_disposed) throw new ObjectDisposedException("GZipStream");
         int n = _baseStream.Read(buffer, offset, count);
-        // Console.WriteLine("GZipStream::Read(buffer, off({0}), c({1}) = {2}", offset, count, n);
-        // Console.WriteLine( Util.FormatByteArray(buffer, offset, n) );
         if (!_firstReadDone)
         {
             _firstReadDone = true;
@@ -243,7 +239,6 @@ public class GZipStream : System.IO.Stream
         if (_disposed) throw new ObjectDisposedException("GZipStream");
         if (_baseStream._streamMode == ZlibBaseStream.StreamMode.Undefined)
         {
-            //Console.WriteLine("GZipStream: First write");
             if (_baseStream._wantCompress)
             {
                 // first write in compression, therefore, emit the GZIP header
@@ -291,8 +286,6 @@ public class GZipStream : System.IO.Stream
                             // OS
         header[i++] = 0xFF; // 0xFF == unspecified
                             // extra field length - only if FEXTRA is set, which it is not.
-                            //header[i++]= 0;
-                            //header[i++]= 0;
                             // filename
         if (fnLength != 0)
         {

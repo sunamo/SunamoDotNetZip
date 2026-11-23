@@ -59,8 +59,6 @@ public class ParallelDeflateOutputStream : System.IO.Stream
     private int _maxBufferPairs;
     private int _bufferSize = IO_BUFFER_SIZE_DEFAULT;
     private AutoResetEvent _newlyCompressedBlob;
-    //private ManualResetEvent            _writingDone;
-    //private ManualResetEvent            _sessionReset;
 #if NET9_0_OR_GREATER
     private readonly Lock _outputLock = new();
 #else
@@ -91,10 +89,7 @@ public class ParallelDeflateOutputStream : System.IO.Stream
     private readonly object _eLock = new();  // protects _pendingException
 #endif
     // This bitfield is used only when Trace is defined.
-    //private TraceBits _DesiredTrace = TraceBits.Write | TraceBits.WriteBegin |
     //TraceBits.WriteDone | TraceBits.Lifecycle | TraceBits.Fill | TraceBits.Flush |
-    //TraceBits.Session;
-    //private TraceBits _DesiredTrace = TraceBits.WriteBegin | TraceBits.WriteDone | TraceBits.Synch | TraceBits.Lifecycle  | TraceBits.Session ;
     private readonly TraceBits _DesiredTrace =
         TraceBits.Session |
         TraceBits.Compress |
@@ -118,10 +113,6 @@ public class ParallelDeflateOutputStream : System.IO.Stream
     {
     }
    
-    //public ParallelDeflateOutputStream(System.IO.Stream stream, bool leaveOpen)
-    //    : this(stream, CompressionLevel.Default, CompressionStrategy.Default, leaveOpen)
-    //{
-    //}
     public ParallelDeflateOutputStream(System.IO.Stream stream,
                                        CompressionLevel level,
                                        CompressionStrategy strategy,

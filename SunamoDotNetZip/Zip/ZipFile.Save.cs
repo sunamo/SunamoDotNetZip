@@ -165,7 +165,6 @@ namespace Ionic.Zip;
                         // this kind of failure happens, we're hosed, and this logic will
                         // throw on the next File.Move().
                         //
-                        //File.Delete(_name);
                         // workitem 10447
                         tmpName = _name + "." + Path.GetRandomFileName();
                         if (File.Exists(tmpName))
@@ -358,7 +357,6 @@ namespace Ionic.Zip;
                     Array.Copy(BitConverter.GetBytes(thisSegment), 0, argument, i, 4);
                     i += 4;
                     // number of the disk with the start of the central directory
-                    //Array.Copy(BitConverter.GetBytes(startSegment), 0, argument, i, 4);
                     Array.Copy(BitConverter.GetBytes(thisSegment), 0, argument, i, 4);
                     i = 60;
                     // offset 60
@@ -385,7 +383,6 @@ namespace Ionic.Zip;
                 Array.Copy(BitConverter.GetBytes(thisSegment), 0, a2, i, 2);
                 i += 2;
                 // number of the disk with the start of the central directory
-                //Array.Copy(BitConverter.GetBytes((UInt16)startSegment), 0, a2, i, 2);
                 Array.Copy(BitConverter.GetBytes(thisSegment), 0, a2, i, 2);
         }
         stream.Write(a2, 0, a2.Length);
@@ -502,7 +499,6 @@ namespace Ionic.Zip;
                     }
             }
         }
-            //   s.Write(bytes, 0, i);
             return bytes;
         }
         private static byte[] GenZip64EndOfCentralDirectory(long StartOfCentralDirectory,
@@ -525,10 +521,8 @@ namespace Ionic.Zip;
             Array.Copy(BitConverter.GetBytes(DataSize), 0, bytes, i, 8);
             i += 8;
             // offset 12
-            // VersionMadeBy = 45;
             bytes[i++] = 45;
             bytes[i++] = 0x00;
-            // VersionNeededToExtract = 45;
             bytes[i++] = 45;
             bytes[i++] = 0x00;
             // offset 16

@@ -80,9 +80,6 @@ namespace Ionic.Zip;
             //
             // ZipEntry.CompressedSize represents the size of all of those elements.
             // salt size varies with key length:
-            //    128 bit key => 8 bytes salt
-            //    192 bits => 12 bytes salt
-            //    256 bits => 16 bytes salt
             WinZipAesCrypto crypto = new WinZipAesCrypto(password, KeyStrengthInBits);
             int saltSizeInBytes = crypto._KeyStrengthInBytes / 2;
             crypto._Salt = new byte[saltSizeInBytes];
@@ -147,7 +144,6 @@ namespace Ionic.Zip;
         }
         private void _GenerateCryptoBytes()
         {
-            //Console.WriteLine(" provided password: '{0}'", _Password);
             System.Security.Cryptography.Rfc2898DeriveBytes rfc2898 =
                 new System.Security.Cryptography.Rfc2898DeriveBytes(_Password, Salt, Rfc2898KeygenIterations);
             _keyBytes = rfc2898.GetBytes(_KeyStrengthInBytes); // 16 or 24 or 32 ???
@@ -326,7 +322,6 @@ namespace Ionic.Zip;
             if (stream == null) throw new ArgumentNullException(nameof(stream));
             // don't read beyond this limit!
             _length = length;
-            //Console.WriteLine("max length of AES stream: {0}", _length);
         }
 #if WANT_TRACE
         Stream untransformed;

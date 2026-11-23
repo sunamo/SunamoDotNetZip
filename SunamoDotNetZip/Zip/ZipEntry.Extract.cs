@@ -351,10 +351,7 @@ public partial class ZipEntry
             // File.Move() from succeeding. To avoid this, when the file
             // already exists, we need to replace it in 3 steps:
             //
-            //     1. rename the existing file to a zombie name;
             //     2. rename the extracted file from the temp name to
-            //        the target file name;
-            //     3. delete the zombie.
             //
             zombie = targetFileName + Path.GetRandomFileName() + ".PendingOverwrite";
             File.Move(targetFileName, zombie);
@@ -534,7 +531,6 @@ public partial class ZipEntry
         {
             while (leftToRead > 0)
             {
-                //Console.WriteLine("ExtractOne: LeftToRead {0}", LeftToRead);
                 // Casting LeftToRead down to an int is ok here in the else clause,
                 // because that only happens when it is less than bytes.Length,
                 // which is much less than MAX_INT.
@@ -719,7 +715,6 @@ public partial class ZipEntry
     }
     void SetupCryptoForExtract(string password)
     {
-        //if (password == null) return;
         if (_Encryption_FromZipFile == EncryptionAlgorithm.None) return;
         if (_Encryption_FromZipFile == EncryptionAlgorithm.PkzipWeak)
         {

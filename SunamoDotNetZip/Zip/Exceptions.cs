@@ -1,6 +1,3 @@
-// variables names: ok
-// EN: Variable names have been checked and replaced with self-descriptive names
-// CZ: Názvy proměnných byly zkontrolovány a nahrazeny samopopisnými názvy
 
 
 // Exceptions.cs
@@ -27,8 +24,6 @@
 // This module defines exceptions used in the class library.
 //
 namespace Ionic.Zip;
-//[AttributeUsage(AttributeTargets.Class)]
-//public class ZipExceptionAttribute : Attribute { }
 [Serializable]
 [System.Runtime.InteropServices.GuidAttribute("ebc25cf6-9120-4283-b972-0e5520d0000B")]
 public class BadPasswordException : ZipException

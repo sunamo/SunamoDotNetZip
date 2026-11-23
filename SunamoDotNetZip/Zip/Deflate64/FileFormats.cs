@@ -1,6 +1,5 @@
 namespace Ionic.Zip.Deflate64;
 
-// variables names: ok
     internal interface IFileFormatReader
     {
         bool ReadHeader(InputBuffer input);
